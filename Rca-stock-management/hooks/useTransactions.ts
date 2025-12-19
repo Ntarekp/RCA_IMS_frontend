@@ -4,7 +4,8 @@
 
 import { useEffect, useState } from 'react';
 import { getAllTransactions, recordTransaction } from '../api/services/transactionService';
-import { StockTransactionDTO, CreateTransactionRequest } from '../api/types';
+import { getBalanceReport } from '../api/services/reportService';
+import { StockTransactionDTO, CreateTransactionRequest, StockBalanceDTO } from '../api/types';
 import { DashboardItem } from '../types';
 import { mapStockBalanceToDashboardItem } from '../utils/mappers';
 
@@ -18,22 +19,14 @@ export const useTransactions = (itemId?: number) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getAllTransactions(itemId);
-      setTransactions(data);
+      const [transactionsData, balanceData] = await Promise.all([
+        getAllTransactions(itemId),
+        getBalanceReport(), // Use balance report for dashboard items
+      ]);
+      setTransactions(transactionsData);
       
-      // Convert to dashboard items format
-      // Note: This is a simplified conversion. You might want to use the balance report instead
-      const dashboardData = data.map((tx, idx) => ({
-        id: tx.id?.toString() || idx.toString(),
-        name: tx.itemName || 'Unknown',
-        unit: 'unit', // Would need to get from item
-        quantityIn: tx.transactionType === 'IN' ? tx.quantity : 0,
-        quantityRemaining: 0, // Would need to calculate
-        quantityDamaged: 0,
-        quantityThreshold: 0,
-        status: 'Birahagije' as const,
-        date: tx.transactionDate,
-      }));
+      // Convert balance report to dashboard items format
+      const dashboardData = balanceData.map(mapStockBalanceToDashboardItem);
       setDashboardItems(dashboardData);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch transactions'));
