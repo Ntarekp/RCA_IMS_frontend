@@ -12,7 +12,7 @@ export const StockCard: React.FC<StockCardProps> = ({ item, onManage }) => {
     switch (status) {
         case 'Birahagije': return 'bg-emerald-50 text-emerald-700 border-emerald-100 ring-emerald-500/10';
         case 'Mucye': return 'bg-amber-50 text-amber-700 border-amber-100 ring-amber-500/10';
-        case 'Shize': return 'bg-rose-50 text-rose-700 border-rose-100 ring-rose-500/10';
+        case 'Byashize': return 'bg-rose-50 text-rose-700 border-rose-100 ring-rose-500/10';
         default: return 'bg-slate-50 text-slate-600 border-slate-100';
     }
   };
@@ -21,7 +21,7 @@ export const StockCard: React.FC<StockCardProps> = ({ item, onManage }) => {
     <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:shadow-lg hover:border-blue-100/50 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group relative overflow-hidden">
       
       {/* Decorative background blur for low stock */}
-      {item.status === 'Shize' && (
+      {item.status === 'Byashize' && (
         <div className="absolute top-0 right-0 w-24 h-24 bg-rose-50 rounded-bl-full -mr-8 -mt-8 opacity-50 z-0"></div>
       )}
 
