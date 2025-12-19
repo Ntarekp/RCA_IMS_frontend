@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { login, LoginRequest } from '../api/services/authService';
+import { ApiError } from '../api/client';
 
 interface LoginViewProps {
-  onLogin: () => void;
+  onLogin: (token: string, email: string) => void;
 }
 
 export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
@@ -10,15 +12,33 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate API call authentication
-    setTimeout(() => {
+    setError(null);
+    
+    try {
+      const loginRequest: LoginRequest = { email, password };
+      const response = await login(loginRequest);
+      
+      // Store token in localStorage
+      localStorage.setItem('authToken', response.token);
+      localStorage.setItem('userEmail', response.email);
+      localStorage.setItem('userRole', response.role);
+      
+      // Call onLogin callback with token and email
+      onLogin(response.token, response.email);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.data?.message || 'Invalid email or password');
+      } else {
+        setError('Login failed. Please try again.');
+      }
+    } finally {
       setLoading(false);
-      onLogin();
-    }, 1500);
+    }
   };
 
   return (
@@ -67,6 +87,12 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                 </div>
+
+                {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
+                        {error}
+                    </div>
+                )}
 
                 <div className="flex items-center justify-between text-xs pt-1">
                     <label className="flex items-center gap-2 text-slate-500 cursor-pointer hover:text-slate-700 select-none">

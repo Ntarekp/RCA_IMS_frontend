@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -84,16 +84,28 @@ const App = () => {
   };
 
   // Logic Handlers
-  const handleLogin = () => {
+  const handleLogin = (token: string, email: string) => {
       setIsLoggedIn(true);
-      addToast('Welcome back, Prince Neza!', 'success');
+      addToast(`Welcome back, ${email}!`, 'success');
   };
 
   const handleLogout = () => {
+      // Clear authentication data
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('userRole');
       setIsLoggedIn(false);
       setView('DASHBOARD');
       addToast('Logged out successfully.', 'info');
   };
+
+  // Check if user is already logged in on mount
+  useEffect(() => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+          setIsLoggedIn(true);
+      }
+  }, []);
 
     // AI report generator using real data
     const handleGenerateReport = async () => {
@@ -580,7 +592,7 @@ const App = () => {
       return (
         <>
             <ToastContainer toasts={toasts} onRemove={removeToast} />
-            <LoginView onLogin={handleLogin} />
+            <LoginView onLogin={(token, email) => handleLogin(token, email)} />
         </>
       );
   }
