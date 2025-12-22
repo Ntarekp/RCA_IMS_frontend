@@ -1,12 +1,36 @@
-import React from 'react';
-import { ArrowUpRight, ArrowDownRight, ChevronRight, Package, AlertTriangle, XCircle, Calendar } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowUpRight, ArrowDownRight, ChevronRight, Package, AlertTriangle, XCircle, Calendar, Loader2 } from 'lucide-react';
 import { ViewState } from '../types';
+import { getDashboardMetrics } from '../api/services/dashboardService';
+import { StockMetricsDTO } from '../api/types';
 
 interface DashboardStatsProps {
   onNavigate: (view: ViewState) => void;
 }
 
 export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) => {
+  const [metrics, setMetrics] = useState<StockMetricsDTO | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMetrics = async () => {
+    try {
+      setLoading(true);
+      const data = await getDashboardMetrics();
+      setMetrics(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load metrics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMetrics();
+    // Refresh metrics every 30 seconds
+    const interval = setInterval(fetchMetrics, 30000);
+    return () => clearInterval(interval);
+  }, []);
   const StatCard = ({ title, value, trend, trendUp, icon: Icon, dark = false, colorClass = "text-blue-500", targetView }: any) => (
       <div 
         className={`p-6 rounded-2xl flex flex-col justify-between h-44 relative group transition-all duration-300 hover:-translate-y-1 cursor-pointer ${
@@ -45,12 +69,38 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
       </div>
   );
 
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="p-6 rounded-2xl bg-white border border-slate-100 flex items-center justify-center h-44">
+            <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error || !metrics) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+        <p className="text-red-800 font-medium">Error loading dashboard metrics</p>
+        <p className="text-red-600 text-sm mt-1">{error || 'Unknown error'}</p>
+      </div>
+    );
+  }
+
+  // Format numbers with commas
+  const formatNumber = (num: number) => {
+    return num.toLocaleString();
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <StatCard 
         title="Total Stock Items" 
-        value="23,450" 
-        trend="12.5%" 
+        value={formatNumber(metrics.total)} 
+        trend="—" 
         trendUp={true} 
         icon={Package} 
         dark={true}
@@ -58,8 +108,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
       />
       <StatCard 
         title="Low Stock Items" 
-        value="142" 
-        trend="4.2%" 
+        value={formatNumber(metrics.lowStock)} 
+        trend="—" 
         trendUp={false} 
         icon={AlertTriangle} 
         colorClass="text-amber-500"
@@ -67,8 +117,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
       />
       <StatCard 
         title="Damaged Items" 
-        value="24" 
-        trend="0.8%" 
+        value={formatNumber(metrics.damaged)} 
+        trend="—" 
         trendUp={false} 
         icon={XCircle} 
         colorClass="text-rose-500"
@@ -76,8 +126,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
       />
        <StatCard 
         title="Monthly Inflow" 
-        value="1,240" 
-        trend="8.2%" 
+        value={formatNumber(metrics.thisMonth)} 
+        trend="—" 
         trendUp={true} 
         icon={Calendar} 
         colorClass="text-indigo-500"

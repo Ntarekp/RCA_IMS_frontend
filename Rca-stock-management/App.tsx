@@ -25,6 +25,7 @@ import { useReports } from './hooks/useReports';
 import { useTransactions } from './hooks/useTransactions';
 import { CreateItemRequest, CreateTransactionRequest } from './api/types';
 import { ApiError } from './api/client';
+import { updateProfile, changePassword, UpdateProfileRequest, ChangePasswordRequest } from './api/services/userService';
 import { 
   Calendar, 
   ChevronDown, 
@@ -280,8 +281,12 @@ const App = () => {
                     
                     addToast("Stock item added successfully.", 'success');
                     closeDrawer();
-                    await refetchItems();
-                    await refetchReports();
+                    // Refresh all data
+                    await Promise.all([
+                        refetchItems(),
+                        refetchReports(),
+                        refetchTransactions()
+                    ]);
                 } catch (error) {
                     const errorMessage = error instanceof ApiError 
                         ? error.message 
@@ -427,33 +432,59 @@ const App = () => {
     if (drawerType === 'EDIT_PROFILE' && selectedItem) {
         const profile = selectedItem as UserProfile;
         return (
-             <form id="edit-profile-form" className="space-y-5" onSubmit={(e) => { e.preventDefault(); closeDrawer(); addToast("Profile updated successfully"); }}>
+             <form id="edit-profile-form" className="space-y-5" onSubmit={async (e) => { 
+                e.preventDefault(); 
+                const form = e.target as HTMLFormElement;
+                const formData = new FormData(form);
+                
+                const profileData: UpdateProfileRequest = {
+                    name: formData.get('name') as string || undefined,
+                    email: formData.get('email') as string || undefined,
+                    phone: formData.get('phone') as string || undefined,
+                    department: formData.get('department') as string || undefined,
+                };
+
+                try {
+                    const toastId = addToast("Updating profile...", 'loading');
+                    await updateProfile(profileData);
+                    removeToast(toastId);
+                    addToast("Profile updated successfully", 'success');
+                    closeDrawer();
+                    // Refresh page or update local state if needed
+                    window.location.reload();
+                } catch (error) {
+                    const errorMessage = error instanceof ApiError 
+                        ? error.data?.message || error.message 
+                        : 'Failed to update profile. Please try again.';
+                    addToast(errorMessage, 'error');
+                }
+            }}>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
-                    <input type="text" defaultValue={profile.name} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                    <input name="name" type="text" defaultValue={profile.name} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                      <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">Role</label>
-                         <input type="text" defaultValue={profile.role} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" readOnly />
+                         <input type="text" defaultValue={profile.role} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50" readOnly />
                     </div>
                      <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">Department</label>
-                         <input type="text" defaultValue={profile.department} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                         <input name="department" type="text" defaultValue={profile.department} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                     </div>
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
                      <div className="relative">
                         <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input type="email" defaultValue={profile.email} className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                        <input name="email" type="email" defaultValue={profile.email} className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
                     </div>
                 </div>
                  <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone Number</label>
                     <div className="relative">
                         <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input type="tel" defaultValue={profile.phone} className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                        <input name="phone" type="tel" defaultValue={profile.phone} className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
                     </div>
                 </div>
             </form>
@@ -462,21 +493,64 @@ const App = () => {
 
     if (drawerType === 'CHANGE_PASSWORD') {
         return (
-             <form id="change-password-form" className="space-y-5" onSubmit={(e) => { e.preventDefault(); closeDrawer(); addToast("Password changed successfully"); }}>
+             <form id="change-password-form" className="space-y-5" onSubmit={async (e) => { 
+                e.preventDefault(); 
+                const form = e.target as HTMLFormElement;
+                const formData = new FormData(form);
+                
+                const currentPassword = formData.get('currentPassword') as string;
+                const newPassword = formData.get('newPassword') as string;
+                const confirmPassword = formData.get('confirmPassword') as string;
+
+                // Validate passwords match
+                if (newPassword !== confirmPassword) {
+                    addToast("New password and confirm password do not match", 'error');
+                    return;
+                }
+
+                // Validate password length
+                if (newPassword.length < 8) {
+                    addToast("New password must be at least 8 characters long", 'error');
+                    return;
+                }
+
+                const passwordData: ChangePasswordRequest = {
+                    currentPassword,
+                    newPassword,
+                    confirmPassword,
+                };
+
+                try {
+                    const toastId = addToast("Changing password...", 'loading');
+                    await changePassword(passwordData);
+                    removeToast(toastId);
+                    addToast("Password changed successfully", 'success');
+                    closeDrawer();
+                    // Optionally logout user after password change
+                    setTimeout(() => {
+                        handleLogout();
+                    }, 1500);
+                } catch (error) {
+                    const errorMessage = error instanceof ApiError 
+                        ? error.data?.message || error.message 
+                        : 'Failed to change password. Please try again.';
+                    addToast(errorMessage, 'error');
+                }
+            }}>
                  <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-sm text-slate-600">
                     <p>Make sure your new password is at least 8 characters long and includes a number.</p>
                  </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Current Password</label>
-                    <input type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                    <input name="currentPassword" type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
                 </div>
                  <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">New Password</label>
-                    <input type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                    <input name="newPassword" type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required minLength={8} />
                 </div>
                  <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Confirm New Password</label>
-                    <input type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                    <input name="confirmPassword" type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required minLength={8} />
                 </div>
             </form>
         );

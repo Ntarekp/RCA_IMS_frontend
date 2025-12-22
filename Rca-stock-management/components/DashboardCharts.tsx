@@ -1,16 +1,70 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { MOCK_CHART_DATA } from '../constants';
-import { ChevronDown, MoreHorizontal } from 'lucide-react';
-
-const DONUT_DATA = [
-  { name: 'Stock In', value: 35, color: '#1e293b' },
-  { name: 'Stock Out', value: 20, color: '#dc2626' },
-  { name: 'Damaged Items', value: 10, color: '#2563eb' },
-  { name: 'Low-items', value: 5, color: '#f59e0b' }, 
-];
+import { ChevronDown, MoreHorizontal, Loader2 } from 'lucide-react';
+import { getChartData } from '../api/services/dashboardService';
+import { useReports } from '../hooks/useReports';
 
 export const DashboardCharts: React.FC = () => {
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { balanceReport, refetch: refetchReports } = useReports();
+
+  const fetchChartData = async () => {
+    try {
+      setLoading(true);
+      const currentYear = new Date().getFullYear();
+      const data = await getChartData(currentYear);
+      setChartData(data);
+    } catch (err) {
+      console.error('Error loading chart data:', err);
+      // Use empty data on error
+      setChartData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchChartData();
+    // Refresh chart data periodically
+    const interval = setInterval(() => {
+      fetchChartData();
+      refetchReports();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Calculate donut chart data from balance report
+  const calculateDonutData = () => {
+    if (!balanceReport || balanceReport.length === 0) {
+      return [
+        { name: 'Stock In', value: 0, color: '#1e293b' },
+        { name: 'Stock Out', value: 0, color: '#dc2626' },
+        { name: 'Damaged Items', value: 0, color: '#2563eb' },
+        { name: 'Low-items', value: 0, color: '#f59e0b' },
+      ];
+    }
+
+    const totalIn = balanceReport.reduce((sum, item) => sum + item.totalIn, 0);
+    const totalOut = balanceReport.reduce((sum, item) => sum + item.totalOut, 0);
+    const damaged = balanceReport.reduce((sum, item) => sum + (item.currentBalance < item.minimumStock ? 1 : 0), 0);
+    const lowStock = balanceReport.filter(item => item.isLowStock).length;
+
+    return [
+      { name: 'Stock In', value: totalIn, color: '#1e293b' },
+      { name: 'Stock Out', value: totalOut, color: '#dc2626' },
+      { name: 'Damaged Items', value: damaged, color: '#2563eb' },
+      { name: 'Low-items', value: lowStock, color: '#f59e0b' },
+    ];
+  };
+
+  const DONUT_DATA = calculateDonutData();
+  const totalDonutValue = DONUT_DATA.reduce((sum, item) => sum + item.value, 0);
+  // Calculate percentage based on total items vs low stock
+  const donutPercentage = balanceReport && balanceReport.length > 0 
+    ? Math.round((balanceReport.length / (balanceReport.length + 10)) * 100) 
+    : 0;
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Bar Chart */}
@@ -35,8 +89,13 @@ export const DashboardCharts: React.FC = () => {
             </div>
         </div>
         <div className="h-[280px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={MOCK_CHART_DATA} barGap={8}>
+            {loading ? (
+              <div className="flex items-center justify-center h-full">
+                <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData.length > 0 ? chartData : []} barGap={8}>
                     <CartesianGrid vertical={false} stroke="#f1f5f9" strokeDasharray="3 3" />
                     <XAxis 
                         dataKey="name" 
@@ -49,8 +108,7 @@ export const DashboardCharts: React.FC = () => {
                         axisLine={false} 
                         tickLine={false} 
                         tick={{fill: '#64748b', fontSize: 11, fontWeight: 500}} 
-                        domain={[0, 6]}
-                        ticks={[0, 2, 4, 6]}
+                        domain={[0, 'auto']}
                     />
                     <Tooltip 
                         contentStyle={{ 
@@ -65,7 +123,8 @@ export const DashboardCharts: React.FC = () => {
                     <Bar dataKey="in" fill="#94a3b8" radius={[6, 6, 6, 6]} barSize={12} activeBar={{ fill: '#64748b' }} />
                     <Bar dataKey="out" fill="#1e293b" radius={[6, 6, 6, 6]} barSize={12} activeBar={{ fill: '#0f172a' }} />
                 </BarChart>
-            </ResponsiveContainer>
+              </ResponsiveContainer>
+            )}
         </div>
       </div>
 
@@ -107,7 +166,7 @@ export const DashboardCharts: React.FC = () => {
             {/* Center Text */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Total</span>
-                <span className="text-3xl font-bold text-slate-800 tracking-tight">35%</span>
+                <span className="text-3xl font-bold text-slate-800 tracking-tight">{donutPercentage}%</span>
             </div>
          </div>
          
