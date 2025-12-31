@@ -17,8 +17,24 @@ const ENDPOINT = API_CONFIG.ENDPOINTS.ITEMS;
 /**
  * Get all items
  */
-export const getAllItems = async (): Promise<ItemDTO[]> => {
-  return get<ItemDTO[]>(ENDPOINT);
+/**
+ * Get all items with optional filters and sorting
+ */
+export const getAllItems = async (params?: {
+  category?: string;
+  status?: string;
+  name?: string;
+  sort?: string;
+}): Promise<ItemDTO[]> => {
+  let url = ENDPOINT;
+  if (params) {
+    const query = Object.entries(params)
+      .filter(([_, v]) => v !== undefined && v !== null && v !== '')
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v as string)}`)
+      .join('&');
+    if (query) url += `?${query}`;
+  }
+  return get<ItemDTO[]>(url);
 };
 
 /**

@@ -13,11 +13,20 @@ export const useItems = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchItems = async () => {
+  // Store last used filters/sorts for refetch
+  const [lastParams, setLastParams] = useState<any>({});
+
+  const fetchItems = async (params?: {
+    category?: string;
+    status?: string;
+    name?: string;
+    sort?: string;
+  }) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getAllItems();
+      setLastParams(params || {});
+      const data = await getAllItems(params);
       const mappedItems = data.map(mapItemDTOToStockItem);
       setItems(mappedItems);
     } catch (err) {
@@ -27,10 +36,12 @@ export const useItems = () => {
     }
   };
 
+  const refetch = () => fetchItems(lastParams);
+
   const addItem = async (itemData: CreateItemRequest) => {
     try {
       const newItem = await createItem(itemData);
-      await fetchItems(); // Refresh list
+      await refetch(); // Refresh list
       return mapItemDTOToStockItem(newItem);
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to create item');
@@ -40,7 +51,7 @@ export const useItems = () => {
   const updateItemById = async (id: number, itemData: Partial<CreateItemRequest>) => {
     try {
       const updated = await updateItem(id, itemData);
-      await fetchItems(); // Refresh list
+      await refetch(); // Refresh list
       return mapItemDTOToStockItem(updated);
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to update item');
@@ -50,7 +61,7 @@ export const useItems = () => {
   const removeItem = async (id: number) => {
     try {
       await deleteItem(id);
-      await fetchItems(); // Refresh list
+      await refetch(); // Refresh list
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to delete item');
     }
@@ -64,7 +75,8 @@ export const useItems = () => {
     items,
     loading,
     error,
-    refetch: fetchItems,
+    fetchItems, // now accepts filters/sorts
+    refetch,
     addItem,
     updateItem: updateItemById,
     deleteItem: removeItem,

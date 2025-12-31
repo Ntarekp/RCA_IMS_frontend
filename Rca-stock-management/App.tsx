@@ -19,7 +19,7 @@ import { DetailDrawer } from './components/DetailDrawer';
 import { ToastContainer, ToastMessage } from './components/Toast';
 import { LoginView } from './components/LoginView';
 import { ViewState, DrawerType, StockItem, Supplier, UserProfile } from './types';
-import { MOCK_SUPPLIERS, MOCK_USER_PROFILE } from './constants';
+import { MOCK_SUPPLIERS } from './constants';
 import { useItems } from './hooks/useItems';
 import { useReports } from './hooks/useReports';
 import { useTransactions } from './hooks/useTransactions';
@@ -55,9 +55,10 @@ import {
 } from 'lucide-react';
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [view, setView] = useState<ViewState>('DASHBOARD');
-  const [aiReport, setAiReport] = useState<string | null>(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [view, setView] = useState<ViewState>('DASHBOARD');
+    const [aiReport, setAiReport] = useState<string | null>(null);
+    const [userProfile, setUserProfile] = useState<any>(null);
   const [loadingReport, setLoadingReport] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -101,12 +102,21 @@ const App = () => {
   };
 
   // Check if user is already logged in on mount
-  useEffect(() => {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-          setIsLoggedIn(true);
-      }
-  }, []);
+    useEffect(() => {
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                    setIsLoggedIn(true);
+            }
+    }, []);
+
+    // Fetch user profile when logged in
+    useEffect(() => {
+        if (isLoggedIn) {
+            import('./api/services/userService').then(({ getProfile }) => {
+                getProfile().then(setUserProfile);
+            });
+        }
+    }, [isLoggedIn]);
 
     // AI report generator using real data
     const handleGenerateReport = async () => {
@@ -179,7 +189,7 @@ const App = () => {
   };
 
   const openEditProfile = () => {
-      setSelectedItem(MOCK_USER_PROFILE);
+      setSelectedItem(userProfile);
       setDrawerType('EDIT_PROFILE');
       setDrawerOpen(true);
   };
@@ -436,22 +446,24 @@ const App = () => {
                 e.preventDefault(); 
                 const form = e.target as HTMLFormElement;
                 const formData = new FormData(form);
-                
                 const profileData: UpdateProfileRequest = {
                     name: formData.get('name') as string || undefined,
                     email: formData.get('email') as string || undefined,
                     phone: formData.get('phone') as string || undefined,
                     department: formData.get('department') as string || undefined,
                 };
-
                 try {
                     const toastId = addToast("Updating profile...", 'loading');
                     await updateProfile(profileData);
                     removeToast(toastId);
                     addToast("Profile updated successfully", 'success');
-                    closeDrawer();
-                    // Refresh page or update local state if needed
-                    window.location.reload();
+                    // Refetch profile and update state
+                    import('./api/services/userService').then(({ getProfile }) => {
+                      getProfile().then((data) => {
+                        setUserProfile(data);
+                        closeDrawer();
+                      });
+                    });
                 } catch (error) {
                     const errorMessage = error instanceof ApiError 
                         ? error.data?.message || error.message 
