@@ -345,4 +345,4 @@ const StatCard = ({ value, label, color }: any) => {
       <div className="text-xs font-semibold opacity-70 uppercase tracking-wider mt-2">{label}</div>
     </div>
   );
-// };
+}
