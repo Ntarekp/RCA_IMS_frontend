@@ -13,12 +13,16 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     
+    console.log('Submitting login request with:', { email, password });
+
     try {
       const loginRequest: LoginRequest = { email, password };
       const response = await login(loginRequest);
@@ -31,11 +35,27 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
       // Call onLogin callback with token and email
       onLogin(response.token, response.email);
     } catch (err) {
+      console.error('Login failed:', err);
       if (err instanceof ApiError) {
         setError(err.data?.message || 'Invalid email or password');
       } else {
         setError('Login failed. Please try again.');
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      // Here you would call your API to send a password reset link
+      // await forgotPassword({ email: forgotPasswordEmail });
+      setError('If an account with that email exists, a password reset link has been sent.');
+    } catch (err) {
+      setError('Failed to send password reset link. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -52,66 +72,109 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
             </div>
         </div>
 
-        {/* Login Card */}
+        {/* Card */}
         <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8 w-full">
-            <div className="text-center mb-8">
-                <h1 className="text-xl font-bold text-slate-800 uppercase tracking-wide">RCA Stock Management System</h1>
-                <p className="text-sm text-slate-400 mt-2 font-medium">Log into your Account</p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-1">
-                    <input 
-                        type="email" 
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Email" 
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-slate-400 text-slate-700"
-                        required 
-                    />
-                </div>
-                <div className="relative space-y-1">
-                    <input 
-                        type={showPassword ? "text" : "password"} 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Password" 
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-slate-400 text-slate-700"
-                        required 
-                    />
-                    <button 
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors"
-                    >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                </div>
-
-                {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
-                        {error}
+            {forgotPasswordMode ? (
+                <>
+                    <div className="text-center mb-8">
+                        <h1 className="text-xl font-bold text-slate-800 uppercase tracking-wide">Reset Password</h1>
+                        <p className="text-sm text-slate-400 mt-2 font-medium">Enter your email to receive a reset link</p>
                     </div>
-                )}
+                    <form onSubmit={handleForgotPassword} className="space-y-5">
+                        <div className="space-y-1">
+                            <input 
+                                type="email" 
+                                value={forgotPasswordEmail}
+                                onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                                placeholder="Email" 
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-slate-400 text-slate-700"
+                                required 
+                            />
+                        </div>
+                        
+                        {error && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-700">
+                                {error}
+                            </div>
+                        )}
 
-                <div className="flex items-center justify-between text-xs pt-1">
-                    <label className="flex items-center gap-2 text-slate-500 cursor-pointer hover:text-slate-700 select-none">
-                        <input type="checkbox" className="rounded border-slate-300 text-[#1e293b] focus:ring-[#1e293b] w-3.5 h-3.5" />
-                        Remember me
-                    </label>
-                    <button type="button" className="text-slate-500 hover:text-[#1e293b] font-medium transition-colors">
-                        Forgot Password
-                    </button>
-                </div>
+                        <button 
+                            type="submit" 
+                            disabled={loading}
+                            className="w-full bg-[#1e293b] text-white py-3 rounded-xl font-medium text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+                        >
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Reset Link'}
+                        </button>
 
-                <button 
-                    type="submit" 
-                    disabled={loading}
-                    className="w-full bg-[#1e293b] text-white py-3 rounded-xl font-medium text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
-                >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Login'}
-                </button>
-            </form>
+                        <div className="text-center text-xs pt-1">
+                            <button type="button" onClick={() => { setForgotPasswordMode(false); setError(null); }} className="text-slate-500 hover:text-[#1e293b] font-medium transition-colors">
+                                Back to Login
+                            </button>
+                        </div>
+                    </form>
+                </>
+            ) : (
+                <>
+                    <div className="text-center mb-8">
+                        <h1 className="text-xl font-bold text-slate-800 uppercase tracking-wide">RCA Stock Management System</h1>
+                        <p className="text-sm text-slate-400 mt-2 font-medium">Log into your Account</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="space-y-1">
+                            <input 
+                                type="email" 
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Email" 
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-slate-400 text-slate-700"
+                                required 
+                            />
+                        </div>
+                        <div className="relative space-y-1">
+                            <input 
+                                type={showPassword ? "text" : "password"} 
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Password" 
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-slate-400 text-slate-700"
+                                required 
+                            />
+                            <button 
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors"
+                            >
+                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
+                                {error}
+                            </div>
+                        )}
+
+                        <div className="flex items-center justify-between text-.xs pt-1">
+                            <label className="flex items-center gap-2 text-slate-500 cursor-pointer hover:text-slate-700 select-none">
+                                <input type="checkbox" className="rounded border-slate-300 text-[#1e293b] focus:ring-[#1e293b] w-3.5 h-3.5" />
+                                Remember me
+                            </label>
+                            <button type="button" onClick={() => { setForgotPasswordMode(true); setError(null); }} className="text-slate-500 hover:text-[#1e293b] font-medium transition-colors">
+                                Forgot Password
+                            </button>
+                        </div>
+
+                        <button 
+                            type="submit" 
+                            disabled={loading}
+                            className="w-full bg-[#1e293b] text-white py-3 rounded-xl font-medium text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+                        >
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Login'}
+                        </button>
+                    </form>
+                </>
+            )}
         </div>
       </div>
     </div>

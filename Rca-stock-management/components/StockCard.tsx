@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StockItem } from '../types';
-import { Package, MoreHorizontal, ArrowRight, MapPin, AlertCircle } from 'lucide-react';
+import { Package, MoreHorizontal, ArrowRight, MapPin, AlertCircle, Trash2, Edit } from 'lucide-react';
 
 interface StockCardProps {
   item: StockItem;
   onManage: (item: StockItem) => void;
+  onDelete: (item: StockItem) => void;
 }
 
-export const StockCard: React.FC<StockCardProps> = ({ item, onManage }) => {
+export const StockCard: React.FC<StockCardProps> = ({ item, onManage, onDelete }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   const getStatusColor = (status: StockItem['status']) => {
     switch (status) {
         case 'Birahagije': return 'bg-emerald-50 text-emerald-700 border-emerald-100 ring-emerald-500/10';
@@ -17,10 +21,22 @@ export const StockCard: React.FC<StockCardProps> = ({ item, onManage }) => {
     }
   };
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:shadow-lg hover:border-blue-100/50 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group relative overflow-hidden">
       
-      {/* Decorative background blur for low stock */}
       {item.status === 'Byashize' && (
         <div className="absolute top-0 right-0 w-24 h-24 bg-rose-50 rounded-bl-full -mr-8 -mt-8 opacity-50 z-0"></div>
       )}
@@ -33,12 +49,32 @@ export const StockCard: React.FC<StockCardProps> = ({ item, onManage }) => {
             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ring-1 ${getStatusColor(item.status)}`}>
                 {item.status}
             </span>
-            <button 
-                onClick={() => onManage(item)}
-                className="text-slate-300 hover:text-slate-500 p-1 rounded-lg hover:bg-slate-50 transition-colors"
-            >
-                <MoreHorizontal className="w-5 h-5" />
-            </button>
+            <div className="relative" ref={menuRef}>
+                <button 
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+                >
+                    <MoreHorizontal className="w-5 h-5" />
+                </button>
+                {/* Dropdown Menu */}
+                {menuOpen && (
+                    <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-xl border border-slate-100 py-1 z-20 animate-in fade-in zoom-in-95 duration-150">
+                        <button 
+                            onClick={() => { onManage(item); setMenuOpen(false); }}
+                            className="w-full text-left px-3 py-2 text-xs text-slate-600 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2"
+                        >
+                            <Edit className="w-3.5 h-3.5" /> Edit Details
+                        </button>
+                        <div className="h-px bg-slate-100 my-1"></div>
+                        <button 
+                            onClick={() => { onDelete(item); setMenuOpen(false); }}
+                            className="w-full text-left px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2"
+                        >
+                            <Trash2 className="w-3.5 h-3.5" /> Delete Item
+                        </button>
+                    </div>
+                )}
+            </div>
          </div>
       </div>
 

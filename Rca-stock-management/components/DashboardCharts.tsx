@@ -17,7 +17,6 @@ export const DashboardCharts: React.FC = () => {
       setChartData(data);
     } catch (err) {
       console.error('Error loading chart data:', err);
-      // Use empty data on error
       setChartData([]);
     } finally {
       setLoading(false);
@@ -26,45 +25,44 @@ export const DashboardCharts: React.FC = () => {
 
   useEffect(() => {
     fetchChartData();
-    // Refresh chart data periodically
     const interval = setInterval(() => {
       fetchChartData();
       refetchReports();
-    }, 30000); // Refresh every 30 seconds
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Calculate donut chart data from balance report
   const calculateDonutData = () => {
     if (!balanceReport || balanceReport.length === 0) {
       return [
-        { name: 'Stock In', value: 0, color: '#1e293b' },
-        { name: 'Stock Out', value: 0, color: '#dc2626' },
-        { name: 'Damaged Items', value: 0, color: '#2563eb' },
-        { name: 'Low-items', value: 0, color: '#f59e0b' },
+        { name: 'Stock In', value: 0, color: '#0f172a' }, // Dark Slate (Brand)
+        { name: 'Stock Out', value: 0, color: '#64748b' }, // Slate
+        { name: 'Damaged', value: 0, color: '#ef4444' }, // Red
+        { name: 'Low Stock', value: 0, color: '#cbd5e1' }, // Light Slate
       ];
     }
 
     const totalIn = balanceReport.reduce((sum, item) => sum + item.totalIn, 0);
     const totalOut = balanceReport.reduce((sum, item) => sum + item.totalOut, 0);
-    const damaged = balanceReport.reduce((sum, item) => sum + (item.currentBalance < item.minimumStock ? 1 : 0), 0);
+    // Placeholder for damaged until backend supports it in balance report
+    const damaged = 0; 
     const lowStock = balanceReport.filter(item => item.isLowStock).length;
 
     return [
-      { name: 'Stock In', value: totalIn, color: '#1e293b' },
-      { name: 'Stock Out', value: totalOut, color: '#dc2626' },
-      { name: 'Damaged Items', value: damaged, color: '#2563eb' },
-      { name: 'Low-items', value: lowStock, color: '#f59e0b' },
+      { name: 'Stock In', value: totalIn, color: '#0f172a' }, // Dark Slate (Brand)
+      { name: 'Stock Out', value: totalOut, color: '#64748b' }, // Slate
+      { name: 'Damaged', value: damaged, color: '#ef4444' }, // Red
+      { name: 'Low Stock', value: lowStock, color: '#cbd5e1' }, // Light Slate
     ];
   };
 
   const DONUT_DATA = calculateDonutData();
   const totalDonutValue = DONUT_DATA.reduce((sum, item) => sum + item.value, 0);
-  // Calculate percentage based on total items vs low stock
-  const donutPercentage = balanceReport && balanceReport.length > 0 
-    ? Math.round((balanceReport.length / (balanceReport.length + 10)) * 100) 
+  const donutPercentage = totalDonutValue > 0 
+    ? Math.round((DONUT_DATA[0].value / totalDonutValue) * 100) 
     : 0;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Bar Chart */}
@@ -77,10 +75,13 @@ export const DashboardCharts: React.FC = () => {
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3 text-xs font-medium text-slate-500">
                     <div className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#1e293b]"></span> In
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#0f172a]"></span> In
                     </div>
                     <div className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#94a3b8]"></span> Out
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#64748b]"></span> Out
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]"></span> Damaged
                     </div>
                 </div>
                 <button className="flex items-center gap-1.5 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 hover:bg-slate-100 transition-colors">
@@ -120,8 +121,9 @@ export const DashboardCharts: React.FC = () => {
                         }}
                         cursor={{fill: '#f8fafc'}}
                     />
-                    <Bar dataKey="in" fill="#94a3b8" radius={[6, 6, 6, 6]} barSize={12} activeBar={{ fill: '#64748b' }} />
-                    <Bar dataKey="out" fill="#1e293b" radius={[6, 6, 6, 6]} barSize={12} activeBar={{ fill: '#0f172a' }} />
+                    <Bar dataKey="in" fill="#0f172a" radius={[4, 4, 0, 0]} barSize={12} activeBar={{ fill: '#1e293b' }} />
+                    <Bar dataKey="out" fill="#64748b" radius={[4, 4, 0, 0]} barSize={12} activeBar={{ fill: '#475569' }} />
+                    <Bar dataKey="damaged" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={12} activeBar={{ fill: '#dc2626' }} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -163,9 +165,8 @@ export const DashboardCharts: React.FC = () => {
                 </PieChart>
             </ResponsiveContainer>
             
-            {/* Center Text */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Total</span>
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Inflow</span>
                 <span className="text-3xl font-bold text-slate-800 tracking-tight">{donutPercentage}%</span>
             </div>
          </div>

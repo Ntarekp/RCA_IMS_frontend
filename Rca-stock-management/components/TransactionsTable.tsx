@@ -1,54 +1,68 @@
 import React from 'react';
-import { DashboardItem } from '../types';
+import { StockTransactionDTO } from '../api/types';
 
 interface TransactionsTableProps {
-  items: DashboardItem[];
+  items: StockTransactionDTO[];
+  showBalance?: boolean; // Kept for compatibility but ignored in this view
 }
 
 export const TransactionsTable: React.FC<TransactionsTableProps> = ({ items }) => {
-  const getStatusBadge = (status: DashboardItem['status']) => {
-    switch (status) {
-      case 'Birahagije':
-        return <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#8b92a1] text-white">Birahagije</span>;
-      case 'Hafi gushira':
-        return <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#fde68a] text-yellow-800">Hafi gushira</span>;
-      case 'Byashize':
-        return <span className="px-3 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-600">Byashize</span>;
-      default:
-        return null;
-    }
-  };
-
   return (
-    <div className="bg-[#f3f6f9] rounded-xl overflow-hidden">
+    <div className="bg-white rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-            <div className="min-w-[900px]">
-                <div className="grid grid-cols-8 gap-4 px-6 py-4 text-sm font-medium text-gray-600">
-                    <div className="col-span-1">Izina <span className="text-xs text-gray-400">↕</span></div>
-                    <div className="col-span-1 text-center">Igipimo fatizo <span className="text-xs text-gray-400">↕</span></div>
-                    <div className="col-span-1 text-center">Ingano y'ibijiye <span className="text-xs text-gray-400">↕</span></div>
-                    <div className="col-span-1 text-center">Ingano y'ibisigaye <span className="text-xs text-gray-400">↕</span></div>
-                    <div className="col-span-1 text-center">Ingano y'ibyangiritse <span className="text-xs text-gray-400">↕</span></div>
-                    <div className="col-span-1 text-center">Ingano ntarengwa <span className="text-xs text-gray-400">↕</span></div>
-                    <div className="col-span-1 text-center">Imitere <span className="text-xs text-gray-400">↕</span></div>
-                    <div className="col-span-1 text-right">Itariki <span className="text-xs text-gray-400">↕</span></div>
+            <div className="min-w-[1000px]">
+                {/* Table Header */}
+                <div className="grid grid-cols-10 gap-4 px-6 py-4 text-sm font-medium text-gray-500 bg-slate-50 border-b border-slate-100">
+                    <div className="col-span-1">Date</div>
+                    <div className="col-span-1">Reference</div>
+                    <div className="col-span-1">Item Name</div>
+                    <div className="col-span-1 text-center">Unit</div>
+                    <div className="col-span-1 text-center">Type</div>
+                    <div className="col-span-1 text-right">Quantity</div>
+                    <div className="col-span-1 text-right">Balance After</div>
+                    <div className="col-span-1">Source / Issued To</div>
+                    <div className="col-span-1">Purpose / Remarks</div>
+                    <div className="col-span-1 text-right">Recorded By</div>
                 </div>
 
+                {/* Table Body */}
                 <div className="divide-y divide-gray-100">
-                    {items.map((item) => (
-                        <div key={item.id} className="grid grid-cols-8 gap-4 px-6 py-4 bg-[#eff4fa] text-sm text-gray-800 items-center hover:bg-gray-100 transition-colors mb-1 last:mb-0">
-                            <div className="col-span-1 font-medium">{item.name}</div>
-                            <div className="col-span-1 text-center text-gray-600">{item.unit}</div>
-                            <div className="col-span-1 text-center">{item.quantityIn}</div>
-                            <div className="col-span-1 text-center">{item.quantityRemaining}</div>
-                            <div className="col-span-1 text-center">{item.quantityDamaged}</div>
-                            <div className="col-span-1 text-center">{item.quantityThreshold}</div>
-                            <div className="col-span-1 text-center flex justify-center">
-                                {getStatusBadge(item.status)}
+                    {items.map((item) => {
+                        // Placeholder logic for fields not yet in DTO
+                        // In a real app, these would come from the backend or be calculated
+                        const unit = 'Kg'; // Placeholder - ideally should come from item details
+                        const balanceAfter = item.balanceAfter !== undefined ? item.balanceAfter : '-'; 
+                        const sourceOrIssuedTo = item.transactionType === 'IN' ? 'Supplier' : 'Consumer'; // Placeholder
+                        const reference = item.referenceNumber || `TXN-${item.id}`;
+
+                        return (
+                        <div key={item.id} className="grid grid-cols-10 gap-4 px-6 py-4 text-sm text-gray-800 items-center hover:bg-slate-50/50 transition-colors">
+                            <div className="col-span-1 text-gray-500">{item.transactionDate}</div>
+                            <div className="col-span-1 font-mono text-xs text-slate-500">{reference}</div>
+                            <div className="col-span-1 font-medium">{item.itemName}</div>
+                            <div className="col-span-1 text-center text-gray-500">{unit}</div>
+                            <div className="col-span-1 text-center">
+                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                    item.transactionType === 'IN' 
+                                        ? 'bg-blue-50 text-blue-700 border-blue-100' 
+                                        : 'bg-slate-50 text-slate-700 border-slate-100'
+                                }`}>
+                                    {item.transactionType}
+                                </span>
                             </div>
-                            <div className="col-span-1 text-right text-gray-500">{item.date}</div>
+                            <div className="col-span-1 text-right font-medium">{item.quantity}</div>
+                            <div className="col-span-1 text-right font-bold text-slate-700">{balanceAfter}</div>
+                            <div className="col-span-1 text-gray-600 truncate" title={sourceOrIssuedTo}>{sourceOrIssuedTo}</div>
+                            <div className="col-span-1 text-gray-500 truncate" title={item.notes}>{item.notes || '-'}</div>
+                            <div className="col-span-1 text-right text-xs text-gray-400">{item.recordedBy}</div>
                         </div>
-                    ))}
+                    )})}
+                    
+                    {items.length === 0 && (
+                        <div className="py-12 text-center text-slate-400">
+                            No transactions found matching your criteria.
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

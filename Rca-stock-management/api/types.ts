@@ -38,6 +38,7 @@ export interface StockTransactionDTO {
   notes?: string;
   recordedBy?: string;
   createdAt?: string;
+  balanceAfter?: number; // New field for running balance
 }
 
 /**
@@ -63,6 +64,12 @@ export interface StockMetricsDTO {
   lowStock: number;
   damaged: number;
   thisMonth: number;
+  
+  // Comparison metrics (vs last month)
+  totalChange?: number;
+  lowStockChange?: number;
+  damagedChange?: number;
+  thisMonthChange?: number;
 }
 
 /**
@@ -101,4 +108,3 @@ export interface CreateTransactionRequest {
   notes?: string;
   recordedBy?: string;
 }
-

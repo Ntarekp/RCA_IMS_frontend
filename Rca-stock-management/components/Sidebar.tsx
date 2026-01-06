@@ -8,7 +8,6 @@ import {
   FileText, 
   Truck, 
   Settings,
-  Shield,
   X
 } from 'lucide-react';
 
@@ -34,8 +33,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
   const NavContent = ({ isCollapsed = false }) => (
     <>
       <div className={`h-20 flex items-center gap-3 border-b border-slate-100/80 mb-2 ${isCollapsed ? 'justify-center px-2' : 'px-6'}`}>
-        <div className="bg-slate-900 text-white p-1.5 rounded-lg shadow-lg shadow-slate-900/20">
-             <Shield className="w-6 h-6" fill="currentColor" />
+        <div className="bg-white p-1 rounded-lg shadow-sm border border-slate-100">
+             <img src="/rca-logo.png" alt="RCA Logo" className="w-8 h-8 object-contain" />
         </div>
         <div className={`leading-tight ${isCollapsed ? 'hidden' : 'block'}`}>
           <h1 className="font-bold text-sm text-slate-900 tracking-tight">RCA</h1>

@@ -20,11 +20,24 @@ export interface LoginResponse {
   message: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
 /**
  * Login user
  */
 export const login = async (credentials: LoginRequest): Promise<LoginResponse> => {
   return post<LoginResponse>(`${ENDPOINT}/login`, credentials);
+};
+
+/**
+ * Request password reset
+ */
+export const forgotPassword = async (
+  payload: ForgotPasswordRequest
+): Promise<void> => {
+  return post<void>(`${ENDPOINT}/forgot-password`, payload);
 };
 
 /**
@@ -43,4 +56,3 @@ export const validateToken = async (token: string): Promise<boolean> => {
     return false;
   }
 };
-

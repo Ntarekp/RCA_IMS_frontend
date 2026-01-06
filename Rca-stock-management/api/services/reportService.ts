@@ -5,10 +5,10 @@
 
 import { get } from '../client';
 import { API_CONFIG } from '../config';
-import { StockBalanceDTO } from '../types';
+import { StockBalanceDTO, StockTransactionDTO } from '../types';
 
 // Report types
-export type ReportType = 'balance' | 'low-stock' | 'stock-in' | 'stock-out' | 'damaged';
+export type ReportType = 'balance' | 'low-stock' | 'stock-in' | 'stock-out' | 'damaged' | 'transactions';
 
 /**
  * Get complete stock balance report
@@ -40,7 +40,7 @@ export const getLowStockReport = async (): Promise<StockBalanceDTO[]> => {
  * @returns Promise<void> - Triggers file download
  */
 export const generatePdfReport = async (
-  reportType: 'balance' | 'low-stock',
+  reportType: ReportType,
   itemId?: number,
   dateRange?: { startDate: string; endDate: string }
 ): Promise<void> => {
@@ -122,7 +122,7 @@ export const generatePdfReport = async (
  * @returns Promise<void> - Triggers file download
  */
 export const generateCsvReport = async (
-  reportType: 'balance' | 'low-stock',
+  reportType: ReportType,
   itemId?: number,
   dateRange?: { startDate: string; endDate: string }
 ): Promise<void> => {
@@ -135,18 +135,74 @@ export const generateCsvReport = async (
       params.append('endDate', dateRange.endDate);
     }
 
-    // In a real implementation, this would call a backend endpoint
-    // For demo purposes, we'll create a simple CSV-like blob
-    const reportData = await get<StockBalanceDTO[]>(API_CONFIG.ENDPOINTS.REPORTS.BALANCE);
+    // Fetch data based on report type
+    let reportData: any[] = [];
+    
+    if (reportType === 'transactions') {
+        // For transaction reports, we need transaction data, not balance data
+        let url = API_CONFIG.ENDPOINTS.TRANSACTIONS;
+        if (dateRange) {
+            url += `/date-range?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
+        } else if (itemId) {
+            url += `?itemId=${itemId}`;
+        }
+        reportData = await get<StockTransactionDTO[]>(url);
+    } else {
+        // Default to balance report for other types
+        reportData = await get<StockBalanceDTO[]>(API_CONFIG.ENDPOINTS.REPORTS.BALANCE);
+    }
 
     // Create CSV content
-    let content = 'Item Name,Current Balance,Unit,Minimum Stock,Status\n';
+    let content = '';
+    
+    if (reportType === 'transactions') {
+        // Detailed Transaction Report Format
+        content = 'Date,Reference,Item Name,Unit,Transaction Type,Quantity,Balance After,Source / Issued To,Purpose / Remarks,Recorded By\n';
+        
+        // Sort by date
+        reportData.sort((a, b) => new Date(a.transactionDate).getTime() - new Date(b.transactionDate).getTime());
 
-    reportData.forEach(item => {
-      if (!itemId || item.itemId === itemId) {
-        content += `"${item.itemName}",${item.currentBalance},"${item.unit}",${item.minimumStock},"${item.status}"\n`;
-      }
-    });
+        // Calculate running balances per item
+        const itemBalances: Record<string, number> = {};
+
+        reportData.forEach((tx: StockTransactionDTO) => {
+            // Initialize balance if not exists
+            if (itemBalances[tx.itemName || 'unknown'] === undefined) {
+                itemBalances[tx.itemName || 'unknown'] = 0;
+            }
+
+            // Update balance
+            if (tx.transactionType === 'IN') {
+                itemBalances[tx.itemName || 'unknown'] += tx.quantity;
+            } else {
+                itemBalances[tx.itemName || 'unknown'] -= tx.quantity;
+            }
+
+            const balanceAfter = itemBalances[tx.itemName || 'unknown'];
+            
+            // Format fields
+            const date = tx.transactionDate;
+            const reference = tx.referenceNumber || `TXN-${tx.id}`;
+            const itemName = tx.itemName || 'Unknown';
+            const unit = 'Unit'; // We might need to fetch unit from item details if not in transaction DTO
+            const type = tx.transactionType;
+            const quantity = tx.quantity;
+            const sourceOrIssuedTo = type === 'IN' ? 'Supplier' : 'Consumer'; // Placeholder logic
+            const remarks = tx.notes ? `"${tx.notes.replace(/"/g, '""')}"` : '';
+            const recordedBy = tx.recordedBy || 'System';
+
+            content += `${date},${reference},"${itemName}",${unit},${type},${quantity},${balanceAfter},"${sourceOrIssuedTo}",${remarks},"${recordedBy}"\n`;
+        });
+
+    } else {
+        // Standard Balance Report Format
+        content = 'Item Name,Current Balance,Unit,Minimum Stock,Status\n';
+        reportData.forEach((item: StockBalanceDTO) => {
+            if (!itemId || item.itemId === itemId) {
+                content += `"${item.itemName}",${item.currentBalance},"${item.unit}",${item.minimumStock},"${item.status}"\n`;
+            }
+        });
+    }
 
     // Create a blob and trigger download
     const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
@@ -158,8 +214,8 @@ export const generateCsvReport = async (
     let filename = `${reportType.toUpperCase()}`;
 
     // Add item name if specific item is selected
-    if (itemId) {
-      const item = reportData.find(i => i.itemId === itemId);
+    if (itemId && reportType !== 'transactions') {
+      const item = reportData.find((i: any) => i.itemId === itemId);
       if (item) {
         filename += `_${item.itemName.replace(/\s+/g, '_')}`;
       }

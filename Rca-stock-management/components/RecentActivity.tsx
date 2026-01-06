@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Clock, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
+import { Clock, ArrowUpRight, ArrowDownRight, Loader2, AlertTriangle } from 'lucide-react';
 import { getRecentTransactions } from '../api/services/dashboardService';
 import { StockTransactionDTO } from '../api/types';
 
@@ -30,7 +30,8 @@ export const RecentActivity: React.FC = () => {
   const formatTimeAgo = (dateString: string) => {
     try {
       // Handle ISO date string format (YYYY-MM-DD)
-      const date = new Date(dateString + 'T00:00:00');
+      // If dateString is just a date (YYYY-MM-DD), append time to make it comparable
+      const date = new Date(dateString.includes('T') ? dateString : dateString + 'T00:00:00');
       const now = new Date();
       const diffMs = now.getTime() - date.getTime();
       const diffMins = Math.floor(diffMs / 60000);
@@ -49,11 +50,18 @@ export const RecentActivity: React.FC = () => {
       return 'Recent';
     }
   };
+
+  // Helper to determine if a transaction is "Damaged" based on notes or type
+  // Since backend doesn't have a DAMAGED type yet, we infer from notes if available
+  const isDamaged = (activity: StockTransactionDTO) => {
+      return activity.notes?.toLowerCase().includes('damaged') || false;
+  };
+
   return (
     <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] h-full">
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-bold text-slate-800">Recent Activity</h3>
-        <button className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors">View All</button>
+        <div className="text-xs font-medium text-blue-600">Live Updates</div>
       </div>
       
       {loading ? (
@@ -66,13 +74,17 @@ export const RecentActivity: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-6 relative before:absolute before:left-3.5 before:top-2 before:bottom-4 before:w-px before:bg-slate-100">
-          {activities.map((activity, idx) => (
+          {activities.map((activity, idx) => {
+              const damaged = isDamaged(activity);
+              return (
               <div key={activity.id || idx} className="relative pl-10 group">
                   {/* Timeline Dot */}
                   <div className={`absolute left-0 top-1.5 w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow-sm z-10 ${
-                      activity.transactionType === 'IN' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'
+                      damaged ? 'bg-red-100 text-red-600' :
+                      activity.transactionType === 'IN' ? 'bg-[#0f172a] text-white' : 'bg-slate-100 text-slate-600'
                   }`}>
-                      {activity.transactionType === 'IN' ? <ArrowDownRight className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
+                      {damaged ? <AlertTriangle className="w-3.5 h-3.5" /> :
+                       activity.transactionType === 'IN' ? <ArrowDownRight className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
                   </div>
 
                   <div className="flex flex-col">
@@ -84,7 +96,9 @@ export const RecentActivity: React.FC = () => {
                           </div>
                       </div>
                       <p className="text-xs text-slate-500 font-medium mb-1">
-                          {activity.transactionType === 'IN' ? 'Stock In' : 'Stock Out'} &bull; <span className="text-slate-400 font-normal">{activity.notes || activity.itemName || 'Transaction'}</span>
+                          {damaged ? 'Reported Damaged' :
+                           activity.transactionType === 'IN' ? 'Stock In' : 'Stock Out'} 
+                           &bull; <span className="text-slate-400 font-normal">{activity.notes || activity.itemName || 'Transaction'}</span>
                       </p>
                       {activity.recordedBy && (
                            <div className="flex items-center gap-1.5 mt-1">
@@ -96,7 +110,7 @@ export const RecentActivity: React.FC = () => {
                       )}
                   </div>
               </div>
-          ))}
+          )})}
         </div>
       )}
     </div>

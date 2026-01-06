@@ -35,21 +35,21 @@ export const DetailDrawer: React.FC<DetailDrawerProps> = ({
   if (!isVisible && !isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-50 flex justify-center items-center">
       {/* Backdrop */}
       <div 
-        className={`fixed inset-0 bg-slate-900/20 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
+        className={`fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClose}
       />
 
-      {/* Drawer Panel */}
+      {/* Modal Panel (Centered) */}
       <div 
-        className={`relative w-full max-w-md md:max-w-lg bg-white h-full shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`relative w-full max-w-lg bg-white rounded-2xl shadow-2xl transform transition-all duration-300 ease-out flex flex-col max-h-[90vh] ${
+          isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'
         }`}
       >
         {/* Header */}
-        <div className="px-6 py-5 border-b border-slate-100 flex items-start justify-between bg-slate-50/50">
+        <div className="px-6 py-5 border-b border-slate-100 flex items-start justify-between bg-slate-50/50 rounded-t-2xl">
           <div>
             <h2 className="text-xl font-bold text-slate-800">{title}</h2>
             {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
@@ -69,7 +69,7 @@ export const DetailDrawer: React.FC<DetailDrawerProps> = ({
 
         {/* Footer (Optional) */}
         {footer && (
-          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/30 flex justify-end gap-3">
+          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/30 flex justify-end gap-3 rounded-b-2xl">
             {footer}
           </div>
         )}

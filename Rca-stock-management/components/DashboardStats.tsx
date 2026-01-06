@@ -31,6 +31,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
     const interval = setInterval(fetchMetrics, 30000);
     return () => clearInterval(interval);
   }, []);
+
   const StatCard = ({ title, value, trend, trendUp, icon: Icon, dark = false, colorClass = "text-blue-500", targetView }: any) => (
       <div 
         className={`p-6 rounded-2xl flex flex-col justify-between h-44 relative group transition-all duration-300 hover:-translate-y-1 cursor-pointer ${
@@ -62,7 +63,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
                     : (dark ? 'text-rose-400' : 'text-rose-500')
             }`}>
                 {trendUp ? <ArrowUpRight className="w-3.5 h-3.5 mr-1" /> : <ArrowDownRight className="w-3.5 h-3.5 mr-1" />}
-                <span>{trend}</span>
+                <span>{trend}%</span>
                 <span className={`ml-1.5 ${dark ? 'text-slate-400' : 'text-slate-400'}`}>vs last month</span>
             </div>
         </div>
@@ -100,8 +101,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
       <StatCard 
         title="Total Stock Items" 
         value={formatNumber(metrics.total)} 
-        trend="—" 
-        trendUp={true} 
+        trend={metrics.totalChange || 0} 
+        trendUp={(metrics.totalChange || 0) >= 0} 
         icon={Package} 
         dark={true}
         targetView="STOCK"
@@ -109,8 +110,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
       <StatCard 
         title="Low Stock Items" 
         value={formatNumber(metrics.lowStock)} 
-        trend="—" 
-        trendUp={false} 
+        trend={metrics.lowStockChange || 0} 
+        trendUp={(metrics.lowStockChange || 0) < 0} // Less low stock is good (green)
         icon={AlertTriangle} 
         colorClass="text-amber-500"
         targetView="STOCK"
@@ -118,17 +119,17 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
       <StatCard 
         title="Damaged Items" 
         value={formatNumber(metrics.damaged)} 
-        trend="—" 
-        trendUp={false} 
+        trend={metrics.damagedChange || 0} 
+        trendUp={(metrics.damagedChange || 0) < 0} // Less damaged is good (green)
         icon={XCircle} 
         colorClass="text-rose-500"
-        targetView="DASHBOARD"
+        targetView="ANALYTICS"
       />
        <StatCard 
         title="Monthly Inflow" 
         value={formatNumber(metrics.thisMonth)} 
-        trend="—" 
-        trendUp={true} 
+        trend={metrics.thisMonthChange || 0} 
+        trendUp={(metrics.thisMonthChange || 0) >= 0} 
         icon={Calendar} 
         colorClass="text-indigo-500"
         targetView="ANALYTICS"

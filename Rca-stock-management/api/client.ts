@@ -53,8 +53,11 @@ async function apiRequest<T>(
     headers,
   };
 
+  console.log(`Sending API request: ${config.method} ${url}`, { headers: config.headers });
+
   try {
     const response = await fetch(url, config);
+    console.log(`Received API response: ${response.status} ${response.statusText}`);
     
     // Handle empty responses (e.g., 204 No Content)
     if (response.status === 204) {
@@ -103,6 +106,9 @@ export async function get<T>(endpoint: string): Promise<T> {
 export async function post<T>(endpoint: string, body: any): Promise<T> {
   return apiRequest<T>(endpoint, {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(body),
   });
 }
@@ -113,6 +119,9 @@ export async function post<T>(endpoint: string, body: any): Promise<T> {
 export async function put<T>(endpoint: string, body: any): Promise<T> {
   return apiRequest<T>(endpoint, {
     method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(body),
   });
 }
@@ -123,6 +132,9 @@ export async function put<T>(endpoint: string, body: any): Promise<T> {
 export async function patch<T>(endpoint: string, body: any): Promise<T> {
   return apiRequest<T>(endpoint, {
     method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(body),
   });
 }
