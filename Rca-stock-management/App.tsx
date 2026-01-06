@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// TODO: The user needs to run "npm install react-datepicker @types/react-datepicker" to install the date picker library.
 import ReactMarkdown from 'react-markdown';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -20,11 +19,10 @@ import { DetailDrawer } from './components/DetailDrawer';
 import { ToastContainer, ToastMessage } from './components/Toast';
 import { LoginView } from './components/LoginView';
 import { ViewState, DrawerType, StockItem, Supplier, UserProfile } from './types';
-import { MOCK_SUPPLIERS } from './constants';
 import { useItems } from './hooks/useItems';
 import { useReports } from './hooks/useReports';
 import { useTransactions } from './hooks/useTransactions';
-import { getAllSuppliers, createSupplier, updateSupplier, deleteSupplier } from './api/services/supplierService';
+import { useSuppliers } from './hooks/useSuppliers';
 import { CreateItemRequest, CreateTransactionRequest, UpdateItemRequest } from './api/types';
 import { ApiError } from './api/client';
 import { updateProfile, changePassword, UpdateProfileRequest, ChangePasswordRequest } from './api/services/userService';
@@ -74,10 +72,7 @@ const App = () => {
   const { items: stockItems, loading: itemsLoading, error: itemsError, addItem, updateItem, deleteItem, refetch: refetchItems } = useItems();
   const { dashboardItems, loading: reportsLoading, error: reportsError, balanceReport, refetch: refetchReports } = useReports();
   const { transactions, loading: transactionsLoading, error: transactionsError, addTransaction, refetch: refetchTransactions } = useTransactions();
-
-  // Supplier State
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [suppliersLoading, setSuppliersLoading] = useState(false);
+  const { suppliers, loading: suppliersLoading, error: suppliersError, addSupplier, updateSupplier, deactivateSupplier, refetch: refetchSuppliers } = useSuppliers();
 
   // Drawer State
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -148,21 +143,9 @@ const App = () => {
             import('./api/services/userService').then(({ getProfile }) => {
                 getProfile().then(setUserProfile);
             });
-            fetchSuppliers();
+            refetchSuppliers();
         }
     }, [isLoggedIn]);
-
-    const fetchSuppliers = async () => {
-        setSuppliersLoading(true);
-        try {
-            const data = await getAllSuppliers();
-            setSuppliers(data);
-        } catch (error) {
-            console.error("Failed to fetch suppliers", error);
-        } finally {
-            setSuppliersLoading(false);
-        }
-    };
 
     // AI report generator using real data
     const handleGenerateReport = async () => {
@@ -313,6 +296,12 @@ const App = () => {
     setNotes('');
   };
 
+  const openAddStock = () => {
+    setSelectedItem(null);
+    setDrawerType('ADD_STOCK');
+    setDrawerOpen(true);
+  };
+
   const openDeleteItem = (item: StockItem) => {
     setSelectedItem(item);
     setDrawerType('DELETE_ITEM');
@@ -342,12 +331,6 @@ const App = () => {
   const openOrderForm = (supplier: Supplier) => {
     setSelectedItem(supplier);
     setDrawerType('ORDER_FORM');
-    setDrawerOpen(true);
-  };
-
-  const openAddStock = () => {
-    setSelectedItem(null);
-    setDrawerType('ADD_STOCK');
     setDrawerOpen(true);
   };
 
@@ -777,11 +760,11 @@ const App = () => {
 
                 try {
                     const toastId = addToast("Adding supplier...", 'loading');
-                    await createSupplier(supplierData);
+                    await addSupplier(supplierData);
                     removeToast(toastId);
                     addToast("Supplier added successfully.", 'success');
                     closeDrawer();
-                    fetchSuppliers(); // Refresh list
+                    refetchSuppliers(); // Refresh list
                 } catch (error) {
                     const errorMessage = error instanceof ApiError 
                         ? error.message 
@@ -862,11 +845,11 @@ const App = () => {
                             if (confirm('Are you sure you want to deactivate this supplier?')) {
                                 try {
                                     const toastId = addToast("Deactivating supplier...", 'loading');
-                                    await deleteSupplier(supplier.id);
+                                    await deactivateSupplier(supplier.id);
                                     removeToast(toastId);
                                     addToast("Supplier deactivated.", 'success');
                                     closeDrawer();
-                                    fetchSuppliers();
+                                    refetchSuppliers();
                                 } catch (e) {
                                     addToast("Failed to deactivate supplier.", 'error');
                                 }
@@ -1600,7 +1583,7 @@ const App = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {MOCK_SUPPLIERS.map((supplier) => (
+                        {suppliers.map((supplier) => (
                             <SupplierCard 
                                 key={supplier.id} 
                                 supplier={supplier} 
