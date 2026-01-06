@@ -24,6 +24,7 @@ import { MOCK_SUPPLIERS } from './constants';
 import { useItems } from './hooks/useItems';
 import { useReports } from './hooks/useReports';
 import { useTransactions } from './hooks/useTransactions';
+import { getAllSuppliers, createSupplier, updateSupplier, deleteSupplier } from './api/services/supplierService';
 import { CreateItemRequest, CreateTransactionRequest, UpdateItemRequest } from './api/types';
 import { ApiError } from './api/client';
 import { updateProfile, changePassword, UpdateProfileRequest, ChangePasswordRequest } from './api/services/userService';
@@ -74,6 +75,10 @@ const App = () => {
   const { dashboardItems, loading: reportsLoading, error: reportsError, balanceReport, refetch: refetchReports } = useReports();
   const { transactions, loading: transactionsLoading, error: transactionsError, addTransaction, refetch: refetchTransactions } = useTransactions();
 
+  // Supplier State
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [suppliersLoading, setSuppliersLoading] = useState(false);
+
   // Drawer State
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerType, setDrawerType] = useState<DrawerType>('NONE');
@@ -87,6 +92,7 @@ const App = () => {
   const [damagedQuantity, setDamagedQuantity] = useState('');
   const [transactionDate, setTransactionDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
+  const [selectedSupplierId, setSelectedSupplierId] = useState('');
 
   // Delete confirmation state
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
@@ -97,7 +103,6 @@ const App = () => {
 
   // Stock View State
   const [stockViewMode, setStockViewMode] = useState<'grid' | 'list'>('list');
-  // Removed stockSearch state as requested
   const [stockCategoryFilter, setStockCategoryFilter] = useState('');
   const [stockStatusFilter, setStockStatusFilter] = useState('');
 
@@ -143,8 +148,21 @@ const App = () => {
             import('./api/services/userService').then(({ getProfile }) => {
                 getProfile().then(setUserProfile);
             });
+            fetchSuppliers();
         }
     }, [isLoggedIn]);
+
+    const fetchSuppliers = async () => {
+        setSuppliersLoading(true);
+        try {
+            const data = await getAllSuppliers();
+            setSuppliers(data);
+        } catch (error) {
+            console.error("Failed to fetch suppliers", error);
+        } finally {
+            setSuppliersLoading(false);
+        }
+    };
 
     // AI report generator using real data
     const handleGenerateReport = async () => {
@@ -207,6 +225,7 @@ const App = () => {
       transactionDate,
       notes,
       recordedBy: userProfile?.name || 'User',
+      supplierId: selectedSupplierId ? Number(selectedSupplierId) : undefined
     };
 
     try {
@@ -311,6 +330,7 @@ const App = () => {
     setTransactionDate(new Date().toISOString().split('T')[0]);
     setNotes('');
     setStockOutReason('Consumed');
+    setSelectedSupplierId('');
   };
 
   const openSupplierDetail = (supplier: Supplier) => {
@@ -362,7 +382,6 @@ const App = () => {
 
   // Filtered Items Logic
   const filteredStockItems = stockItems.filter(item => {
-      // Removed search logic as requested, relying on filters
       const matchesCategory = stockCategoryFilter ? item.category === stockCategoryFilter : true;
       const matchesStatus = stockStatusFilter ? item.status === stockStatusFilter : true;
       
@@ -412,6 +431,17 @@ const App = () => {
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Quantity</label>
                     <input value={isStockIn ? stockInQuantity : stockOutQuantity} onChange={(e) => isStockIn ? setStockInQuantity(e.target.value) : setStockOutQuantity(e.target.value)} type="number" min="1" placeholder="Enter quantity" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
                 </div>
+                {isStockIn && (
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Supplier (Optional)</label>
+                        <select value={selectedSupplierId} onChange={(e) => setSelectedSupplierId(e.target.value)} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                            <option value="">Select Supplier...</option>
+                            {suppliers.map(supplier => (
+                                <option key={supplier.id} value={supplier.id}>{supplier.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
                 {!isStockIn && (
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">Reason for Stock Out</label>
@@ -733,35 +763,60 @@ const App = () => {
 
     if (drawerType === 'ADD_SUPPLIER') {
         return (
-            <form id="add-supplier-form" className="space-y-5" onSubmit={(e) => { e.preventDefault(); closeDrawer(); addToast("Supplier profile created successfully."); }}>
+            <form id="add-supplier-form" className="space-y-5" onSubmit={async (e) => { 
+                e.preventDefault(); 
+                const form = e.target as HTMLFormElement;
+                const formData = new FormData(form);
+                
+                const supplierData = {
+                    name: formData.get('name') as string,
+                    contact: formData.get('phone') as string, // Mapping phone to contact for now
+                    email: formData.get('email') as string,
+                    itemsSupplied: (formData.get('itemsSupplied') as string).split(',').map(s => s.trim()),
+                };
+
+                try {
+                    const toastId = addToast("Adding supplier...", 'loading');
+                    await createSupplier(supplierData);
+                    removeToast(toastId);
+                    addToast("Supplier added successfully.", 'success');
+                    closeDrawer();
+                    fetchSuppliers(); // Refresh list
+                } catch (error) {
+                    const errorMessage = error instanceof ApiError 
+                        ? error.message 
+                        : 'Failed to add supplier. Please try again.';
+                    addToast(errorMessage, 'error');
+                }
+            }}>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Company Name</label>
-                    <input type="text" placeholder="e.g. Kigali Grains Ltd" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                    <input name="name" type="text" placeholder="e.g. Kigali Grains Ltd" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Contact Person</label>
                     <div className="relative">
                         <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input type="text" placeholder="Full Name" className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                        <input name="contactPerson" type="text" placeholder="Full Name" className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
                     </div>
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone Number</label>
                     <div className="relative">
                         <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input type="tel" placeholder="+250 7..." className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                        <input name="phone" type="tel" placeholder="+250 7..." className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
                     </div>
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
                     <div className="relative">
                         <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input type="email" placeholder="contact@supplier.com" className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                        <input name="email" type="email" placeholder="contact@supplier.com" className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
                     </div>
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1.5">Items Supplied</label>
-                    <textarea placeholder="List main items supplied..." className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 h-24"></textarea>
+                    <textarea name="itemsSupplied" placeholder="List main items supplied (comma separated)..." className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 h-24"></textarea>
                 </div>
             </form>
         );
@@ -799,6 +854,28 @@ const App = () => {
                             </span>
                         ))}
                     </div>
+                </div>
+                
+                <div className="pt-4 border-t border-slate-100">
+                    <button 
+                        onClick={async () => {
+                            if (confirm('Are you sure you want to deactivate this supplier?')) {
+                                try {
+                                    const toastId = addToast("Deactivating supplier...", 'loading');
+                                    await deleteSupplier(supplier.id);
+                                    removeToast(toastId);
+                                    addToast("Supplier deactivated.", 'success');
+                                    closeDrawer();
+                                    fetchSuppliers();
+                                } catch (e) {
+                                    addToast("Failed to deactivate supplier.", 'error');
+                                }
+                            }
+                        }}
+                        className="w-full text-center text-rose-600 text-sm font-medium hover:text-rose-700"
+                    >
+                        Deactivate Supplier
+                    </button>
                 </div>
             </div>
         );
