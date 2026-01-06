@@ -112,19 +112,13 @@ export const MOCK_CATEGORY_DISTRIBUTION = [
   { subject: 'Liquids', A: 65, fullMark: 150 },
 ];
 
-export const MOCK_SUPPLIERS: Supplier[] = [
-  { id: '1', name: 'Igisubizo LTD', contact: '+250 788 123 441', email: 'igisubizo@gmail.com', itemsSupplied: ['Rice', 'beans'] },
-  { id: '2', name: 'Igisubizo LTD', contact: '+250 788 123 441', email: 'igisubizo@gmail.com', itemsSupplied: ['Rice', 'beans'] },
-  { id: '3', name: 'Igisubizo LTD', contact: '+250 788 123 441', email: 'igisubizo@gmail.com', itemsSupplied: ['Rice', 'beans'] },
-  { id: '4', name: 'Igisubizo LTD', contact: '+250 788 123 441', email: 'igisubizo@gmail.com', itemsSupplied: ['Rice', 'beans'] },
-  { id: '5', name: 'Igisubizo LTD', contact: '+250 788 123 441', email: 'igisubizo@gmail.com', itemsSupplied: ['Rice', 'beans'] },
-];
+export const MOCK_SUPPLIERS: Supplier[] = [];
 
 export const MOCK_REPORTS: SystemReport[] = [
-  { id: '1', title: 'Monthly Stock Summary', type: 'STOCK', generatedDate: 'Oct 30, 2023', size: '2.4 MB', status: 'READY', format: 'PDF' },
-  { id: '2', title: 'Q3 Financial Audit', type: 'FINANCIAL', generatedDate: 'Oct 15, 2023', size: '4.1 MB', status: 'READY', format: 'CSV' },
-  { id: '3', title: 'Supplier Performance Review', type: 'AUDIT', generatedDate: 'Sep 30, 2023', size: '1.2 MB', status: 'READY', format: 'PDF' },
-  { id: '4', title: 'Weekly Consumption Log', type: 'STOCK', generatedDate: 'Oct 28, 2023', size: '856 KB', status: 'READY', format: 'CSV' },
+  { id: '1', title: 'Monthly Stock Summary', type: 'STOCK', generatedDate: 'Oct 30, 2023', size: '24 KB', status: 'READY', format: 'PDF' },
+  { id: '2', title: 'Q3 Financial Audit', type: 'FINANCIAL', generatedDate: 'Oct 15, 2023', size: '41 KB', status: 'READY', format: 'CSV' },
+  { id: '3', title: 'Supplier Performance Review', type: 'AUDIT', generatedDate: 'Sep 30, 2023', size: '12 KB', status: 'READY', format: 'PDF' },
+  { id: '4', title: 'Weekly Consumption Log', type: 'STOCK', generatedDate: 'Oct 28, 2023', size: '8 KB', status: 'READY', format: 'CSV' },
 ];
 
 export const MOCK_NOTIFICATIONS: NotificationItem[] = [

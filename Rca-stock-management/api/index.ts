@@ -7,6 +7,7 @@
 export * from './services/itemService';
 export * from './services/transactionService';
 export * from './services/reportService';
+export * from './services/supplierService'; // Export supplier service
 
 // Types
 export * from './types';
@@ -16,4 +17,3 @@ export * from './config';
 
 // Client utilities
 export * from './client';
-
