@@ -56,8 +56,7 @@ import {
   ArrowDown,
   ArrowUp,
   AlertTriangle,
-  LayoutGrid,
-  Search
+  LayoutGrid
 } from 'lucide-react';
 
 const App = () => {
@@ -98,7 +97,7 @@ const App = () => {
 
   // Stock View State
   const [stockViewMode, setStockViewMode] = useState<'grid' | 'list'>('list');
-  const [stockSearch, setStockSearch] = useState('');
+  // Removed stockSearch state as requested
   const [stockCategoryFilter, setStockCategoryFilter] = useState('');
   const [stockStatusFilter, setStockStatusFilter] = useState('');
 
@@ -178,7 +177,7 @@ const App = () => {
     try {
         // Use the report service to generate a comprehensive CSV
         await import('./api/services/reportService').then(({ generateCsvReport }) => 
-            generateCsvReport('transactions') // Use the detailed transaction report
+            generateCsvReport('balance') // Default to balance report for stock view
         );
         removeToast(id);
         addToast(`${type} file downloaded successfully.`, 'success');
@@ -363,12 +362,11 @@ const App = () => {
 
   // Filtered Items Logic
   const filteredStockItems = stockItems.filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(stockSearch.toLowerCase()) || 
-                            item.category.toLowerCase().includes(stockSearch.toLowerCase());
+      // Removed search logic as requested, relying on filters
       const matchesCategory = stockCategoryFilter ? item.category === stockCategoryFilter : true;
       const matchesStatus = stockStatusFilter ? item.status === stockStatusFilter : true;
       
-      return matchesSearch && matchesCategory && matchesStatus;
+      return matchesCategory && matchesStatus;
   });
 
   // Unique categories for filter dropdown
@@ -440,57 +438,125 @@ const App = () => {
 
     if (drawerType === 'STOCK_DETAIL' && selectedItem) {
         const item = selectedItem as StockItem;
-        return (
-            <form id="edit-stock-form" className="space-y-5" onSubmit={async (e) => {
-                e.preventDefault();
-                const form = e.target as HTMLFormElement;
-                const formData = new FormData(form);
-                
-                const updateData: UpdateItemRequest = {
-                    name: formData.get('name') as string,
-                    unit: formData.get('unit') as string,
-                    minimumStock: parseInt(formData.get('minimumStock') as string),
-                    description: formData.get('description') as string,
-                };
+        const TabButton = ({ tabName, label }: { tabName: string; label: string }) => (
+            <button
+                onClick={() => setActiveTab(tabName)}
+                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+                    activeTab === tabName
+                        ? 'bg-white border-slate-200 border-t border-x text-slate-800'
+                        : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                }`}
+            >
+                {label}
+            </button>
+        );
 
-                try {
-                    const toastId = addToast("Updating item...", 'loading');
-                    await updateItem(Number(item.id), updateData);
-                    removeToast(toastId);
-                    addToast("Item updated successfully.", 'success');
-                    closeDrawer();
-                    await refetchItems();
-                } catch (error) {
-                    const errorMessage = error instanceof ApiError ? error.message : 'Failed to update item.';
-                    addToast(errorMessage, 'error');
-                }
-            }}>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Item Name</label>
-                    <input name="name" defaultValue={item.name} type="text" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+        return (
+            <div className="space-y-6">
+                <div className="flex border-b border-slate-200 -mx-6 px-6">
+                    <TabButton tabName="details" label="Details" />
+                    <TabButton tabName="edit" label="Edit Item" />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Description / Category</label>
-                    <input name="description" defaultValue={item.category} type="text" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Unit</label>
-                        <select name="unit" defaultValue={item.unit} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required>
-                            <option>Kg</option>
-                            <option>Liters</option>
-                            <option>Pieces</option>
-                            <option>Bags</option>
-                            <option>Sacks</option>
-                            <option>Boxes</option>
-                        </select>
+
+                {activeTab === 'details' && (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                                <div className="text-xs text-slate-500 mb-1">Current Stock</div>
+                                <div className="text-2xl font-bold text-slate-800">{item.currentQuantity} <span className="text-sm font-normal text-slate-500">{item.unit}</span></div>
+                            </div>
+                            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                                <div className="text-xs text-slate-500 mb-1">Status</div>
+                                <div className={`text-sm font-bold px-2 py-1 rounded-full w-fit ${
+                                    item.status === 'Birahagije' ? 'bg-emerald-100 text-emerald-700' :
+                                    item.status === 'Mucye' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                                }`}>{item.status}</div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
+                                <div className="p-3 bg-white border border-slate-200 rounded-lg text-slate-600 text-sm flex items-center gap-2">
+                                    <Box className="w-4 h-4 text-slate-400" />
+                                    {item.category}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Minimum Threshold</label>
+                                <div className="p-3 bg-white border border-slate-200 rounded-lg text-slate-600 text-sm">
+                                    {item.minimumQuantity} {item.unit}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Last Updated</label>
+                                <div className="flex items-center gap-2 text-sm text-slate-500">
+                                    <Clock className="w-4 h-4" />
+                                    {item.lastUpdated}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Min Threshold</label>
-                        <input name="minimumStock" defaultValue={item.minimumQuantity} type="number" min="1" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
-                    </div>
-                </div>
-            </form>
+                )}
+
+                {activeTab === 'edit' && (
+                    <form id="edit-stock-form" className="space-y-5" onSubmit={async (e) => {
+                        e.preventDefault();
+                        const form = e.target as HTMLFormElement;
+                        const formData = new FormData(form);
+                        
+                        const updateData: UpdateItemRequest = {
+                            name: formData.get('name') as string,
+                            unit: formData.get('unit') as string,
+                            minimumStock: parseInt(formData.get('minimumStock') as string),
+                            description: formData.get('description') as string,
+                        };
+
+                        try {
+                            const toastId = addToast("Updating item...", 'loading');
+                            await updateItem(Number(item.id), updateData);
+                            removeToast(toastId);
+                            addToast("Item updated successfully.", 'success');
+                            closeDrawer();
+                            await refetchItems();
+                        } catch (error) {
+                            const errorMessage = error instanceof ApiError ? error.message : 'Failed to update item.';
+                            addToast(errorMessage, 'error');
+                        }
+                    }}>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Item Name</label>
+                            <input name="name" defaultValue={item.name} type="text" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Description / Category</label>
+                            <input name="description" defaultValue={item.category} type="text" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1.5">Unit</label>
+                                <select name="unit" defaultValue={item.unit} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required>
+                                    <option>Kg</option>
+                                    <option>Liters</option>
+                                    <option>Pieces</option>
+                                    <option>Bags</option>
+                                    <option>Sacks</option>
+                                    <option>Boxes</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1.5">Min Threshold</label>
+                                <input name="minimumStock" defaultValue={item.minimumQuantity} type="number" min="1" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                            </div>
+                        </div>
+                        <div className="pt-4">
+                            <button type="submit" className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                )}
+            </div>
         );
     }
 
@@ -515,21 +581,21 @@ const App = () => {
                         return;
                     }
                     
-                    // Verify password (mock check for now, ideally backend verification)
-                    // In a real app, you might send the password to the delete endpoint or verify it first
-                    // For this demo, we'll assume if they typed the phrase, it's intentional enough, 
-                    // but let's simulate a password check if we had the user's password (we don't).
-                    // So we'll just proceed with the confirmation phrase check.
+                    if (!deletePassword) {
+                        addToast('Please enter your password.', 'error');
+                        return;
+                    }
                     
                     try {
                         const toastId = addToast("Deleting item...", 'loading');
-                        await deleteItem(Number(item.id));
+                        // Pass password to deleteItem
+                        await deleteItem(Number(item.id), deletePassword);
                         removeToast(toastId);
                         addToast("Item deleted successfully.", 'success');
                         closeDrawer();
                         await Promise.all([refetchItems(), refetchReports(), refetchTransactions()]);
                     } catch (error) {
-                        const errorMessage = error instanceof ApiError ? error.message : 'Failed to delete item.';
+                        const errorMessage = error instanceof ApiError ? error.message : 'Failed to delete item. Incorrect password?';
                         addToast(errorMessage, 'error');
                     }
                 }} className="space-y-4">
@@ -547,7 +613,6 @@ const App = () => {
                         />
                     </div>
                     
-                    {/* Password field - optional enhancement if backend supports sudo mode */}
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">Admin Password</label>
                         <input 
@@ -901,7 +966,7 @@ const App = () => {
     switch(drawerType) {
         case 'STOCK_IN': return 'Record Stock In';
         case 'STOCK_OUT': return 'Record Stock Out';
-        case 'STOCK_DETAIL': return 'Edit Item';
+        case 'STOCK_DETAIL': return 'Item Details';
         case 'DELETE_ITEM': return 'Delete Item';
         case 'SUPPLIER_DETAIL': return 'Supplier Profile';
         case 'ADD_STOCK': return 'New Stock Item';
@@ -927,17 +992,6 @@ const App = () => {
 
   // Drawer Footer Logic
   const getDrawerFooter = () => {
-    if (drawerType === 'STOCK_DETAIL') {
-        return (
-            <button 
-                type="submit"
-                form="edit-stock-form"
-                className="bg-[#1e293b] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
-            >
-                Save Changes
-            </button>
-        );
-    }
     if (drawerType === 'STOCK_IN' || drawerType === 'STOCK_OUT') {
         return (
             <button 
@@ -1139,22 +1193,20 @@ const App = () => {
                     
                     {/* Filter Bar */}
                     <div className="flex flex-wrap items-center gap-3 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
-                        <div className="relative flex-1 min-w-[200px]">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                            <input 
-                                type="text" 
-                                placeholder="Search items..." 
-                                value={stockSearch}
-                                onChange={(e) => setStockSearch(e.target.value)}
-                                className="w-full bg-slate-50 border border-transparent rounded-lg pl-10 pr-4 py-2 text-sm outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
-                            />
+                        <div className="px-3 py-2 border-r border-slate-100 flex items-center gap-2 text-slate-500">
+                            <Filter className="w-4 h-4" />
+                            <span className="text-sm font-medium">Filters:</span>
                         </div>
-
+                        
+                        {/* Search Input - Removed as requested, relying on main header search if implemented or just filters */}
+                        {/* If main header search is not wired to stockSearch state, we might need to keep this or wire header search */}
+                        {/* Assuming main header search is global or we just use filters for now as per request to remove "extra" search */}
+                        
                         {/* Category Filter */}
                         <select 
                             value={stockCategoryFilter}
                             onChange={(e) => setStockCategoryFilter(e.target.value)}
-                            className="px-3 py-2 rounded-lg bg-slate-50 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors border-none outline-none cursor-pointer"
+                            className="px-3 py-1.5 rounded-lg bg-slate-50 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors border-none outline-none cursor-pointer"
                         >
                             <option value="">All Categories</option>
                             {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
@@ -1164,7 +1216,7 @@ const App = () => {
                         <select 
                             value={stockStatusFilter}
                             onChange={(e) => setStockStatusFilter(e.target.value)}
-                            className="px-3 py-2 rounded-lg bg-slate-50 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors border-none outline-none cursor-pointer"
+                            className="px-3 py-1.5 rounded-lg bg-slate-50 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors border-none outline-none cursor-pointer"
                         >
                             <option value="">All Statuses</option>
                             <option value="Birahagije">Birahagije</option>
@@ -1172,7 +1224,7 @@ const App = () => {
                             <option value="Byashize">Byashize</option>
                         </select>
 
-                        <div className="flex-1 md:hidden"></div>
+                        <div className="flex-1"></div>
                         
                         {/* View Toggle */}
                         <div className="flex bg-slate-100 rounded-lg p-1">

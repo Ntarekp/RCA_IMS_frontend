@@ -66,7 +66,10 @@ export const updateItem = async (
 /**
  * Delete item
  */
-export const deleteItem = async (id: number): Promise<void> => {
+export const deleteItem = async (id: number, password?: string): Promise<void> => {
+  if (password) {
+    return del<void>(`${ENDPOINT}/${id}`, { password });
+  }
   return del<void>(`${ENDPOINT}/${id}`);
 };
 
@@ -80,4 +83,3 @@ export const recordDamagedQuantity = async (
   const request: DamagedQuantityRequest = { damagedQuantity };
   return patch<ItemDTO>(`${ENDPOINT}/${id}/damaged`, request);
 };
-

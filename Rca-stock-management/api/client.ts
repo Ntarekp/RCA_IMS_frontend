@@ -142,7 +142,11 @@ export async function patch<T>(endpoint: string, body: any): Promise<T> {
 /**
  * DELETE request
  */
-export async function del<T>(endpoint: string): Promise<T> {
-  return apiRequest<T>(endpoint, { method: 'DELETE' });
+export async function del<T>(endpoint: string, body?: any): Promise<T> {
+  const options: RequestInit = { method: 'DELETE' };
+  if (body) {
+    options.headers = { 'Content-Type': 'application/json' };
+    options.body = JSON.stringify(body);
+  }
+  return apiRequest<T>(endpoint, options);
 }
-

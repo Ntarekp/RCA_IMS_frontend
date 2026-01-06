@@ -58,9 +58,9 @@ export const useItems = () => {
     }
   };
 
-  const removeItem = async (id: number) => {
+  const removeItem = async (id: number, password?: string) => {
     try {
-      await deleteItem(id);
+      await deleteItem(id, password);
       await refetch(); // Refresh list
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to delete item');
@@ -82,4 +82,3 @@ export const useItems = () => {
     deleteItem: removeItem,
   };
 };
-
