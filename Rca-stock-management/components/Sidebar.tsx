@@ -81,7 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
         />
       )}
 
-      {/* Mobile Sidebar (Drawer) */}
+      {/* Mobile Sidebar (Drawer) - Remains Fixed */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-2xl transform transition-transform duration-300 ease-out md:hidden flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="absolute top-4 right-4 z-50">
             <button onClick={onClose} className="p-2 text-[#9CA3AF] hover:text-[#1E293B] hover:bg-[#EDEEF3] rounded-full transition-colors">
@@ -91,13 +91,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
         <NavContent />
       </aside>
 
-      {/* Tablet (Icons) Sidebar */}
-      <aside className="hidden md:flex flex-col fixed inset-y-0 left-0 z-30 bg-transparent h-full transition-all duration-300 w-24 lg:hidden">
-         <NavContent isCollapsed={true} /> 
-      </aside>
-
-      {/* Desktop (Full) Sidebar */}
-       <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 z-30 bg-transparent h-full transition-all duration-300 w-72">
+      {/* Desktop Sidebar - Now Relative/Static to fit in flex container */}
+      <aside className="hidden md:flex flex-col w-full h-full bg-transparent">
          <NavContent />
       </aside>
     </>
