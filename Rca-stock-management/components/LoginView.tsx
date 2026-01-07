@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { login, LoginRequest } from '../api/services/authService';
 import { ApiError } from '../api/client';
 
@@ -37,7 +37,13 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
     } catch (err) {
       console.error('Login failed:', err);
       if (err instanceof ApiError) {
-        setError(err.data?.message || 'Invalid email or password');
+        if (err.status === 0) {
+            setError('Network Error: Unable to connect to server. Check if backend is running on port 8081.');
+        } else if (err.status === 401) {
+            setError('Invalid email or password');
+        } else {
+            setError(err.data?.message || `Login failed: ${err.statusText}`);
+        }
       } else {
         setError('Login failed. Please try again.');
       }
@@ -63,17 +69,21 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
 
   return (
     <div className="min-h-screen bg-[#F8F9FC] flex items-center justify-center p-4">
-      <div className="flex flex-col items-center gap-8 w-full max-w-md animate-in fade-in zoom-in duration-500">
-        {/* Logo Section */}
-        <div className="flex flex-col items-center gap-2">
-            <div className="w-20 h-24 bg-[#1e293b] rounded-b-[3rem] rounded-t-lg flex items-center justify-center shadow-xl relative overflow-hidden group">
-                 <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <Shield className="w-10 h-10 text-white relative z-10" strokeWidth={1.5} />
+      <div className="flex flex-col md:flex-row items-center justify-center gap-12 w-full max-w-4xl animate-in fade-in zoom-in duration-500">
+        
+        {/* Logo Section (Left Side) */}
+        <div className="flex flex-col items-center md:items-start gap-4 text-center md:text-left">
+            <div className="w-32 h-32 bg-white rounded-2xl flex items-center justify-center shadow-xl border border-slate-100 p-4">
+                 <img src="/rca-logo.png" alt="RCA Logo" className="w-full h-full object-contain" />
             </div>
+            {/*<div>*/}
+            {/*    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">RCA Inventory</h1>*/}
+            {/*    <p className="text-slate-500 mt-2 max-w-xs">Secure stock management system for Rwanda Coding Academy.</p>*/}
+            {/*</div>*/}
         </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8 w-full">
+        {/* Login Card (Right Side) */}
+        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8 w-full max-w-md">
             {forgotPasswordMode ? (
                 <>
                     <div className="text-center mb-8">
@@ -116,8 +126,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
             ) : (
                 <>
                     <div className="text-center mb-8">
-                        <h1 className="text-xl font-bold text-slate-800 uppercase tracking-wide">RCA Stock Management System</h1>
-                        <p className="text-sm text-slate-400 mt-2 font-medium">Log into your Account</p>
+                        <h1 className="text-xl font-bold text-slate-800 uppercase tracking-wide">Welcome Back</h1>
+                        <p className="text-sm text-slate-400 mt-2 font-medium">Log into your account to continue</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
