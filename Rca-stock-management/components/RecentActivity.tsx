@@ -58,22 +58,22 @@ export const RecentActivity: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] h-full">
+    <div className="bg-white rounded-2xl p-6 border border-[#E5E7EB] shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] h-full">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="font-bold text-slate-800">Recent Activity</h3>
-        <div className="text-xs font-medium text-blue-600">Live Updates</div>
+        <h3 className="font-bold text-[#1E293B]">Recent Activity</h3>
+        <div className="text-xs font-medium text-[#1E293B]">Live Updates</div>
       </div>
       
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#9CA3AF]" />
         </div>
       ) : activities.length === 0 ? (
-        <div className="text-center py-12 text-slate-400 text-sm">
+        <div className="text-center py-12 text-[#9CA3AF] text-sm">
           <p>No recent activity</p>
         </div>
       ) : (
-        <div className="space-y-6 relative before:absolute before:left-3.5 before:top-2 before:bottom-4 before:w-px before:bg-slate-100">
+        <div className="space-y-6 relative before:absolute before:left-3.5 before:top-2 before:bottom-4 before:w-px before:bg-[#F7F8FD]">
           {activities.map((activity, idx) => {
               const damaged = isDamaged(activity);
               return (
@@ -81,7 +81,7 @@ export const RecentActivity: React.FC = () => {
                   {/* Timeline Dot */}
                   <div className={`absolute left-0 top-1.5 w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow-sm z-10 ${
                       damaged ? 'bg-red-100 text-red-600' :
-                      activity.transactionType === 'IN' ? 'bg-[#0f172a] text-white' : 'bg-slate-100 text-slate-600'
+                      activity.transactionType === 'IN' ? 'bg-[#1E293B] text-white' : 'bg-[#EDEEF3] text-[#9CA3AF]'
                   }`}>
                       {damaged ? <AlertTriangle className="w-3.5 h-3.5" /> :
                        activity.transactionType === 'IN' ? <ArrowDownRight className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
@@ -89,23 +89,23 @@ export const RecentActivity: React.FC = () => {
 
                   <div className="flex flex-col">
                       <div className="flex justify-between items-start mb-1">
-                          <span className="text-xs font-bold text-slate-800">{activity.quantity} {activity.itemName ? activity.itemName.split(' ')[0] : ''}</span>
-                          <div className="flex items-center gap-1 text-[10px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">
+                          <span className="text-xs font-bold text-[#1E293B]">{activity.quantity} {activity.itemName ? activity.itemName.split(' ')[0] : ''}</span>
+                          <div className="flex items-center gap-1 text-[10px] text-[#9CA3AF] bg-[#F7F8FD] px-2 py-0.5 rounded-full">
                               <Clock className="w-3 h-3" />
                               {formatTimeAgo(activity.transactionDate)}
                           </div>
                       </div>
-                      <p className="text-xs text-slate-500 font-medium mb-1">
+                      <p className="text-xs text-[#9CA3AF] font-medium mb-1">
                           {damaged ? 'Reported Damaged' :
                            activity.transactionType === 'IN' ? 'Stock In' : 'Stock Out'} 
-                           &bull; <span className="text-slate-400 font-normal">{activity.notes || activity.itemName || 'Transaction'}</span>
+                           &bull; <span className="text-[#9CA3AF] font-normal">{activity.notes || activity.itemName || 'Transaction'}</span>
                       </p>
                       {activity.recordedBy && (
                            <div className="flex items-center gap-1.5 mt-1">
-                               <div className="w-4 h-4 rounded-full bg-slate-200 flex items-center justify-center text-[8px] font-bold text-slate-500">
+                               <div className="w-4 h-4 rounded-full bg-[#EDEEF3] flex items-center justify-center text-[8px] font-bold text-[#9CA3AF]">
                                   {activity.recordedBy.charAt(0).toUpperCase()}
                                </div>
-                               <span className="text-[10px] text-slate-400">by {activity.recordedBy}</span>
+                               <span className="text-[10px] text-[#9CA3AF]">by {activity.recordedBy}</span>
                            </div>
                       )}
                   </div>

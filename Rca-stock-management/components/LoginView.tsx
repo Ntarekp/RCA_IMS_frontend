@@ -93,7 +93,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                                 value={forgotPasswordEmail}
                                 onChange={(e) => setForgotPasswordEmail(e.target.value)}
                                 placeholder="Email" 
-                                className="w-full px-4 py-3 bg-[#EDEEF3] border border-[#D1D5DB] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-[#9CA3AF] text-slate-700"
+                                className="w-full px-4 py-3 bg-[#EDEEF3] border border-[#D1D5DB] rounded-xl text-sm outline-none transition-all placeholder:text-[#9CA3AF] text-slate-700"
                                 required 
                             />
                         </div>
@@ -108,14 +108,14 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                             <button 
                                 type="submit" 
                                 disabled={loading}
-                                className="w-2/5 bg-[#1e293b] text-white py-3 rounded-2xl font-medium text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-2/5 bg-[#1e293b] text-white py-3 rounded-[50px] font-medium text-sm hover:bg-[#334155] transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Reset Link'}
                             </button>
                         </div>
 
                         <div className="text-center text-xs pt-1">
-                            <button type="button" onClick={() => { setForgotPasswordMode(false); setError(null); }} className="text-[#1E293B] hover:text-[#1e293b] font-medium transition-colors">
+                            <button type="button" onClick={() => { setForgotPasswordMode(false); setError(null); }} className="text-[#1E293B] hover:text-[#334155] font-medium transition-colors">
                                 Back to Login
                             </button>
                         </div>
@@ -135,7 +135,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Email" 
-                                className="w-full px-4 py-3 bg-[#EDEEF3] border border-[#D1D5DB] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-[#9CA3AF] text-slate-700"
+                                className="w-full px-4 py-3 bg-[#EDEEF3] border border-[#D1D5DB] rounded-xl text-sm outline-none transition-all placeholder:text-[#9CA3AF] text-slate-700"
                                 required 
                             />
                         </div>
@@ -145,7 +145,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Password" 
-                                className="w-full px-4 py-3 bg-[#EDEEF3] border border-[#D1D5DB] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-[#9CA3AF] text-slate-700"
+                                className="w-full px-4 py-3 bg-[#EDEEF3] border border-[#D1D5DB] rounded-xl text-sm outline-none transition-all placeholder:text-[#9CA3AF] text-slate-700"
                                 required 
                             />
                             <button 
@@ -168,7 +168,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                                 <input type="checkbox" className="rounded border-[#D1D5DB] text-[#1e293b] focus:ring-[#1e293b] w-3.5 h-3.5 bg-[#EDEEF3]" />
                                 Remember me
                             </label>
-                            <button type="button" onClick={() => { setForgotPasswordMode(true); setError(null); }} className="text-[#1E293B] hover:text-[#1e293b] font-medium transition-colors">
+                            <button type="button" onClick={() => { setForgotPasswordMode(true); setError(null); }} className="text-[#1E293B] hover:text-[#334155] font-medium transition-colors">
                                 Forgot Password
                             </button>
                         </div>
@@ -177,7 +177,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                             <button 
                                 type="submit" 
                                 disabled={loading}
-                                className="w-2/5 bg-[#1e293b] text-white py-3 rounded-2xl font-medium text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-2/5 bg-[#1e293b] text-white py-3 rounded-[50px] font-medium text-sm hover:bg-[#334155] transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Login'}
                             </button>

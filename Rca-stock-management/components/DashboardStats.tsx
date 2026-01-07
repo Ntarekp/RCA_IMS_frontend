@@ -32,30 +32,30 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
     return () => clearInterval(interval);
   }, []);
 
-  const StatCard = ({ title, value, trend, trendUp, icon: Icon, dark = false, colorClass = "text-blue-500", targetView }: any) => (
+  const StatCard = ({ title, value, trend, trendUp, icon: Icon, dark = false, colorClass = "text-[#1E293B]", targetView }: any) => (
       <div 
         className={`p-6 rounded-2xl flex flex-col justify-between h-44 relative group transition-all duration-300 hover:-translate-y-1 cursor-pointer ${
           dark 
-            ? 'bg-gradient-to-br from-slate-800 to-slate-900 text-white shadow-xl shadow-slate-900/20' 
-            : 'bg-white border border-slate-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:shadow-lg'
+            ? 'bg-[#1E293B] text-white shadow-xl shadow-slate-900/20' 
+            : 'bg-white border border-[#E5E7EB] shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-lg'
       }`}
         onClick={() => onNavigate(targetView)}
       >
         <div className="flex justify-between items-start">
-            <div className={`p-2.5 rounded-xl ${dark ? 'bg-white/10' : 'bg-slate-50'}`}>
+            <div className={`p-2.5 rounded-xl ${dark ? 'bg-white/10' : 'bg-[#F7F8FD]'}`}>
                 <Icon className={`w-5 h-5 ${dark ? 'text-white' : colorClass}`} />
             </div>
             <button className={`flex items-center text-[10px] border rounded-full px-2.5 py-1 transition-colors ${
-                dark ? 'border-white/20 text-slate-300 hover:bg-white/10' : 'border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                dark ? 'border-white/20 text-slate-300 hover:bg-white/10' : 'border-[#E5E7EB] text-[#9CA3AF] hover:bg-[#F7F8FD] hover:text-[#1E293B]'
             }`}>
                 Details <ChevronRight className="w-3 h-3 ml-0.5" />
             </button>
         </div>
         
         <div className="space-y-1">
-            <span className={`text-sm font-medium ${dark ? 'text-slate-300' : 'text-slate-500'}`}>{title}</span>
+            <span className={`text-sm font-medium ${dark ? 'text-slate-300' : 'text-[#9CA3AF]'}`}>{title}</span>
             <div className="flex items-baseline gap-2">
-                <h3 className={`text-3xl font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-800'}`}>{value}</h3>
+                <h3 className={`text-3xl font-bold tracking-tight ${dark ? 'text-white' : 'text-[#1E293B]'}`}>{value}</h3>
             </div>
             <div className={`flex items-center text-xs font-medium ${
                 trendUp 
@@ -64,7 +64,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
             }`}>
                 {trendUp ? <ArrowUpRight className="w-3.5 h-3.5 mr-1" /> : <ArrowDownRight className="w-3.5 h-3.5 mr-1" />}
                 <span>{trend}%</span>
-                <span className={`ml-1.5 ${dark ? 'text-slate-400' : 'text-slate-400'}`}>vs last month</span>
+                <span className={`ml-1.5 ${dark ? 'text-slate-400' : 'text-[#9CA3AF]'}`}>vs last month</span>
             </div>
         </div>
       </div>
@@ -74,8 +74,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="p-6 rounded-2xl bg-white border border-slate-100 flex items-center justify-center h-44">
-            <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+          <div key={i} className="p-6 rounded-2xl bg-white border border-[#E5E7EB] flex items-center justify-center h-44">
+            <Loader2 className="w-6 h-6 animate-spin text-[#9CA3AF]" />
           </div>
         ))}
       </div>
@@ -131,7 +131,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
         trend={metrics.thisMonthChange || 0} 
         trendUp={(metrics.thisMonthChange || 0) >= 0} 
         icon={Calendar} 
-        colorClass="text-indigo-500"
+        colorClass="text-[#1E293B]"
         targetView="ANALYTICS"
       />
     </div>
