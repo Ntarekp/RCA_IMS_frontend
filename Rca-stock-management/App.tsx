@@ -422,20 +422,20 @@ const App = () => {
                 }
             }}>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Select Item</label>
-                    <select id="item-select" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Select Item</label>
+                    <select id="item-select" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required>
                         <option value="">Choose an item...</option>
                         {stockItems.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                     </select>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Quantity</label>
-                    <input value={isStockIn ? stockInQuantity : stockOutQuantity} onChange={(e) => isStockIn ? setStockInQuantity(e.target.value) : setStockOutQuantity(e.target.value)} type="number" min="1" placeholder="Enter quantity" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Quantity</label>
+                    <input value={isStockIn ? stockInQuantity : stockOutQuantity} onChange={(e) => isStockIn ? setStockInQuantity(e.target.value) : setStockOutQuantity(e.target.value)} type="number" min="1" placeholder="Enter quantity" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
                 </div>
                 {isStockIn && (
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Supplier (Optional)</label>
-                        <select value={selectedSupplierId} onChange={(e) => setSelectedSupplierId(e.target.value)} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Supplier (Optional)</label>
+                        <select value={selectedSupplierId} onChange={(e) => setSelectedSupplierId(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
                             <option value="">Select Supplier...</option>
                             {suppliers.map(supplier => (
                                 <option key={supplier.id} value={supplier.id}>{supplier.name}</option>
@@ -445,8 +445,8 @@ const App = () => {
                 )}
                 {!isStockIn && (
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Reason for Stock Out</label>
-                        <select value={stockOutReason} onChange={(e) => setStockOutReason(e.target.value)} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Reason for Stock Out</label>
+                        <select value={stockOutReason} onChange={(e) => setStockOutReason(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required>
                             <option>Consumed</option>
                             <option>Damaged</option>
                             <option>Expired</option>
@@ -456,12 +456,12 @@ const App = () => {
                     </div>
                 )}
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Transaction Date</label>
-                    <input value={transactionDate} onChange={(e) => setTransactionDate(e.target.value)} type="date" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Transaction Date</label>
+                    <input value={transactionDate} onChange={(e) => setTransactionDate(e.target.value)} type="date" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Notes (Optional)</label>
-                    <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add any relevant details" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 h-24"></textarea>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Notes (Optional)</label>
+                    <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add any relevant details" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 h-24"></textarea>
                 </div>
             </form>
         );
@@ -474,8 +474,8 @@ const App = () => {
                 onClick={() => setActiveTab(tabName)}
                 className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
                     activeTab === tabName
-                        ? 'bg-white border-slate-200 border-t border-x text-slate-800'
-                        : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                        ? 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 border-t border-x text-slate-800 dark:text-white'
+                        : 'bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600'
                 }`}
             >
                 {label}
@@ -484,7 +484,7 @@ const App = () => {
 
         return (
             <div className="space-y-6">
-                <div className="flex border-b border-slate-200 -mx-6 px-6">
+                <div className="flex border-b border-slate-200 dark:border-slate-600 -mx-6 px-6">
                     <TabButton tabName="details" label="Details" />
                     <TabButton tabName="edit" label="Edit Item" />
                 </div>
@@ -492,36 +492,36 @@ const App = () => {
                 {activeTab === 'details' && (
                     <div className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                <div className="text-xs text-slate-500 mb-1">Current Stock</div>
-                                <div className="text-2xl font-bold text-slate-800">{item.currentQuantity} <span className="text-sm font-normal text-slate-500">{item.unit}</span></div>
+                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-600">
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Current Stock</div>
+                                <div className="text-2xl font-bold text-slate-800 dark:text-white">{item.currentQuantity} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">{item.unit}</span></div>
                             </div>
-                            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                <div className="text-xs text-slate-500 mb-1">Status</div>
+                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-600">
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Status</div>
                                 <div className={`text-sm font-bold px-2 py-1 rounded-full w-fit ${
-                                    item.status === 'Birahagije' ? 'bg-emerald-100 text-emerald-700' :
-                                    item.status === 'Mucye' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                                    item.status === 'Birahagije' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' :
+                                    item.status === 'Mucye' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                                 }`}>{item.status}</div>
                             </div>
                         </div>
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
-                                <div className="p-3 bg-white border border-slate-200 rounded-lg text-slate-600 text-sm flex items-center gap-2">
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Category</label>
+                                <div className="p-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-600 dark:text-slate-300 text-sm flex items-center gap-2">
                                     <Box className="w-4 h-4 text-slate-400" />
                                     {item.category}
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Minimum Threshold</label>
-                                <div className="p-3 bg-white border border-slate-200 rounded-lg text-slate-600 text-sm">
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Minimum Threshold</label>
+                                <div className="p-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-600 dark:text-slate-300 text-sm">
                                     {item.minimumQuantity} {item.unit}
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Last Updated</label>
-                                <div className="flex items-center gap-2 text-sm text-slate-500">
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Last Updated</label>
+                                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                                     <Clock className="w-4 h-4" />
                                     {item.lastUpdated}
                                 </div>
@@ -556,17 +556,17 @@ const App = () => {
                         }
                     }}>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Item Name</label>
-                            <input name="name" defaultValue={item.name} type="text" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Item Name</label>
+                            <input name="name" defaultValue={item.name} type="text" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Description / Category</label>
-                            <input name="description" defaultValue={item.category} type="text" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Description / Category</label>
+                            <input name="description" defaultValue={item.category} type="text" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1.5">Unit</label>
-                                <select name="unit" defaultValue={item.unit} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Unit</label>
+                                <select name="unit" defaultValue={item.unit} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required>
                                     <option>Kg</option>
                                     <option>Liters</option>
                                     <option>Pieces</option>
@@ -576,8 +576,8 @@ const App = () => {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1.5">Min Threshold</label>
-                                <input name="minimumStock" defaultValue={item.minimumQuantity} type="number" min="1" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Min Threshold</label>
+                                <input name="minimumStock" defaultValue={item.minimumQuantity} type="number" min="1" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required />
                             </div>
                         </div>
                         <div className="pt-4">
@@ -595,11 +595,11 @@ const App = () => {
         const item = selectedItem as StockItem;
         return (
             <div className="space-y-6">
-                <div className="bg-red-50 p-4 rounded-xl border border-red-100 flex gap-3">
-                    <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0" />
+                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-800 flex gap-3">
+                    <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0" />
                     <div>
-                        <h3 className="text-sm font-bold text-red-800">Warning: Irreversible Action</h3>
-                        <p className="text-xs text-red-600 mt-1">
+                        <h3 className="text-sm font-bold text-red-800 dark:text-red-400">Warning: Irreversible Action</h3>
+                        <p className="text-xs text-red-600 dark:text-red-300 mt-1">
                             Deleting <strong>{item.name}</strong> will remove all associated data, including transaction history. This cannot be undone.
                         </p>
                     </div>
@@ -631,26 +631,26 @@ const App = () => {
                     }
                 }} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                            Type <span className="font-mono font-bold text-red-600">i confirm delete</span> to confirm
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Type <span className="font-mono font-bold text-red-600 dark:text-red-400">i confirm delete</span> to confirm
                         </label>
                         <input 
                             type="text" 
                             value={deleteConfirmation}
                             onChange={(e) => setDeleteConfirmation(e.target.value)}
-                            className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
                             placeholder="i confirm delete"
                             required 
                         />
                     </div>
                     
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Admin Password</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Admin Password</label>
                         <input 
                             type="password" 
                             value={deletePassword}
                             onChange={(e) => setDeletePassword(e.target.value)}
-                            className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
                             placeholder="Enter your password"
                             required 
                         />
@@ -660,7 +660,7 @@ const App = () => {
                         <button 
                             type="button" 
                             onClick={closeDrawer}
-                            className="flex-1 px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                            className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                         >
                             Cancel
                         </button>
@@ -727,17 +727,17 @@ const App = () => {
                 }
             }}>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Item Name</label>
-                    <input name="name" type="text" placeholder="e.g. Rice (Gikongoro)" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Item Name</label>
+                    <input name="name" type="text" placeholder="e.g. Rice (Gikongoro)" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
-                        <input name="description" type="text" placeholder="Category or description" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
+                        <input name="description" type="text" placeholder="Category or description" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Unit</label>
-                        <select name="unit" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Unit</label>
+                        <select name="unit" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required>
                             <option value="">Select unit...</option>
                             <option>Kg</option>
                             <option>Liters</option>
@@ -750,12 +750,12 @@ const App = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Initial Quantity (Optional)</label>
-                        <input name="initialQuantity" type="number" min="0" placeholder="0" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Initial Quantity (Optional)</label>
+                        <input name="initialQuantity" type="number" min="0" placeholder="0" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Min Threshold</label>
-                        <input name="minimumStock" type="number" min="1" placeholder="10" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Min Threshold</label>
+                        <input name="minimumStock" type="number" min="1" placeholder="10" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
                     </div>
                 </div>
             </form>
@@ -791,33 +791,33 @@ const App = () => {
                 }
             }}>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Company Name</label>
-                    <input name="name" type="text" placeholder="e.g. Kigali Grains Ltd" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Company Name</label>
+                    <input name="name" type="text" placeholder="e.g. Kigali Grains Ltd" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Contact Person</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Contact Person</label>
                     <div className="relative">
                         <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input name="contactPerson" type="text" placeholder="Full Name" className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                        <input name="contactPerson" type="text" placeholder="Full Name" className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
                     </div>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone Number</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Phone Number</label>
                     <div className="relative">
                         <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input name="phone" type="tel" placeholder="+250 7..." className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                        <input name="phone" type="tel" placeholder="+250 7..." className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
                     </div>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email Address</label>
                     <div className="relative">
                         <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input name="email" type="email" placeholder="contact@supplier.com" className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                        <input name="email" type="email" placeholder="contact@supplier.com" className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
                     </div>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Items Supplied</label>
-                    <textarea name="itemsSupplied" placeholder="List main items supplied (comma separated)..." className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 h-24"></textarea>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Items Supplied</label>
+                    <textarea name="itemsSupplied" placeholder="List main items supplied (comma separated)..." className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 h-24"></textarea>
                 </div>
             </form>
         );
@@ -827,16 +827,16 @@ const App = () => {
         const supplier = selectedItem as Supplier;
         return (
             <div className="space-y-6">
-                <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 space-y-3">
-                    <div className="flex items-center gap-3 text-slate-700">
+                <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-5 border border-slate-100 dark:border-slate-600 space-y-3">
+                    <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
                         <Phone className="w-4 h-4 text-slate-400" />
                         <span className="text-sm font-medium">{supplier.contact}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-slate-700">
+                    <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
                         <Mail className="w-4 h-4 text-slate-400" />
                         <span className="text-sm font-medium">{supplier.email}</span>
                     </div>
-                     <div className="flex items-center gap-3 text-slate-700">
+                     <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
                         <MapPin className="w-4 h-4 text-slate-400" />
                         <span className="text-sm font-medium">Kigali, Nyarugenge District</span>
                     </div>
@@ -844,20 +844,20 @@ const App = () => {
                 
                  {/* Supplies List */}
                 <div>
-                    <h3 className="font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                        <Truck className="w-4 h-4 text-slate-500" />
+                    <h3 className="font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
+                        <Truck className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                         Supplied Items
                     </h3>
                     <div className="flex flex-wrap gap-2">
                         {supplier.itemsSupplied.map((item, i) => (
-                            <span key={i} className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 shadow-sm">
+                            <span key={i} className="px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-600 dark:text-slate-300 shadow-sm">
                                 {item}
                             </span>
                         ))}
                     </div>
                 </div>
                 
-                <div className="pt-4 border-t border-slate-100">
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
                     <button 
                         onClick={async () => {
                             if (confirm('Are you sure you want to deactivate this supplier?')) {
@@ -873,7 +873,7 @@ const App = () => {
                                 }
                             }
                         }}
-                        className="w-full text-center text-rose-600 text-sm font-medium hover:text-rose-700"
+                        className="w-full text-center text-rose-600 dark:text-rose-400 text-sm font-medium hover:text-rose-700 dark:hover:text-rose-300"
                     >
                         Deactivate Supplier
                     </button>
@@ -885,24 +885,24 @@ const App = () => {
     if (drawerType === 'ORDER_FORM' && selectedItem) {
         return (
              <form id="order-form" className="space-y-5" onSubmit={(e) => { e.preventDefault(); closeDrawer(); addToast(`Order request sent to ${selectedItem.name}`); }}>
-                 <div className="bg-blue-50 p-4 rounded-lg text-blue-800 text-sm flex gap-3">
-                    <div className="bg-white p-1 rounded-full h-fit"><CheckCircle2 className="w-4 h-4 text-blue-600" /></div>
+                 <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg text-blue-800 dark:text-blue-300 text-sm flex gap-3">
+                    <div className="bg-white dark:bg-slate-800 p-1 rounded-full h-fit"><CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
                     You are placing an order request to <strong>{selectedItem.name}</strong>.
                  </div>
                  
                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Select Item</label>
-                    <select className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Select Item</label>
+                    <select className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
                         {(selectedItem as Supplier).itemsSupplied.map((item, i) => <option key={i}>{item}</option>)}
                     </select>
                 </div>
                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Quantity</label>
-                    <input type="number" placeholder="Amount" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Quantity</label>
+                    <input type="number" placeholder="Amount" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
                 </div>
                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Delivery Instructions</label>
-                    <textarea placeholder="Any specific requirements..." className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 h-24"></textarea>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Delivery Instructions</label>
+                    <textarea placeholder="Any specific requirements..." className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 h-24"></textarea>
                 </div>
              </form>
         )
@@ -941,31 +941,31 @@ const App = () => {
                 }
             }}>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
-                    <input name="name" type="text" defaultValue={profile.name} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
+                    <input name="name" type="text" defaultValue={profile.name} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Role</label>
-                         <input type="text" defaultValue={profile.role} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50" readOnly />
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Role</label>
+                         <input type="text" defaultValue={profile.role} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white" readOnly />
                     </div>
                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Department</label>
-                         <input name="department" type="text" defaultValue={profile.department} className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Department</label>
+                         <input name="department" type="text" defaultValue={profile.department} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" />
                     </div>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email Address</label>
                      <div className="relative">
                         <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input name="email" type="email" defaultValue={profile.email} className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                        <input name="email" type="email" defaultValue={profile.email} className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required />
                     </div>
                 </div>
                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone Number</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Phone Number</label>
                     <div className="relative">
                         <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input name="phone" type="tel" defaultValue={profile.phone} className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                        <input name="phone" type="tel" defaultValue={profile.phone} className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" />
                     </div>
                 </div>
             </form>
@@ -1018,20 +1018,20 @@ const App = () => {
                     addToast(errorMessage, 'error');
                 }
             }}>
-                 <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-sm text-slate-600">
+                 <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg border border-slate-100 dark:border-slate-600 text-sm text-slate-600 dark:text-slate-300">
                     <p>Make sure your new password is at least 8 characters long and includes a number.</p>
                  </div>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Current Password</label>
-                    <input name="currentPassword" type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required />
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Current Password</label>
+                    <input name="currentPassword" type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
                 </div>
                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">New Password</label>
-                    <input name="newPassword" type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required minLength={8} />
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">New Password</label>
+                    <input name="newPassword" type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required minLength={8} />
                 </div>
                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Confirm New Password</label>
-                    <input name="confirmPassword" type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" required minLength={8} />
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Confirm New Password</label>
+                    <input name="confirmPassword" type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required minLength={8} />
                 </div>
             </form>
         );
@@ -1075,7 +1075,7 @@ const App = () => {
             <button 
                 type="submit"
                 form="transaction-form"
-                className="bg-[#1e293b] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
             >
                 {drawerType === 'STOCK_IN' ? 'Record Stock In' : 'Record Stock Out'}
             </button>
@@ -1086,7 +1086,7 @@ const App = () => {
             <button 
                 type="submit"
                 form="add-stock-form"
-                className="bg-[#1e293b] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
             >
                 Create Item
             </button>
@@ -1097,7 +1097,7 @@ const App = () => {
             <button 
                 type="submit"
                 form="add-supplier-form"
-                className="bg-[#1e293b] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
             >
                 Register Supplier
             </button>
@@ -1108,7 +1108,7 @@ const App = () => {
             <button 
                 type="submit"
                 form="order-form"
-                className="bg-[#1e293b] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
             >
                 Send Request
             </button>
@@ -1119,7 +1119,7 @@ const App = () => {
             <button 
                 type="submit"
                 form="edit-profile-form"
-                className="bg-[#1e293b] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
             >
                 Save Changes
             </button>
@@ -1130,7 +1130,7 @@ const App = () => {
             <button 
                 type="submit"
                 form="change-password-form"
-                className="bg-[#1e293b] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
             >
                 Update Password
             </button>
@@ -1143,7 +1143,7 @@ const App = () => {
                     closeDrawer();
                     setTimeout(() => openOrderForm(selectedItem), 300);
                 }}
-                className="bg-[#1e293b] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors"
              >
                  Create New Order
              </button>
