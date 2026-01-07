@@ -52,6 +52,10 @@ export const generatePdfReport = async (
     // Handle different report types
     if (reportType === 'suppliers') {
         url = `${API_CONFIG.BASE_URL}/api/reports/export/suppliers/pdf`;
+    } else if (reportType === 'balance') {
+        url = `${API_CONFIG.BASE_URL}/api/reports/export/balance/pdf`;
+    } else if (reportType === 'low-stock') {
+        url = `${API_CONFIG.BASE_URL}/api/reports/export/low-stock/pdf`;
     } else {
         // Add query params for transaction reports
         const params = new URLSearchParams();
@@ -96,6 +100,10 @@ export const generateCsvReport = async (
     // Handle different report types
     if (reportType === 'suppliers') {
         url = `${API_CONFIG.BASE_URL}/api/reports/export/suppliers/excel`;
+    } else if (reportType === 'balance') {
+        url = `${API_CONFIG.BASE_URL}/api/reports/export/balance/excel`;
+    } else if (reportType === 'low-stock') {
+        url = `${API_CONFIG.BASE_URL}/api/reports/export/low-stock/excel`;
     } else {
         // Add query params for transaction reports
         const params = new URLSearchParams();
