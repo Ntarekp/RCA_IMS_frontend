@@ -38,8 +38,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
                         <img src="/rca-logo.png" alt="RCA Logo" className="w-10 h-10 object-contain" />
                     </div>
                     <div className={`leading-tight ${isCollapsed ? 'hidden' : 'block'}`}>
-                        <h1 className="font-bold text-sm text-[#1E293B] tracking-tight">RCA</h1>
-                        <h1 className="font-medium text-xs text-[#9CA3AF] tracking-wide">Inventory</h1>
+                        <h1 className="font-bold text-sm text-[#1E293B] dark:text-white tracking-tight">RCA</h1>
+                        <h1 className="font-medium text-xs text-[#9CA3AF] dark:text-slate-400 tracking-wide">Inventory</h1>
                     </div>
                 </div>
             )}
@@ -60,18 +60,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
                             title={isCollapsed ? item.label : undefined}
                             className={`w-full flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-[12px] transition-all duration-200 group relative ${
                                 isActive
-                                    ? 'bg-[#1E293B] text-white shadow-md shadow-slate-900/10'
-                                    : 'text-[#9CA3AF] hover:bg-[#EDEEF3] hover:text-[#1E293B]'
+                                    ? 'bg-[#1E293B] dark:bg-blue-600 text-white shadow-md shadow-slate-900/10'
+                                    : 'text-[#9CA3AF] dark:text-slate-400 hover:bg-[#EDEEF3] dark:hover:bg-slate-700 hover:text-[#1E293B] dark:hover:text-white'
                             } ${isCollapsed ? 'justify-center px-2' : ''}`}
                         >
-                            <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive ? 'text-white' : 'text-[#9CA3AF] group-hover:text-[#1E293B]'}`} strokeWidth={2} />
+                            <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive ? 'text-white' : 'text-[#9CA3AF] dark:text-slate-400 group-hover:text-[#1E293B] dark:group-hover:text-white'}`} strokeWidth={2} />
                             <span className={`${isCollapsed ? 'hidden' : 'block'} whitespace-nowrap`}>
                   {item.label}
               </span>
 
                             {/* Tooltip for collapsed mode */}
                             {isCollapsed && (
-                                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-[#1E293B] text-white text-xs px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 whitespace-nowrap shadow-xl translate-x-[-5px] group-hover:translate-x-0">
+                                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-[#1E293B] dark:bg-slate-800 text-white text-xs px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 whitespace-nowrap shadow-xl translate-x-[-5px] group-hover:translate-x-0">
                                     {item.label}
                                 </div>
                             )}
@@ -79,19 +79,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
                     );
                 })}
             </nav>
-
-            {/* Bottom Profile Snippet */}
-            {!isCollapsed && (
-                <div className="p-4 border-t border-[#E5E7EB]">
-                    <div className="flex items-center gap-3 p-2 rounded-xl bg-[#F7F8FD] border border-[#E5E7EB]">
-                        <div className="w-8 h-8 rounded-full bg-[#D1D5DB] flex items-center justify-center text-xs font-bold text-[#1E293B]">PN</div>
-                        <div className="flex-1 overflow-hidden">
-                            <p className="text-xs font-semibold text-[#1E293B] truncate">Prince Neza</p>
-                            <p className="text-[10px] text-[#9CA3AF] truncate">Manager</p>
-                        </div>
-                    </div>
-                </div>
-            )}
         </>
     );
 
@@ -100,15 +87,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
             {/* Mobile Overlay */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-[#1E293B]/20 backdrop-blur-sm z-40 md:hidden transition-opacity"
+                    className="fixed inset-0 bg-[#1E293B]/20 dark:bg-black/50 backdrop-blur-sm z-40 md:hidden transition-opacity"
                     onClick={onClose}
                 />
             )}
 
             {/* Mobile Sidebar (Drawer) */}
-            <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#E5E7EB] shadow-2xl transform transition-transform duration-300 ease-out md:hidden flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 border-r border-[#E5E7EB] dark:border-slate-700 shadow-2xl transform transition-transform duration-300 ease-out md:hidden flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="absolute top-4 right-4">
-                    <button onClick={onClose} className="p-2 text-[#9CA3AF] hover:text-[#1E293B] hover:bg-[#EDEEF3] rounded-full transition-colors">
+                    <button onClick={onClose} className="p-2 text-[#9CA3AF] dark:text-slate-400 hover:text-[#1E293B] dark:hover:text-white hover:bg-[#EDEEF3] dark:hover:bg-slate-700 rounded-full transition-colors">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -116,12 +103,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
             </aside>
 
             {/* Tablet (Icons) Sidebar */}
-            <aside className="hidden md:flex flex-col border-r border-[#E5E7EB] h-full transition-all duration-300 w-20 lg:hidden bg-[#F1F2F7]">
+            <aside className="hidden md:flex flex-col border border-[#E5E7EB] dark:border-slate-700 h-[calc(100%-1rem)] transition-all duration-300 w-20 lg:hidden bg-[#F1F2F7] dark:bg-slate-800 ml-4 mb-4 rounded-2xl">
                 <NavContent isCollapsed={true} showLogo={false} />
             </aside>
 
             {/* Desktop (Full) Sidebar */}
-            <aside className="hidden lg:flex flex-col border-r border-[#E5E7EB] h-full transition-all duration-300 w-64 bg-[#F1F2F7]">
+            <aside className="hidden lg:flex flex-col border border-[#E5E7EB] dark:border-slate-700 h-[calc(100%-1rem)] transition-all duration-300 w-64 bg-[#F1F2F7] dark:bg-slate-800 ml-4 mb-4 rounded-2xl">
                 <NavContent showLogo={false} />
             </aside>
         </>

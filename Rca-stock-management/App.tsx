@@ -143,7 +143,15 @@ const App = () => {
     useEffect(() => {
         if (isLoggedIn) {
             import('./api/services/userService').then(({ getProfile }) => {
-                getProfile().then(setUserProfile);
+                getProfile().then((profile) => {
+                    setUserProfile(profile);
+                    // Apply theme from profile
+                    if (profile.theme === 'DARK') {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                });
             });
             refetchSuppliers();
         }
@@ -1155,7 +1163,7 @@ const App = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50/50 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden">
+    <div className="flex flex-col h-screen bg-slate-50/50 dark:bg-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden transition-colors duration-300">
       <ToastContainer toasts={toasts} onRemove={removeToast} />
       
       {/* Header - Spans full width */}
@@ -1178,14 +1186,14 @@ const App = () => {
                     {/* Header Section */}
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
                         <div>
-                             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Overview</h1>
-                             <p className="text-sm text-slate-500 mt-1 font-medium">Welcome back, Prince Neza</p>
+                             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Overview</h1>
+                             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Welcome back, Prince Neza</p>
                         </div>
                         
                         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                             <button 
                                 onClick={() => handleDateFilter(dateRange === 'This Month' ? 'Last 3 Months' : 'This Month')}
-                                className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+                                className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 transition-all shadow-sm"
                             >
                                 <Calendar className="w-4 h-4" />
                                 <span>{dateRange}</span>
@@ -1194,7 +1202,7 @@ const App = () => {
                             <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
                                 <button 
                                     onClick={openAddStock}
-                                    className="flex items-center gap-2 bg-[#1e293b] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all whitespace-nowrap active:scale-95"
+                                    className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 hover:shadow-lg hover:shadow-slate-900/20 transition-all whitespace-nowrap active:scale-95"
                                 >
                                     <Plus className="w-4 h-4" />
                                     <span>New Entry</span>
@@ -1208,12 +1216,12 @@ const App = () => {
                     <DashboardCharts />
 
                     <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-                        <div className="xl:col-span-3 overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] p-1">
-                             <div className="flex justify-between items-center p-5 border-b border-slate-50">
-                                <h3 className="font-bold text-slate-800">Recent Inventory</h3>
+                        <div className="xl:col-span-3 overflow-hidden rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] p-1">
+                             <div className="flex justify-between items-center p-5 border-b border-slate-50 dark:border-slate-700">
+                                <h3 className="font-bold text-slate-800 dark:text-white">Recent Inventory</h3>
                                 <button 
                                     onClick={() => setView('TRANSACTIONS')}
-                                    className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                                    className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                                 >
                                     View All
                                 </button>
@@ -1243,8 +1251,8 @@ const App = () => {
                 <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                          <div>
-                             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Stock Management</h1>
-                             <p className="text-sm text-slate-500 mt-1 font-medium">Manage and track your inventory items</p>
+                             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Stock Management</h1>
+                             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage and track your inventory items</p>
                         </div>
 
                         <div className="flex items-center gap-3 w-full md:w-auto">
@@ -1257,7 +1265,7 @@ const App = () => {
                             </button>
                             <button 
                                 onClick={openAddStock}
-                                className="flex items-center gap-2 bg-[#1e293b] hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-900/20 active:scale-95"
+                                className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-900/20 active:scale-95"
                             >
                                 <span>Add Item</span>
                                 <PlusCircle className="w-4 h-4" />
@@ -1266,21 +1274,17 @@ const App = () => {
                     </div>
                     
                     {/* Filter Bar */}
-                    <div className="flex flex-wrap items-center gap-3 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
-                        <div className="px-3 py-2 border-r border-slate-100 flex items-center gap-2 text-slate-500">
+                    <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div className="px-3 py-2 border-r border-slate-100 dark:border-slate-700 flex items-center gap-2 text-slate-500 dark:text-slate-400">
                             <Filter className="w-4 h-4" />
                             <span className="text-sm font-medium">Filters:</span>
                         </div>
-                        
-                        {/* Search Input - Removed as requested, relying on main header search if implemented or just filters */}
-                        {/* If main header search is not wired to stockSearch state, we might need to keep this or wire header search */}
-                        {/* Assuming main header search is global or we just use filters for now as per request to remove "extra" search */}
                         
                         {/* Category Filter */}
                         <select 
                             value={stockCategoryFilter}
                             onChange={(e) => setStockCategoryFilter(e.target.value)}
-                            className="px-3 py-1.5 rounded-lg bg-slate-50 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors border-none outline-none cursor-pointer"
+                            className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors border-none outline-none cursor-pointer"
                         >
                             <option value="">All Categories</option>
                             {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
@@ -1290,7 +1294,7 @@ const App = () => {
                         <select 
                             value={stockStatusFilter}
                             onChange={(e) => setStockStatusFilter(e.target.value)}
-                            className="px-3 py-1.5 rounded-lg bg-slate-50 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors border-none outline-none cursor-pointer"
+                            className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors border-none outline-none cursor-pointer"
                         >
                             <option value="">All Statuses</option>
                             <option value="Birahagije">Birahagije</option>
@@ -1301,16 +1305,16 @@ const App = () => {
                         <div className="flex-1"></div>
                         
                         {/* View Toggle */}
-                        <div className="flex bg-slate-100 rounded-lg p-1">
+                        <div className="flex bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
                             <button 
                                 onClick={() => setStockViewMode('list')}
-                                className={`p-1.5 rounded-md transition-all ${stockViewMode === 'list' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`p-1.5 rounded-md transition-all ${stockViewMode === 'list' ? 'bg-white dark:bg-slate-600 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                             >
                                 <List className="w-4 h-4" />
                             </button>
                             <button 
                                 onClick={() => setStockViewMode('grid')}
-                                className={`p-1.5 rounded-md transition-all ${stockViewMode === 'grid' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`p-1.5 rounded-md transition-all ${stockViewMode === 'grid' ? 'bg-white dark:bg-slate-600 shadow-sm text-slate-800 dark:text-white' : 'text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                             >
                                 <LayoutGrid className="w-4 h-4" />
                             </button>
@@ -1320,12 +1324,12 @@ const App = () => {
                     {itemsLoading ? (
                         <div className="flex items-center justify-center py-12">
                             <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
-                            <span className="ml-3 text-slate-600">Loading items...</span>
+                            <span className="ml-3 text-slate-600 dark:text-slate-400">Loading items...</span>
                         </div>
                     ) : itemsError ? (
-                        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-                            <p className="text-red-800 font-medium">Error loading items</p>
-                            <p className="text-red-600 text-sm mt-1">{itemsError.message}</p>
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
+                            <p className="text-red-800 dark:text-red-400 font-medium">Error loading items</p>
+                            <p className="text-red-600 dark:text-red-300 text-sm mt-1">{itemsError.message}</p>
                             <button 
                                 onClick={() => refetchItems()}
                                 className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700"
@@ -1334,10 +1338,10 @@ const App = () => {
                             </button>
                         </div>
                     ) : filteredStockItems.length === 0 ? (
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-12 text-center">
+                        <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-12 text-center">
                             <Box className="w-12 h-12 mx-auto text-slate-400 mb-3" />
-                            <p className="text-slate-600 font-medium">No items found</p>
-                            <p className="text-slate-500 text-sm mt-1">Try adjusting your filters or add a new item</p>
+                            <p className="text-slate-600 dark:text-slate-300 font-medium">No items found</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Try adjusting your filters or add a new item</p>
                         </div>
                     ) : (
                         stockViewMode === 'grid' ? (
@@ -1352,9 +1356,9 @@ const App = () => {
                                 ))}
                             </div>
                         ) : (
-                            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                                 <table className="w-full text-sm text-left">
-                                    <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
+                                    <thead className="bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-medium border-b border-slate-200 dark:border-slate-600">
                                         <tr>
                                             <th className="px-6 py-4">Item Name</th>
                                             <th className="px-6 py-4">Category</th>
@@ -1364,18 +1368,18 @@ const App = () => {
                                             <th className="px-6 py-4 text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-100">
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                                         {filteredStockItems.map((item) => (
-                                            <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                                                <td className="px-6 py-4 font-medium text-slate-800">{item.name}</td>
-                                                <td className="px-6 py-4 text-slate-500">{item.category}</td>
-                                                <td className="px-6 py-4 text-center text-slate-500">{item.unit}</td>
-                                                <td className="px-6 py-4 text-right font-bold text-slate-700">{item.currentQuantity}</td>
+                                            <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
+                                                <td className="px-6 py-4 font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
+                                                <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{item.category}</td>
+                                                <td className="px-6 py-4 text-center text-slate-500 dark:text-slate-400">{item.unit}</td>
+                                                <td className="px-6 py-4 text-right font-bold text-slate-700 dark:text-slate-300">{item.currentQuantity}</td>
                                                 <td className="px-6 py-4 text-center">
                                                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
-                                                        item.status === 'Birahagije' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                                        item.status === 'Mucye' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                                                        'bg-rose-50 text-rose-700 border-rose-100'
+                                                        item.status === 'Birahagije' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800' :
+                                                        item.status === 'Mucye' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-800' :
+                                                        'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-800'
                                                     }`}>
                                                         {item.status}
                                                     </span>
@@ -1383,13 +1387,13 @@ const App = () => {
                                                 <td className="px-6 py-4 text-right">
                                                     <button 
                                                         onClick={() => openStockDetail(item)}
-                                                        className="text-blue-600 hover:text-blue-800 font-medium text-xs mr-3"
+                                                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-xs mr-3"
                                                     >
                                                         Edit
                                                     </button>
                                                     <button 
                                                         onClick={() => openDeleteItem(item)}
-                                                        className="text-rose-600 hover:text-rose-800 font-medium text-xs"
+                                                        className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 font-medium text-xs"
                                                     >
                                                         Delete
                                                     </button>
@@ -1408,8 +1412,8 @@ const App = () => {
                  <div className="max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-500">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Transactions</h1>
-                            <p className="text-sm text-slate-500 mt-1 font-medium">Complete history of stock movements</p>
+                            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Transactions</h1>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Complete history of stock movements</p>
                         </div>
                         <div className="flex items-center gap-3 w-full md:w-auto">
                             <button
@@ -1429,13 +1433,13 @@ const App = () => {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] p-6">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] p-6">
                         <div className="flex flex-wrap items-center gap-3 mb-6">
-                            <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm text-slate-600 hover:bg-slate-50 font-medium">
+                            <button className="flex items-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-4 py-2 rounded-xl text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 font-medium">
                                 <Calendar className="w-4 h-4" />
                                 <span>This Month</span>
                             </button>
-                             <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm text-slate-600 hover:bg-slate-50 font-medium">
+                             <button className="flex items-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-4 py-2 rounded-xl text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 font-medium">
                                 <SlidersHorizontal className="w-4 h-4" />
                                 <span>All Filters</span>
                             </button>
@@ -1444,16 +1448,8 @@ const App = () => {
                                 value={selectedTransactionItem}
                                 onChange={(e) => {
                                     setSelectedTransactionItem(e.target.value);
-                                    // Trigger refetch with new item ID
-                                    // Note: In a real app, we might want to debounce this or use a separate effect
-                                    // For now, we'll rely on the parent component to handle this if needed, 
-                                    // but useTransactions hook exposes refetch which we can use.
-                                    // However, useTransactions doesn't take arguments in its current form in App.tsx
-                                    // We need to update how we call useTransactions or filter locally.
-                                    // Given the current setup, we'll filter locally in the render or update the hook.
-                                    // Let's update the hook call in the component body to depend on this state.
                                 }}
-                                className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm text-slate-600 hover:bg-slate-50 font-medium"
+                                className="flex items-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-4 py-2 rounded-xl text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 font-medium"
                             >
                                 <option value="">All Items</option>
                                 {stockItems.map(item => (
@@ -1465,12 +1461,12 @@ const App = () => {
                         {transactionsLoading ? (
                             <div className="flex items-center justify-center py-12">
                                 <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
-                                <span className="ml-3 text-slate-600">Loading transactions...</span>
+                                <span className="ml-3 text-slate-600 dark:text-slate-400">Loading transactions...</span>
                             </div>
                         ) : transactionsError ? (
-                            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-                                <p className="text-red-800 font-medium">Error loading transactions</p>
-                                <p className="text-red-600 text-sm mt-1">{transactionsError.message}</p>
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
+                                <p className="text-red-800 dark:text-red-400 font-medium">Error loading transactions</p>
+                                <p className="text-red-600 dark:text-red-300 text-sm mt-1">{transactionsError.message}</p>
                                 <button 
                                     onClick={() => refetchTransactions()}
                                     className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700"
@@ -1479,7 +1475,7 @@ const App = () => {
                                 </button>
                             </div>
                         ) : transactions.length === 0 ? (
-                            <div className="p-12 text-center text-slate-400">
+                            <div className="p-12 text-center text-slate-400 dark:text-slate-500">
                                 <History className="w-12 h-12 mx-auto mb-3 opacity-50" />
                                 <p className="font-medium">No transactions found</p>
                                 <p className="text-sm mt-1">Transactions will appear here once you start recording stock movements</p>
@@ -1494,19 +1490,19 @@ const App = () => {
                             />
                         )}
                         
-                         <div className="flex flex-col sm:flex-row justify-between items-center mt-6 text-sm text-slate-500 gap-4 pt-4 border-t border-slate-50">
-                                 <div>Displaying <span className="font-semibold text-slate-700">{Math.min(transactions.length, 14)}</span> of <span className="font-semibold text-slate-700">{transactions.length}</span> transactions</div>
+                         <div className="flex flex-col sm:flex-row justify-between items-center mt-6 text-sm text-slate-500 dark:text-slate-400 gap-4 pt-4 border-t border-slate-50 dark:border-slate-700">
+                                 <div>Displaying <span className="font-semibold text-slate-700 dark:text-slate-300">{Math.min(transactions.length, 14)}</span> of <span className="font-semibold text-slate-700 dark:text-slate-300">{transactions.length}</span> transactions</div>
                                  <div className="flex items-center gap-2">
-                                     <button className="flex items-center gap-1 bg-white border border-slate-200 px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-50 text-slate-600 transition-colors">
+                                     <button className="flex items-center gap-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors">
                                          <ChevronLeft className="w-3 h-3" />
                                          <span>Previous</span>
                                      </button>
                                      <div className="flex gap-1">
-                                         <button className="w-8 h-8 flex items-center justify-center bg-[#1e293b] text-white rounded-lg text-xs font-medium">1</button>
-                                         <button className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 rounded-lg text-xs font-medium text-slate-600">2</button>
-                                         <button className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 rounded-lg text-xs font-medium text-slate-600">3</button>
+                                         <button className="w-8 h-8 flex items-center justify-center bg-[#1e293b] dark:bg-blue-600 text-white rounded-lg text-xs font-medium">1</button>
+                                         <button className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400">2</button>
+                                         <button className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400">3</button>
                                      </div>
-                                      <button className="flex items-center gap-1 bg-white border border-slate-200 px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-50 text-slate-600 transition-colors">
+                                      <button className="flex items-center gap-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors">
                                          <span>Next</span>
                                          <ChevronRight className="w-3 h-3" />
                                      </button>
@@ -1520,17 +1516,17 @@ const App = () => {
                 <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                         <div>
-                             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Analytics</h1>
-                             <p className="text-sm text-slate-500 mt-1 font-medium">Deep dive into inventory performance</p>
+                             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Analytics</h1>
+                             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Deep dive into inventory performance</p>
                         </div>
                         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                            <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
+                            <button className="flex items-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600 hover:border-slate-300 transition-all shadow-sm">
                                 <Calendar className="w-4 h-4" />
                                 <span>Last 6 Months</span>
                             </button>
                             <button 
                                 onClick={() => handleExport('Analytics')}
-                                className="flex items-center gap-2 bg-[#1e293b] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20"
+                                className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-all shadow-lg shadow-slate-900/20"
                             >
                                 <FileSpreadsheet className="w-4 h-4" />
                                 <span>Export Report</span>
@@ -1542,19 +1538,19 @@ const App = () => {
 
                      <AnalyticsCharts />
 
-                     <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] overflow-hidden">
-                        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center bg-gradient-to-r from-blue-50/50 to-indigo-50/50 gap-4">
+                     <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] overflow-hidden">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col md:flex-row justify-between items-center bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 gap-4">
                             <div>
-                                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                    <Sparkles className="w-5 h-5 text-indigo-600" />
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                    <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                                     AI Intelligent Insight
                                 </h3>
-                                <p className="text-sm text-slate-500 mt-1">Generate a comprehensive analysis of your current stock health.</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Generate a comprehensive analysis of your current stock health.</p>
                             </div>
                             <button 
                                 onClick={handleGenerateReport}
                                 disabled={loadingReport}
-                                className="w-full md:w-auto flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-50 disabled:opacity-50 transition-all shadow-sm"
+                                className="w-full md:w-auto flex items-center justify-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 transition-all shadow-sm"
                             >
                                 {loadingReport ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCcw className="w-4 h-4" />}
                                 <span>{loadingReport ? 'Analyzing...' : 'Generate Analysis'}</span>
@@ -1562,13 +1558,13 @@ const App = () => {
                         </div>
                         
                         {aiReport && (
-                            <div className="p-8 prose prose-slate max-w-none bg-white">
+                            <div className="p-8 prose prose-slate dark:prose-invert max-w-none bg-white dark:bg-slate-800">
                                 <ReactMarkdown>{aiReport}</ReactMarkdown>
                             </div>
                         )}
                         
                         {!aiReport && !loadingReport && (
-                            <div className="p-12 text-center text-slate-400">
+                            <div className="p-12 text-center text-slate-400 dark:text-slate-500">
                                 <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-20 text-indigo-400" />
                                 <p className="font-medium">Click "Generate Analysis" to get AI-powered insights about your inventory.</p>
                             </div>
@@ -1581,14 +1577,14 @@ const App = () => {
                 <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Suppliers</h1>
-                             <p className="text-sm text-slate-500 mt-1 font-medium">Manage your partnerships</p>
+                             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Suppliers</h1>
+                             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage your partnerships</p>
                         </div>
 
                         <div className="flex items-center gap-3 w-full md:w-auto">
                             <button 
                                 onClick={openAddSupplier}
-                                className="flex items-center gap-2 bg-[#1e293b] hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-900/20 active:scale-95"
+                                className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-900/20 active:scale-95"
                             >
                                 <span>Add Supplier</span>
                                 <PlusCircle className="w-4 h-4" />
@@ -1610,7 +1606,7 @@ const App = () => {
             )}
 
             {view === 'REPORT' && <ReportsView onGenerateReport={() => addToast('Generate Report feature is coming soon!', 'info')} />}
-            {view === 'SETTINGS' && <SettingsView />}
+            {view === 'SETTINGS' && <SettingsView onChangePassword={openChangePassword} />}
             {view === 'NOTIFICATIONS' && <NotificationsView />}
             {view === 'PROFILE' && <ProfileView onEditProfile={openEditProfile} onChangePassword={openChangePassword} onLogout={handleLogout} />}
 

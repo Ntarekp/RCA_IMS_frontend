@@ -50,6 +50,8 @@ export interface UserProfile {
   emailNotifications?: boolean;
   smsNotifications?: boolean;
   twoFactorAuth?: boolean;
+  theme?: 'LIGHT' | 'DARK';
+  language?: string;
 }
 
 export interface Supplier {
