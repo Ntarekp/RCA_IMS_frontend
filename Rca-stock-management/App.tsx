@@ -1183,7 +1183,7 @@ const App = () => {
           </div>
           
           {/* Main Content Container */}
-          <main className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
+          <main className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
             {view === 'DASHBOARD' && (
                 <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500 slide-in-from-bottom-4">
                     {/* Header Section */}
@@ -1244,7 +1244,7 @@ const App = () => {
                              </div>
                         </div>
                         <div className="xl:col-span-1">
-                             <RecentActivity />
+                             <RecentActivity onViewAll={() => setView('TRANSACTIONS')} />
                         </div>
                     </div>
                 </div>

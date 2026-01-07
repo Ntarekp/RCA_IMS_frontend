@@ -8,7 +8,7 @@ interface ReportsViewProps {
 }
 
 export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) => {
-  const [reportType, setReportType] = useState<ReportType>('balance');
+  const [reportType, setReportType] = useState<ReportType>('transactions'); // Default to transactions for full history
   const [format, setFormat] = useState<'PDF' | 'CSV'>('CSV');
   const [dateRange, setDateRange] = useState({
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
@@ -28,13 +28,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
         : undefined;
 
       if (format === 'CSV') {
+        // This now calls the backend Excel endpoint
         await generateCsvReport(reportType, itemId, range);
       } else {
+        // This calls the backend PDF endpoint
         await generatePdfReport(reportType, itemId, range);
       }
     } catch (error) {
       console.error('Failed to generate report:', error);
-      // Ideally show a toast here
     } finally {
       setIsGenerating(false);
     }
@@ -66,14 +67,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                   onChange={(e) => setReportType(e.target.value as ReportType)}
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                 >
+                  <option value="transactions">Detailed Transactions (Full History)</option>
                   <option value="balance">Current Stock Balance</option>
                   <option value="low-stock">Low Stock Alert</option>
-                  <option value="transactions">Detailed Transactions</option>
                 </select>
                 <p className="text-xs text-slate-500 mt-2">
                   {reportType === 'balance' && "Overview of all items and their current quantities."}
                   {reportType === 'low-stock' && "List of items below their minimum threshold."}
-                  {reportType === 'transactions' && "Detailed history of stock movements (In/Out)."}
+                  {reportType === 'transactions' && "Complete chronological log of all stock movements (In/Out) with running balances."}
                 </p>
               </div>
 
@@ -89,7 +90,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                     }`}
                   >
                     <FileSpreadsheet className="w-4 h-4" />
-                    CSV (Excel)
+                    Excel (XLSX)
                   </button>
                   <button 
                     onClick={() => setFormat('PDF')}
@@ -105,45 +106,32 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                 </div>
               </div>
 
-              {(reportType === 'transactions' || reportType === 'stock-in' || reportType === 'stock-out') && (
-                <div className="space-y-4 pt-4 border-t border-slate-100">
-                  <label className="block text-sm font-medium text-slate-700">Date Range</label>
+              {/* Date Range - Visual only for now as backend exports full history, but good for future filtering */}
+              {(reportType === 'transactions') && (
+                <div className="space-y-4 pt-4 border-t border-slate-100 opacity-50 pointer-events-none">
+                  <label className="block text-sm font-medium text-slate-700">Date Range (Full History Enabled)</label>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs text-slate-500 mb-1 block">From</label>
                       <input 
                         type="date" 
+                        disabled
                         value={dateRange.startDate}
-                        onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm"
                       />
                     </div>
                     <div>
                       <label className="text-xs text-slate-500 mb-1 block">To</label>
                       <input 
                         type="date" 
+                        disabled
                         value={dateRange.endDate}
-                        onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm"
                       />
                     </div>
                   </div>
                 </div>
               )}
-
-              <div className="pt-4 border-t border-slate-100">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Filter by Item (Optional)</label>
-                <select 
-                  value={selectedItemId}
-                  onChange={(e) => setSelectedItemId(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                >
-                  <option value="">All Items</option>
-                  {items.map(item => (
-                    <option key={item.id} value={item.id}>{item.name}</option>
-                  ))}
-                </select>
-              </div>
 
               <button 
                 onClick={handleGenerate}
@@ -153,12 +141,12 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                 {isGenerating ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Generating...
+                    Generating Report...
                   </>
                 ) : (
                   <>
                     <Download className="w-4 h-4" />
-                    Download Report
+                    Download {format === 'CSV' ? 'Excel' : 'PDF'}
                   </>
                 )}
               </button>
@@ -174,14 +162,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
             </div>
             <h3 className="text-xl font-bold text-slate-800">Report Preview</h3>
             <p className="text-slate-500 max-w-md">
-              Select your configuration on the left to generate a comprehensive report. 
-              The report will include detailed data based on your selected filters.
+              The generated report will include a complete, chronological history of all stock transactions, including running balances, supplier details, and remarks.
             </p>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl mt-8">
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                 <div className="text-sm font-medium text-slate-500 mb-1">Format</div>
-                <div className="font-bold text-slate-800">{format}</div>
+                <div className="font-bold text-slate-800">{format === 'CSV' ? 'Excel (.xlsx)' : 'PDF'}</div>
               </div>
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                 <div className="text-sm font-medium text-slate-500 mb-1">Type</div>
@@ -190,7 +177,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                 <div className="text-sm font-medium text-slate-500 mb-1">Scope</div>
                 <div className="font-bold text-slate-800">
-                  {selectedItemId ? items.find(i => i.id === selectedItemId)?.name : 'All Items'}
+                  Full History
                 </div>
               </div>
             </div>

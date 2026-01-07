@@ -3,7 +3,7 @@ import { getProfile, updateProfile } from '../api/services/userService';
 import { useItems } from '../hooks/useItems';
 import { useReports } from '../hooks/useReports';
 import { useTransactions } from '../hooks/useTransactions';
-import { Mail, Phone, Briefcase, Calendar, MapPin, Edit3, LogOut, Key, Save, X, Loader2 } from 'lucide-react';
+import { Mail, Phone, Briefcase, Calendar, MapPin, Edit3, LogOut, Key, Save, X, Loader2, Camera } from 'lucide-react';
 
 // --- Types ---
 interface UserProfile {
@@ -55,9 +55,9 @@ const ProfileEditForm: React.FC<EditFormProps> = ({ profile, onSave, onCancel })
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-8 bg-white rounded-xl shadow border border-gray-100">
-      <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-        <Edit3 className="w-5 h-5 text-blue-600" /> Edit Profile
+    <div className="max-w-2xl mx-auto p-8 bg-white rounded-xl shadow border border-[#E5E7EB]">
+      <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-[#1E293B]">
+        <Edit3 className="w-5 h-5 text-[#1E293B]" /> Edit Profile
       </h2>
       
       {error && (
@@ -68,23 +68,23 @@ const ProfileEditForm: React.FC<EditFormProps> = ({ profile, onSave, onCancel })
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1 text-gray-700">Full Name</label>
-          <input name="name" defaultValue={profile.name} required className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+          <label className="block text-sm font-medium mb-1 text-[#1E293B]">Full Name</label>
+          <input name="name" defaultValue={profile.name} required className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#1E293B]/20 outline-none transition-all bg-[#F7F8FD]" />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1 text-gray-700">Phone</label>
-          <input name="phone" defaultValue={profile.phone} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+          <label className="block text-sm font-medium mb-1 text-[#1E293B]">Phone</label>
+          <input name="phone" defaultValue={profile.phone} className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#1E293B]/20 outline-none transition-all bg-[#F7F8FD]" />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1 text-gray-700">Department</label>
-          <input name="department" defaultValue={profile.department} className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+          <label className="block text-sm font-medium mb-1 text-[#1E293B]">Department</label>
+          <input name="department" defaultValue={profile.department} className="w-full border border-[#E5E7EB] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#1E293B]/20 outline-none transition-all bg-[#F7F8FD]" />
         </div>
         
-        <div className="flex gap-3 mt-6 pt-4 border-t">
+        <div className="flex gap-3 mt-6 pt-4 border-t border-[#E5E7EB]">
           <button 
             type="submit" 
             disabled={isSaving}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 bg-[#1E293B] hover:bg-[#334155] text-white px-6 py-2 rounded-lg transition-colors disabled:opacity-50"
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {isSaving ? 'Saving...' : 'Save Changes'}
@@ -93,7 +93,7 @@ const ProfileEditForm: React.FC<EditFormProps> = ({ profile, onSave, onCancel })
             type="button" 
             onClick={onCancel}
             disabled={isSaving}
-            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-2 bg-white border border-[#E5E7EB] hover:bg-[#F7F8FD] text-[#1E293B] px-6 py-2 rounded-lg transition-colors"
           >
             <X className="w-4 h-4" /> Cancel
           </button>
@@ -169,8 +169,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onChangePassword, onLo
   if (isLoadingAll) {
     return (
       <div className="flex flex-col items-center justify-center h-96">
-        <Loader2 className="animate-spin h-12 w-12 text-blue-600 mb-4" />
-        <p className="text-slate-400 font-medium">Loading profile data...</p>
+        <Loader2 className="animate-spin h-12 w-12 text-[#9CA3AF] mb-4" />
+        <p className="text-[#9CA3AF] font-medium">Loading profile data...</p>
       </div>
     );
   }
@@ -182,29 +182,32 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onChangePassword, onLo
   }
 
   return (
-    <div className="max-w-5xl mx-auto pb-12">
+    <div className="max-w-5xl mx-auto pb-12 animate-in fade-in duration-500">
       <div className="relative mb-24">
         {/* Cover Photo */}
-        <div className="h-56 w-full bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 rounded-2xl overflow-hidden relative shadow-inner">
+        <div className="h-56 w-full bg-gradient-to-r from-[#1E293B] to-[#334155] rounded-2xl overflow-hidden relative shadow-inner">
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
-          <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
         </div>
         
         {/* Avatar & Info */}
         <div className="absolute -bottom-16 left-8 md:left-12 flex items-end gap-6">
           <div className="relative group">
-            <div className="w-36 h-36 rounded-full border-[5px] border-white shadow-lg overflow-hidden bg-white">
+            <div className="w-36 h-36 rounded-full border-[5px] border-white shadow-lg overflow-hidden bg-white relative">
               <img 
-                src={profile.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name || profile.email)}&background=1e293b&color=fff&size=256`}
+                src={profile.avatarUrl || "/rca-logo.png"} // Use RCA logo as default or uploaded image
                 alt={profile.name} 
                 className="w-full h-full object-cover transition-transform group-hover:scale-105" 
               />
+              {/* Upload Overlay */}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                  <Camera className="w-8 h-8 text-white" />
+              </div>
             </div>
           </div>
           <div className="mb-3 pb-1">
-            <h1 className="text-3xl font-bold text-gray-800 mb-1">{profile.name || 'User'}</h1>
-            <div className="flex items-center gap-2 text-gray-500 font-medium">
-               <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full uppercase tracking-wide">
+            <h1 className="text-3xl font-bold text-[#1E293B] mb-1">{profile.name || 'User'}</h1>
+            <div className="flex items-center gap-2 text-[#9CA3AF] font-medium">
+               <span className="bg-[#F7F8FD] text-[#1E293B] border border-[#E5E7EB] text-xs px-2 py-0.5 rounded-full uppercase tracking-wide">
                  {profile.role || 'Member'}
                </span>
                {profile.department && <span>• {profile.department}</span>}
@@ -227,8 +230,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onChangePassword, onLo
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 px-4 md:px-0">
         {/* Left Column: Personal Info */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <h3 className="font-semibold text-gray-800 mb-5 flex items-center gap-2">
+          <div className="bg-white p-6 rounded-2xl border border-[#E5E7EB] shadow-sm">
+            <h3 className="font-semibold text-[#1E293B] mb-5 flex items-center gap-2">
               Personal Information
             </h3>
             <div className="space-y-5">
@@ -240,8 +243,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onChangePassword, onLo
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <h3 className="font-semibold text-gray-800 mb-4">Account Settings</h3>
+          <div className="bg-white p-6 rounded-2xl border border-[#E5E7EB] shadow-sm">
+            <h3 className="font-semibold text-[#1E293B] mb-4">Account Settings</h3>
             <div className="space-y-2">
               <ActionButton onClick={() => setEditMode(true)} icon={Edit3} label="Edit Profile Details" />
               <ActionButton onClick={onChangePassword} icon={Key} label="Change Password" />
@@ -252,8 +255,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onChangePassword, onLo
 
         {/* Right Column: Activity / Stats */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <h3 className="font-semibold text-gray-800 mb-6">Activity Overview</h3>
+          <div className="bg-white p-6 rounded-2xl border border-[#E5E7EB] shadow-sm">
+            <h3 className="font-semibold text-[#1E293B] mb-6">Activity Overview</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <StatCard value={stats.stockEntries} label="Stock Entries" color="blue" />
               <StatCard value={stats.reportsCreated} label="Reports Generated" color="emerald" />
@@ -261,11 +264,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onChangePassword, onLo
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <h3 className="font-semibold text-gray-800 mb-6">Recent System Logs</h3>
+          <div className="bg-white p-6 rounded-2xl border border-[#E5E7EB] shadow-sm">
+            <h3 className="font-semibold text-[#1E293B] mb-6">Recent System Logs</h3>
             <div className="space-y-6">
               {stats.recentLogs.length === 0 ? (
-                <div className="text-center py-8 text-slate-400 text-sm bg-gray-50 rounded-lg">
+                <div className="text-center py-8 text-[#9CA3AF] text-sm bg-[#F7F8FD] rounded-lg">
                   No recent activity found.
                 </div>
               ) : (
@@ -273,22 +276,22 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onChangePassword, onLo
                   <div key={log.id || i} className="flex gap-4 items-start relative pl-4">
                     {/* Timeline Line */}
                     {i !== stats.recentLogs.length - 1 && (
-                      <div className="absolute left-[21px] top-8 bottom-[-24px] w-0.5 bg-gray-100"></div>
+                      <div className="absolute left-[21px] top-8 bottom-[-24px] w-0.5 bg-[#F7F8FD]"></div>
                     )}
                     
                     <div className={`
                       min-w-[10px] h-[10px] mt-1.5 rounded-full border-2 
-                      ${log.transactionType === 'IN' ? 'bg-green-100 border-green-500' : 'bg-orange-100 border-orange-500'}
+                      ${log.transactionType === 'IN' ? 'bg-[#1E293B] border-[#1E293B]' : 'bg-[#9CA3AF] border-[#9CA3AF]'}
                     `} />
                     
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-700">
+                      <p className="text-sm font-medium text-[#1E293B]">
                         {log.transactionType === 'IN' ? 'Stocked In' : 'Stocked Out'} 
-                        <span className="font-bold text-gray-900 mx-1">{log.quantity}</span>
+                        <span className="font-bold text-[#1E293B] mx-1">{log.quantity}</span>
                         {log.itemName}
                       </p>
-                      {log.notes && <p className="text-xs text-gray-500 mt-1 italic">"{log.notes}"</p>}
-                      <div className="text-xs font-mono text-gray-400 mt-2">
+                      {log.notes && <p className="text-xs text-[#9CA3AF] mt-1 italic">"{log.notes}"</p>}
+                      <div className="text-xs font-mono text-[#9CA3AF] mt-2">
                         {log.createdAt ? new Date(log.createdAt).toLocaleString() : log.transactionDate}
                       </div>
                     </div>
@@ -307,12 +310,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onChangePassword, onLo
 
 const InfoRow = ({ icon: Icon, label, value }: { icon: any, label: string, value: string }) => (
   <div className="flex items-start gap-4">
-    <div className="p-2 bg-gray-50 rounded-lg text-gray-400">
+    <div className="p-2 bg-[#F7F8FD] rounded-lg text-[#9CA3AF]">
       <Icon className="w-4 h-4" />
     </div>
     <div>
-      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
-      <p className="text-sm text-gray-700 font-medium mt-0.5">{value}</p>
+      <p className="text-xs font-medium text-[#9CA3AF] uppercase tracking-wide">{label}</p>
+      <p className="text-sm text-[#1E293B] font-medium mt-0.5">{value}</p>
     </div>
   </div>
 );
@@ -324,7 +327,7 @@ const ActionButton = ({ onClick, icon: Icon, label, variant = 'default' }: any) 
       w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors text-left
       ${variant === 'danger' 
         ? 'text-red-600 hover:bg-red-50 hover:text-red-700' 
-        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
+        : 'text-[#1E293B] hover:bg-[#F7F8FD]'}
     `}
   >
     <Icon className="w-4 h-4 opacity-70" />
@@ -333,10 +336,11 @@ const ActionButton = ({ onClick, icon: Icon, label, variant = 'default' }: any) 
 );
 
 const StatCard = ({ value, label, color }: any) => {
+  // Simplified colors to match theme
   const colors: any = {
-    blue: "bg-blue-50 text-blue-600 border-blue-100",
-    emerald: "bg-emerald-50 text-emerald-600 border-emerald-100",
-    purple: "bg-purple-50 text-purple-600 border-purple-100"
+    blue: "bg-[#F7F8FD] text-[#1E293B] border-[#E5E7EB]",
+    emerald: "bg-[#F7F8FD] text-[#1E293B] border-[#E5E7EB]",
+    purple: "bg-[#F7F8FD] text-[#1E293B] border-[#E5E7EB]"
   };
   
   return (

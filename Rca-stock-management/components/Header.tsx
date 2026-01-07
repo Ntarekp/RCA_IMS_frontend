@@ -9,7 +9,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => {
   return (
-    <header className="h-24 flex items-center justify-between px-4 sticky top-0 z-20 transition-all duration-200 bg-transparent pointer-events-none">
+    <header className="h-20 flex items-center justify-between px-4 sticky top-0 z-20 transition-all duration-200 bg-transparent pointer-events-none">
       {/* Left side: Menu (Mobile) + Logo */}
       <div className="flex items-center gap-4 pointer-events-auto w-full">
         <button 
@@ -25,10 +25,8 @@ export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => 
             <div className="flex items-center gap-3 pl-2 pr-4 border-r border-[#E5E7EB] flex-shrink-0">
                 <img src="/rca-logo.png" alt="RCA Logo" className="w-8 h-8 object-contain" />
                 <div className="hidden sm:block leading-tight">
-                    <h1 className="font-bold text-xs text-[#1E293B] tracking-tight">Rwanda Coding</h1>
-                    <h1 className="font-bold text-xs text-[#1E293B] tracking-tight">Academy</h1>
-
-                    <h1 className="font-medium text-[10px] text-[#9CA3AF] tracking-wide">I.M System</h1>
+                    <h1 className="font-bold text-xs text-[#1E293B] tracking-tight">RCA</h1>
+                    <h1 className="font-medium text-[10px] text-[#9CA3AF] tracking-wide">IMS</h1>
                 </div>
             </div>
 
@@ -67,8 +65,8 @@ export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => 
                 onClick={() => onChangeView?.('PROFILE')}
                 className="flex items-center gap-3 bg-white p-1.5 pr-4 rounded-xl border border-[#E5E7EB] shadow-sm hover:shadow-md transition-all group ml-2 flex-shrink-0"
             >
-                <div className="w-8 h-8 rounded-lg bg-[#1E293B] flex items-center justify-center text-white text-xs font-bold shadow-md shadow-slate-900/10 group-hover:scale-105 transition-transform">
-                    PN
+                <div className="w-8 h-8 rounded-lg bg-[#1E293B] flex items-center justify-center text-white text-xs font-bold shadow-md shadow-slate-900/10 group-hover:scale-105 transition-transform overflow-hidden">
+                    <img src="/rca-logo.png" alt="Profile" className="w-full h-full object-cover" />
                 </div>
                 <div className="hidden md:block text-left">
                     <p className="text-xs font-semibold text-[#1E293B]">Prince</p>
