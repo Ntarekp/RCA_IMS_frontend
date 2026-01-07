@@ -1,205 +1,306 @@
-import React, { useState } from 'react';
-import { FileSpreadsheet, FileText, Calendar, Download, Filter, Loader2 } from 'lucide-react';
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+    FileSpreadsheet,
+    FileText,
+    Calendar,
+    Download,
+    Filter,
+    Loader2,
+    Clock,
+    ArrowDownUp,
+    Eye,
+    ChevronDown,
+    CalendarDays
+} from 'lucide-react';
 import { generateCsvReport, generatePdfReport, ReportType } from '../api/services/reportService';
 import { useItems } from '../hooks/useItems';
 
-interface ReportsViewProps {
-  onGenerateReport: () => void;
+/* -------------------------------------------------------------------------- */
+/*                                   TYPES                                    */
+/* -------------------------------------------------------------------------- */
+
+interface RecentReport {
+    id: string;
+    title: string;
+    date: string;
+    type: ReportType;
+    format: 'PDF' | 'CSV';
 }
 
-export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) => {
-  const [reportType, setReportType] = useState<ReportType>('transactions');
-  const [format, setFormat] = useState<'PDF' | 'CSV'>('CSV');
-  const [dateRange, setDateRange] = useState({
-    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0]
-  });
-  const [selectedItemId, setSelectedItemId] = useState<string>('');
-  const [isGenerating, setIsGenerating] = useState(false);
+/* -------------------------------------------------------------------------- */
+/*                               MAIN COMPONENT                               */
+/* -------------------------------------------------------------------------- */
 
-  const { items } = useItems();
+export const ReportsView: React.FC = () => {
+    const { items } = useItems();
 
-  const handleGenerate = async () => {
-    setIsGenerating(true);
-    try {
-      const itemId = selectedItemId ? parseInt(selectedItemId) : undefined;
-      const range = (reportType === 'stock-in' || reportType === 'stock-out' || reportType === 'transactions') 
-        ? dateRange 
-        : undefined;
+    const [reportType, setReportType] = useState<ReportType>('transactions');
+    const [format, setFormat] = useState<'PDF' | 'CSV'>('CSV');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [selectedItemId, setSelectedItemId] = useState<string>('');
+    const [recentReports, setRecentReports] = useState<RecentReport[]>([]);
 
-      if (format === 'CSV') {
-        await generateCsvReport(reportType, itemId, range);
-      } else {
-        await generatePdfReport(reportType, itemId, range);
-      }
-    } catch (error) {
-      console.error('Failed to generate report:', error);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+    const [dateRange, setDateRange] = useState(() => ({
+        startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+            .toISOString()
+            .split('T')[0],
+        endDate: new Date().toISOString().split('T')[0]
+    }));
 
-  return (
-    <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Reports</h1>
-          <p className="text-sm text-slate-500 mt-1 font-medium">Generate and export detailed inventory reports</p>
-        </div>
-      </div>
+    /* ------------------------------------------------------------------------ */
+    /*                                DERIVED DATA                               */
+    /* ------------------------------------------------------------------------ */
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Configuration Panel */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
-            <h2 className="font-bold text-slate-800 flex items-center gap-2">
-              <Filter className="w-5 h-5 text-blue-600" />
-              Report Configuration
-            </h2>
+    const isDateRangeRequired = useMemo(
+        () => ['transactions', 'stock-in', 'stock-out'].includes(reportType),
+        [reportType]
+    );
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Report Type</label>
-                <select 
-                  value={reportType}
-                  onChange={(e) => setReportType(e.target.value as ReportType)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                >
-                  <option value="transactions">Detailed Transactions (Full History)</option>
-                  <option value="balance">Current Stock Balance</option>
-                  <option value="low-stock">Low Stock Alert</option>
-                  <option value="suppliers">Active Suppliers List</option>
-                </select>
-                <p className="text-xs text-slate-500 mt-2">
-                  {reportType === 'balance' && "Overview of all items and their current quantities."}
-                  {reportType === 'low-stock' && "List of items below their minimum threshold."}
-                  {reportType === 'transactions' && "Complete chronological log of all stock movements (In/Out) with running balances."}
-                  {reportType === 'suppliers' && "List of all active suppliers and their contact details."}
+    /* ------------------------------------------------------------------------ */
+    /*                                HANDLERS                                   */
+    /* ------------------------------------------------------------------------ */
+
+    const handleGenerate = useCallback(async () => {
+        setIsGenerating(true);
+
+        try {
+            const itemId = selectedItemId ? Number(selectedItemId) : undefined;
+            const range = isDateRangeRequired ? dateRange : undefined;
+
+            if (format === 'CSV') {
+                await generateCsvReport(reportType, itemId, range);
+            } else {
+                await generatePdfReport(reportType, itemId, range);
+            }
+
+            setRecentReports(prev => [
+                {
+                    id: crypto.randomUUID(),
+                    title: `${reportType.replace('-', ' ').toUpperCase()} REPORT`,
+                    date: new Date().toLocaleDateString(),
+                    type: reportType,
+                    format
+                },
+                ...prev
+            ]);
+        } catch (err) {
+            console.error('Report generation failed:', err);
+        } finally {
+            setIsGenerating(false);
+        }
+    }, [reportType, format, selectedItemId, dateRange, isDateRangeRequired]);
+
+    const generateQuick = (days?: number, type?: ReportType) => {
+        if (days) {
+            const end = new Date();
+            const start = new Date();
+            start.setDate(start.getDate() - days);
+            setReportType('transactions');
+            setDateRange({
+                startDate: start.toISOString().split('T')[0],
+                endDate: end.toISOString().split('T')[0]
+            });
+        }
+
+        if (type) setReportType(type);
+    };
+
+    /* ------------------------------------------------------------------------ */
+    /*                                   RENDER                                   */
+    /* ------------------------------------------------------------------------ */
+
+    return (
+        <section className="max-w-[1600px] mx-auto space-y-10 pb-12 animate-in fade-in">
+
+            {/* ------------------------------------------------------------------ */}
+            {/* HEADER                                                             */}
+            {/* ------------------------------------------------------------------ */}
+
+            <header className="flex flex-col gap-3">
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900">Reports & Analytics</h1>
+                <p className="text-slate-500 max-w-2xl">
+                    Generate professional, export-ready inventory and transaction reports
+                    with flexible filters and formats.
                 </p>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Format</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={() => setFormat('CSV')}
-                    className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      format === 'CSV' 
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 ring-2 ring-emerald-500/20' 
-                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <FileSpreadsheet className="w-4 h-4" />
-                    Excel (XLSX)
-                  </button>
-                  <button 
-                    onClick={() => setFormat('PDF')}
-                    className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      format === 'PDF' 
-                        ? 'bg-red-50 text-red-700 border border-red-200 ring-2 ring-red-500/20' 
-                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <FileText className="w-4 h-4" />
-                    PDF Document
-                  </button>
-                </div>
-              </div>
-
-              {(reportType === 'transactions') && (
-                <div className="space-y-4 pt-4 border-t border-slate-100">
-                  <label className="block text-sm font-medium text-slate-700">Date Range</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-slate-500 mb-1 block">From</label>
-                      <input 
-                        type="date" 
+                <div className="inline-flex items-center gap-3 bg-white px-4 py-2 rounded-xl border shadow-sm w-fit">
+                    <CalendarDays className="w-4 h-4 text-blue-600" />
+                    <input
+                        type="date"
                         value={dateRange.startDate}
-                        onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-slate-500 mb-1 block">To</label>
-                      <input 
-                        type="date" 
+                        onChange={e => setDateRange(p => ({ ...p, startDate: e.target.value }))}
+                        className="text-sm font-medium outline-none"
+                    />
+                    <span className="text-slate-400">–</span>
+                    <input
+                        type="date"
                         value={dateRange.endDate}
-                        onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                      />
+                        onChange={e => setDateRange(p => ({ ...p, endDate: e.target.value }))}
+                        className="text-sm font-medium outline-none"
+                    />
+                </div>
+            </header>
+
+            {/* ------------------------------------------------------------------ */}
+            {/* QUICK ACTIONS                                                       */}
+            {/* ------------------------------------------------------------------ */}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <aside className="space-y-5">
+                    <div className="bg-slate-50 rounded-2xl border p-6">
+                        <h2 className="font-semibold text-slate-800 flex items-center gap-2 mb-4">
+                            <Clock className="w-5 h-5 text-blue-600" /> Quick Reports
+                        </h2>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <QuickButton label="Last 7 Days" onClick={() => generateQuick(7)} />
+                            <QuickButton label="Last 30 Days" onClick={() => generateQuick(30)} />
+                            <QuickButton label="Stock In" onClick={() => generateQuick(undefined, 'stock-in')} />
+                            <QuickButton label="Stock Out" onClick={() => generateQuick(undefined, 'stock-out')} />
+                        </div>
                     </div>
-                  </div>
-                </div>
-              )}
+                </aside>
 
-              {reportType === 'transactions' && (
-                <div className="pt-4 border-t border-slate-100">
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Filter by Item (Optional)</label>
-                  <select 
-                    value={selectedItemId}
-                    onChange={(e) => setSelectedItemId(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  >
-                    <option value="">All Items</option>
-                    {items.map(item => (
-                      <option key={item.id} value={item.id}>{item.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
+                {/* ---------------------------------------------------------------- */}
+                {/* REPORT BUILDER                                                    */}
+                {/* ---------------------------------------------------------------- */}
 
-              <button 
-                onClick={handleGenerate}
-                disabled={isGenerating}
-                className="w-full mt-6 bg-[#1e293b] text-white py-3 rounded-xl font-medium hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Generating Report...
-                  </>
+                <main className="lg:col-span-2 bg-slate-50 rounded-2xl border p-6 flex flex-col">
+                    <div className="mb-6">
+                        <h2 className="text-lg font-semibold flex items-center gap-2">
+                            <Filter className="w-5 h-5 text-blue-600" /> Custom Report Builder
+                        </h2>
+                        <p className="text-sm text-slate-500">Fine‑tune every detail before exporting</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6 flex-1">
+
+                        <SelectField
+                            label="Report Type"
+                            value={reportType}
+                            onChange={e => setReportType(e.target.value as ReportType)}
+                        >
+                            <option value="transactions">Transactions</option>
+                            <option value="balance">Stock Balance</option>
+                            <option value="low-stock">Low Stock</option>
+                            <option value="suppliers">Suppliers</option>
+                        </SelectField>
+
+                        <SelectField
+                            label="Item Filter"
+                            value={selectedItemId}
+                            disabled={reportType !== 'transactions'}
+                            onChange={e => setSelectedItemId(e.target.value)}
+                        >
+                            <option value="">All Items</option>
+                            {items.map(i => (
+                                <option key={i.id} value={i.id}>{i.name}</option>
+                            ))}
+                        </SelectField>
+
+                        <FormatToggle format={format} setFormat={setFormat} />
+                    </div>
+
+                    <button
+                        onClick={handleGenerate}
+                        disabled={isGenerating}
+                        className="mt-8 bg-slate-900 text-white py-3 rounded-xl flex items-center justify-center gap-3 hover:bg-slate-800 transition shadow-lg"
+                    >
+                        {isGenerating ? <Loader2 className="animate-spin" /> : <Download />}
+                        {isGenerating ? 'Generating…' : 'Generate Report'}
+                    </button>
+                </main>
+            </div>
+
+            {/* ------------------------------------------------------------------ */}
+            {/* RECENT REPORTS                                                      */}
+            {/* ------------------------------------------------------------------ */}
+
+            <section className="bg-slate-50 rounded-2xl border overflow-hidden">
+                <div className="px-6 py-4 border-b font-semibold">Recent Reports</div>
+
+                {recentReports.length === 0 ? (
+                    <div className="p-10 text-center text-slate-400">
+                        <FileText className="mx-auto mb-3 opacity-20" size={40} />
+                        No reports generated yet
+                    </div>
                 ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    Download {format === 'CSV' ? 'Excel' : 'PDF'}
-                  </>
+                    <table className="w-full text-sm">
+                        <thead className="bg-white/60 text-slate-500">
+                        <tr>
+                            <th className="px-6 py-3">Title</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Format</th>
+                            <th className="text-right px-6">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                        {recentReports.map(r => (
+                            <tr key={r.id} className="hover:bg-white">
+                                <td className="px-6 py-4 font-medium">{r.title}</td>
+                                <td>{r.date}</td>
+                                <td className="capitalize">{r.type.replace('-', ' ')}</td>
+                                <td>{r.format}</td>
+                                <td className="px-6 text-right">
+                                    <button className="p-2 hover:bg-slate-100 rounded"><Eye size={16} /></button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
                 )}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Preview / Info Panel */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 h-full flex flex-col items-center justify-center text-center space-y-4 min-h-[400px]">
-            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-2">
-              <FileSpreadsheet className="w-8 h-8 text-blue-600" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800">Report Preview</h3>
-            <p className="text-slate-500 max-w-md">
-              Select your configuration on the left to generate a comprehensive report. 
-              The report will include detailed data based on your selected filters.
-            </p>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl mt-8">
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                <div className="text-sm font-medium text-slate-500 mb-1">Format</div>
-                <div className="font-bold text-slate-800">{format === 'CSV' ? 'Excel (.xlsx)' : 'PDF'}</div>
-              </div>
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                <div className="text-sm font-medium text-slate-500 mb-1">Type</div>
-                <div className="font-bold text-slate-800 capitalize">{reportType.replace('-', ' ')}</div>
-              </div>
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                <div className="text-sm font-medium text-slate-500 mb-1">Scope</div>
-                <div className="font-bold text-slate-800">
-                  {selectedItemId ? items.find(i => i.id === selectedItemId)?.name : 'All Items'}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+            </section>
+        </section>
+    );
 };
+
+/* -------------------------------------------------------------------------- */
+/*                               SUB COMPONENTS                               */
+/* -------------------------------------------------------------------------- */
+
+const QuickButton = ({ label, onClick }: { label: string; onClick: () => void }) => (
+    <button
+        onClick={onClick}
+        className="h-28 rounded-xl border bg-white hover:shadow-md transition flex flex-col items-center justify-center gap-2"
+    >
+        <ArrowDownUp className="text-blue-600" />
+        <span className="text-sm font-medium">{label}</span>
+    </button>
+);
+
+const SelectField = ({ label, children, ...props }: any) => (
+    <div className="space-y-2">
+        <label className="text-sm font-medium text-slate-700">{label}</label>
+        <div className="relative">
+            <select
+                {...props}
+                className="w-full appearance-none px-4 py-3 rounded-xl border bg-white shadow-sm focus:ring-2 focus:ring-blue-500/20"
+            >
+                {children}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+        </div>
+    </div>
+);
+
+const FormatToggle = ({ format, setFormat }: any) => (
+    <div className="space-y-2">
+        <label className="text-sm font-medium text-slate-700">Format</label>
+        <div className="grid grid-cols-2 gap-3">
+            <button
+                onClick={() => setFormat('CSV')}
+                className={`rounded-xl py-3 flex justify-center gap-2 border ${format === 'CSV' ? 'ring-2 ring-emerald-500/20 border-emerald-500 text-emerald-700' : 'bg-white'}`}
+            >
+                <FileSpreadsheet size={16} /> CSV
+            </button>
+            <button
+                onClick={() => setFormat('PDF')}
+                className={`rounded-xl py-3 flex justify-center gap-2 border ${format === 'PDF' ? 'ring-2 ring-red-500/20 border-red-500 text-red-700' : 'bg-white'}`}
+            >
+                <FileText size={16} /> PDF
+            </button>
+        </div>
+    </div>
+);

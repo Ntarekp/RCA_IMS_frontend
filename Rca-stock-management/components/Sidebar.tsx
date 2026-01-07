@@ -79,6 +79,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
                     );
                 })}
             </nav>
+
+            {/* Bottom Profile Snippet */}
+            {!isCollapsed && (
+                <div className="p-4 border-t border-[#E5E7EB]">
+                    <div className="flex items-center gap-3 p-2 rounded-xl bg-[#F7F8FD] border border-[#E5E7EB]">
+                        <div className="w-8 h-8 rounded-full bg-[#D1D5DB] flex items-center justify-center text-xs font-bold text-[#1E293B]">PN</div>
+                        <div className="flex-1 overflow-hidden">
+                            <p className="text-xs font-semibold text-[#1E293B] truncate">Prince Neza</p>
+                            <p className="text-[10px] text-[#9CA3AF] truncate">Manager</p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 
@@ -103,12 +116,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
             </aside>
 
             {/* Tablet (Icons) Sidebar */}
-            <aside className="hidden md:flex flex-col border border-[#E5E7EB] h-[calc(100%-1rem)] transition-all duration-300 w-20 lg:hidden bg-[#F1F2F7] ml-4 mb-4 rounded-2xl">
+            <aside className="hidden md:flex flex-col border-r border-[#E5E7EB] h-full transition-all duration-300 w-20 lg:hidden bg-[#F1F2F7]">
                 <NavContent isCollapsed={true} showLogo={false} />
             </aside>
 
             {/* Desktop (Full) Sidebar */}
-            <aside className="hidden lg:flex flex-col border border-[#E5E7EB] h-[calc(100%-1rem)] transition-all duration-300 w-64 bg-[#F1F2F7] ml-4 mb-4 rounded-2xl">
+            <aside className="hidden lg:flex flex-col border-r border-[#E5E7EB] h-full transition-all duration-300 w-64 bg-[#F1F2F7]">
                 <NavContent showLogo={false} />
             </aside>
         </>
