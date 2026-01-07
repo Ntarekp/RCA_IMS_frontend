@@ -36,26 +36,28 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
       <div 
         className={`p-6 rounded-2xl flex flex-col justify-between h-44 relative group transition-all duration-300 hover:-translate-y-1 cursor-pointer ${
           dark 
-            ? 'bg-[#1E293B] text-white shadow-xl shadow-slate-900/20' 
-            : 'bg-white border border-[#E5E7EB] shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-lg'
+            ? 'bg-[#1E293B] dark:bg-blue-600 text-white shadow-xl shadow-slate-900/20' 
+            : 'bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-lg'
       }`}
         onClick={() => onNavigate(targetView)}
       >
         <div className="flex justify-between items-start">
-            <div className={`p-2.5 rounded-xl ${dark ? 'bg-white/10' : 'bg-[#F7F8FD]'}`}>
-                <Icon className={`w-5 h-5 ${dark ? 'text-white' : colorClass}`} />
+            <div className={`p-2.5 rounded-xl ${dark ? 'bg-white/10' : 'bg-[#F7F8FD] dark:bg-slate-700'}`}>
+                <Icon className={`w-5 h-5 ${dark ? 'text-white' : `${colorClass} dark:text-white`}`} />
             </div>
             <button className={`flex items-center text-[10px] border rounded-full px-2.5 py-1 transition-colors ${
-                dark ? 'border-white/20 text-slate-300 hover:bg-white/10' : 'border-[#E5E7EB] text-[#9CA3AF] hover:bg-[#F7F8FD] hover:text-[#1E293B]'
+                dark 
+                    ? 'border-white/20 text-slate-300 hover:bg-white/10' 
+                    : 'border-[#E5E7EB] dark:border-slate-600 text-[#9CA3AF] dark:text-slate-400 hover:bg-[#F7F8FD] dark:hover:bg-slate-700 hover:text-[#1E293B] dark:hover:text-white'
             }`}>
                 Details <ChevronRight className="w-3 h-3 ml-0.5" />
             </button>
         </div>
         
         <div className="space-y-1">
-            <span className={`text-sm font-medium ${dark ? 'text-slate-300' : 'text-[#9CA3AF]'}`}>{title}</span>
+            <span className={`text-sm font-medium ${dark ? 'text-slate-300' : 'text-[#9CA3AF] dark:text-slate-400'}`}>{title}</span>
             <div className="flex items-baseline gap-2">
-                <h3 className={`text-3xl font-bold tracking-tight ${dark ? 'text-white' : 'text-[#1E293B]'}`}>{value}</h3>
+                <h3 className={`text-3xl font-bold tracking-tight ${dark ? 'text-white' : 'text-[#1E293B] dark:text-white'}`}>{value}</h3>
             </div>
             <div className={`flex items-center text-xs font-medium ${
                 trendUp 
@@ -64,7 +66,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
             }`}>
                 {trendUp ? <ArrowUpRight className="w-3.5 h-3.5 mr-1" /> : <ArrowDownRight className="w-3.5 h-3.5 mr-1" />}
                 <span>{trend}%</span>
-                <span className={`ml-1.5 ${dark ? 'text-slate-400' : 'text-[#9CA3AF]'}`}>vs last month</span>
+                <span className={`ml-1.5 ${dark ? 'text-slate-400' : 'text-[#9CA3AF] dark:text-slate-500'}`}>vs last month</span>
             </div>
         </div>
       </div>
@@ -74,8 +76,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="p-6 rounded-2xl bg-white border border-[#E5E7EB] flex items-center justify-center h-44">
-            <Loader2 className="w-6 h-6 animate-spin text-[#9CA3AF]" />
+          <div key={i} className="p-6 rounded-2xl bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 flex items-center justify-center h-44">
+            <Loader2 className="w-6 h-6 animate-spin text-[#9CA3AF] dark:text-slate-500" />
           </div>
         ))}
       </div>
@@ -84,9 +86,9 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
 
   if (error || !metrics) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-        <p className="text-red-800 font-medium">Error loading dashboard metrics</p>
-        <p className="text-red-600 text-sm mt-1">{error || 'Unknown error'}</p>
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
+        <p className="text-red-800 dark:text-red-400 font-medium">Error loading dashboard metrics</p>
+        <p className="text-red-600 dark:text-red-300 text-sm mt-1">{error || 'Unknown error'}</p>
       </div>
     );
   }
