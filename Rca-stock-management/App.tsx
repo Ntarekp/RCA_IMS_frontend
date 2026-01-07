@@ -155,24 +155,16 @@ const App = () => {
         setAiReport(null);
         const id = addToast("Analyzing inventory data...", 'loading');
         try {
-            // Fetch real analytics data
-            const analytics = await getAnalyticsSummary();
+            // Refresh reports to get latest data
+            await refetchReports();
+            await new Promise((res) => setTimeout(res, 1500));
             
             const totalItems = stockItems.length;
             const lowStockCount = balanceReport.filter(item => item.isLowStock).length;
             const criticalCount = balanceReport.filter(item => item.status === 'CRITICAL').length;
+            const adequateCount = totalItems - lowStockCount;
             
-            // Generate insights based on real data
-            let insights = "";
-            if (analytics.wastageRatio > 5) {
-                insights += `- **High Wastage**: Your wastage ratio is ${analytics.wastageRatio}%, which is above the recommended 5%. Check for expired items.\n`;
-            }
-            if (analytics.consumptionRate > 100) {
-                insights += `- **High Consumption**: You are consuming items rapidly (${analytics.consumptionRate}/mo). Ensure restock frequency matches demand.\n`;
-            }
-            
-            const report = `# Inventory Analysis\n\n## Summary\n- **Total Items**: ${totalItems}\n- **Consumption Rate**: ${analytics.consumptionRate} units/mo\n- **Wastage Ratio**: ${analytics.wastageRatio}%\n- **Restock Frequency**: Every ${analytics.restockFrequency} days\n\n## Stock Health\n${criticalCount > 0 ? `⚠️ **CRITICAL**: ${criticalCount} item(s) are out of stock.\n` : ''}${lowStockCount > 0 ? `⚠️ **LOW STOCK**: ${lowStockCount} item(s) are below minimum threshold.\n` : ''}\n## AI Insights\n${insights || '- Operations appear normal based on current data.'}\n\n> Analysis generated from real-time inventory data.`;
-            
+            const report = `# Inventory Analysis\n\n## Summary\n- **Total Items**: ${totalItems}\n- **Adequate Stock**: ${adequateCount}\n- **Low Stock**: ${lowStockCount}\n- **Critical**: ${criticalCount}\n\n## Stock Health\n${criticalCount > 0 ? `⚠️ **CRITICAL**: ${criticalCount} item(s) are out of stock and need immediate attention.\n\n` : ''}${lowStockCount > 0 ? `⚠️ **LOW STOCK**: ${lowStockCount} item(s) are below minimum threshold.\n\n` : ''}${adequateCount === totalItems ? '✅ All items are sufficiently stocked.\n\n' : ''}## Recommendations\n${criticalCount > 0 ? '- **URGENT**: Restock critical items immediately\n' : ''}${lowStockCount > 0 ? '- **PLAN**: Order low stock items before they run out\n' : ''}${adequateCount === totalItems ? '- **MAINTAIN**: Current stock levels are healthy\n' : ''}\n> Analysis generated from real-time inventory data.`;
             setAiReport(report);
             removeToast(id);
             addToast("Analysis generated successfully!", 'success');
@@ -1158,14 +1150,28 @@ const App = () => {
     <div className="flex h-screen bg-slate-50/50 font-sans selection:bg-blue-100 selection:text-blue-900">
       <ToastContainer toasts={toasts} onRemove={removeToast} />
       
-      <Sidebar 
-        currentView={view} 
-        onChangeView={setView} 
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-      />
+      {/* Sidebar Container - Fixed width, full height */}
+      <div className="w-72 h-full hidden md:block flex-shrink-0">
+        <Sidebar 
+            currentView={view} 
+            onChangeView={setView} 
+            isOpen={isMobileMenuOpen}
+            onClose={() => setIsMobileMenuOpen(false)}
+        />
+      </div>
+
+      {/* Mobile Sidebar (Drawer) */}
+      <div className="md:hidden">
+         <Sidebar 
+            currentView={view} 
+            onChangeView={setView} 
+            isOpen={isMobileMenuOpen}
+            onClose={() => setIsMobileMenuOpen(false)}
+        />
+      </div>
       
-      <div className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 md:ml-20 lg:ml-64">
+      {/* Main Content Container - Takes remaining width */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300">
         <Header onChangeView={setView} onMenuClick={() => setIsMobileMenuOpen(true)} />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">

@@ -31,18 +31,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
 
   // Shared Nav Content
   const NavContent = ({ isCollapsed = false }) => (
-    <>
-      <div className={`h-20 flex items-center gap-3 mb-2 ${isCollapsed ? 'justify-center px-2' : 'px-6'}`}>
-        <div className="p-1">
-             <img src="/rca-logo.png" alt="RCA Logo" className="w-10 h-10 object-contain" />
-        </div>
-        <div className={`leading-tight ${isCollapsed ? 'hidden' : 'block'}`}>
-          <h1 className="font-bold text-sm text-[#1E293B] tracking-tight">RCA</h1>
-          <h1 className="font-medium text-xs text-[#9CA3AF] tracking-wide">Inventory</h1>
-        </div>
-      </div>
-
-      <nav className="flex-1 px-3 py-4 space-y-1">
+    <div className="flex flex-col h-full p-4 gap-4">
+      {/* Navigation Section - Unified Card */}
+      <nav className="flex-1 bg-[#F1F2F7] border border-[#E5E7EB] rounded-2xl p-3 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
           const isActive = currentView === item.id;
           return (
@@ -59,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
               className={`w-full flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-[12px] transition-all duration-200 group relative ${
                 isActive 
                   ? 'bg-[#1E293B] text-white shadow-md shadow-slate-900/10' 
-                  : 'text-[#9CA3AF] hover:bg-[#EDEEF3] hover:text-[#1E293B]'
+                  : 'text-[#9CA3AF] hover:bg-white hover:text-[#1E293B] hover:shadow-sm'
               } ${isCollapsed ? 'justify-center px-2' : ''}`}
             >
               <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive ? 'text-white' : 'text-[#9CA3AF] group-hover:text-[#1E293B]'}`} strokeWidth={2} />
@@ -77,20 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
           );
         })}
       </nav>
-      
-      {/* Bottom Profile Snippet */}
-      {!isCollapsed && (
-        <div className="p-4 border-t border-[#E5E7EB]">
-            <div className="flex items-center gap-3 p-2 rounded-xl bg-[#F7F8FD] border border-[#E5E7EB]">
-                <div className="w-8 h-8 rounded-full bg-[#D1D5DB] flex items-center justify-center text-xs font-bold text-[#1E293B]">PN</div>
-                <div className="flex-1 overflow-hidden">
-                    <p className="text-xs font-semibold text-[#1E293B] truncate">Prince Neza</p>
-                    <p className="text-[10px] text-[#9CA3AF] truncate">Manager</p>
-                </div>
-            </div>
-        </div>
-      )}
-    </>
+    </div>
   );
 
   return (
@@ -104,8 +82,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
       )}
 
       {/* Mobile Sidebar (Drawer) */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#E5E7EB] shadow-2xl transform transition-transform duration-300 ease-out md:hidden flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="absolute top-4 right-4">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-2xl transform transition-transform duration-300 ease-out md:hidden flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="absolute top-4 right-4 z-50">
             <button onClick={onClose} className="p-2 text-[#9CA3AF] hover:text-[#1E293B] hover:bg-[#EDEEF3] rounded-full transition-colors">
                 <X className="w-5 h-5" />
             </button>
@@ -114,12 +92,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
       </aside>
 
       {/* Tablet (Icons) Sidebar */}
-      <aside className="hidden md:flex flex-col fixed inset-y-0 left-0 z-30 bg-white border-r border-[#E5E7EB] h-full transition-all duration-300 w-20 lg:hidden">
+      <aside className="hidden md:flex flex-col fixed inset-y-0 left-0 z-30 bg-transparent h-full transition-all duration-300 w-24 lg:hidden">
          <NavContent isCollapsed={true} /> 
       </aside>
 
       {/* Desktop (Full) Sidebar */}
-       <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 z-30 bg-white border-r border-[#E5E7EB] h-full transition-all duration-300 w-64">
+       <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 z-30 bg-transparent h-full transition-all duration-300 w-72">
          <NavContent />
       </aside>
     </>
