@@ -7,7 +7,8 @@
 export * from './services/itemService';
 export * from './services/transactionService';
 export * from './services/reportService';
-export * from './services/supplierService'; // Export supplier service
+export * from './services/supplierService';
+export * from './services/analyticsService'; // Export analytics service
 
 // Types
 export * from './types';
