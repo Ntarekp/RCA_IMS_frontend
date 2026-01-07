@@ -1155,35 +1155,24 @@ const App = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50/50 font-sans selection:bg-blue-100 selection:text-blue-900">
+    <div className="flex flex-col h-screen bg-slate-50/50 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden">
       <ToastContainer toasts={toasts} onRemove={removeToast} />
       
-      {/* Full Width Header */}
+      {/* Header - Spans full width */}
       <Header onChangeView={setView} onMenuClick={() => setIsMobileMenuOpen(true)} />
 
-      <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar Container - Below Header */}
-          <div className="w-72 h-full hidden md:block flex-shrink-0 pt-0">
-            <Sidebar 
-                currentView={view} 
-                onChangeView={setView} 
-                isOpen={isMobileMenuOpen}
-                onClose={() => setIsMobileMenuOpen(false)}
-            />
-          </div>
+      {/* Main Content Area - Flex Row */}
+      <div className="flex flex-1 overflow-hidden relative z-10">
+        {/* Sidebar - Handles its own responsive states */}
+        <Sidebar
+            currentView={view}
+            onChangeView={setView}
+            isOpen={isMobileMenuOpen}
+            onClose={() => setIsMobileMenuOpen(false)}
+        />
 
-          {/* Mobile Sidebar (Drawer) */}
-          <div className="md:hidden">
-             <Sidebar 
-                currentView={view} 
-                onChangeView={setView} 
-                isOpen={isMobileMenuOpen}
-                onClose={() => setIsMobileMenuOpen(false)}
-            />
-          </div>
-          
-          {/* Main Content Container */}
-          <main className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
+        {/* Scrollable Content */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
             {view === 'DASHBOARD' && (
                 <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500 slide-in-from-bottom-4">
                     {/* Header Section */}
