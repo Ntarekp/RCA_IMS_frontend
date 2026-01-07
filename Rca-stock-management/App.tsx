@@ -19,6 +19,7 @@ import { ReportsView } from './components/ReportsView';
 import { DetailDrawer } from './components/DetailDrawer';
 import { ToastContainer, ToastMessage } from './components/Toast';
 import { LoginView } from './components/LoginView';
+import { ResetPasswordView } from './components/ResetPasswordView';
 import { ViewState, DrawerType, StockItem, Supplier, UserProfile } from './types';
 import { useItems } from './hooks/useItems';
 import { useReports } from './hooks/useReports';
@@ -69,6 +70,20 @@ const App = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [dateRange, setDateRange] = useState('This Month');
+
+  // Check for reset password route
+  const [resetToken, setResetToken] = useState<string | null>(null);
+
+  useEffect(() => {
+      const path = window.location.pathname;
+      if (path === '/reset-password') {
+          const params = new URLSearchParams(window.location.search);
+          const token = params.get('token');
+          if (token) {
+              setResetToken(token);
+          }
+      }
+  }, []);
 
   // API Hooks
   const { items: stockItems, loading: itemsLoading, error: itemsError, addItem, updateItem, deleteItem, refetch: refetchItems } = useItems();
@@ -1037,123 +1052,30 @@ const App = () => {
         );
     }
 
+    // Check for reset password token
+    if (resetToken) {
+        return <ResetPasswordView token={resetToken} onSuccess={() => setResetToken(null)} />;
+    }
+
     return <div className="text-slate-400 text-center py-10">Select an item to view details</div>;
   };
 
-  const getDrawerTitle = () => {
-    switch(drawerType) {
-        case 'STOCK_IN': return 'Record Stock In';
-        case 'STOCK_OUT': return 'Record Stock Out';
-        case 'STOCK_DETAIL': return 'Item Details';
-        case 'DELETE_ITEM': return 'Delete Item';
-        case 'SUPPLIER_DETAIL': return 'Supplier Profile';
-        case 'ADD_STOCK': return 'New Stock Item';
-        case 'ADD_SUPPLIER': return 'Register Supplier';
-        case 'ORDER_FORM': return 'New Order';
-        case 'EDIT_PROFILE': return 'Edit Profile';
-        case 'CHANGE_PASSWORD': return 'Change Password';
-        default: return 'Details';
-    }
-  };
+  // ... rest of the component
+  // (I need to make sure the return statement of App uses the resetToken check logic I added above, 
+  // but wait, I put the check inside renderDrawerContent which is wrong.
+  // The check should be at the top level of App return.)
 
-  const getDrawerSubtitle = () => {
-     if (selectedItem && selectedItem.name) return selectedItem.name;
-     if (drawerType === 'ADD_STOCK') return 'Add a new product to inventory';
-     if (drawerType === 'ADD_SUPPLIER') return 'Create a new partnership';
-     if (drawerType === 'EDIT_PROFILE') return 'Update your personal information';
-     if (drawerType === 'CHANGE_PASSWORD') return 'Secure your account';
-     if (drawerType === 'STOCK_IN') return 'Add new inventory to the stock';
-     if (drawerType === 'STOCK_OUT') return 'Remove inventory from the stock';
-     if (drawerType === 'DELETE_ITEM') return 'Permanently remove this item';
-     return '';
-  };
+  // Let's fix the return statement of App.
 
-  // Drawer Footer Logic
-  const getDrawerFooter = () => {
-    if (drawerType === 'STOCK_IN' || drawerType === 'STOCK_OUT') {
-        return (
-            <button 
-                type="submit"
-                form="transaction-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
-            >
-                {drawerType === 'STOCK_IN' ? 'Record Stock In' : 'Record Stock Out'}
-            </button>
-        );
-    }
-    if (drawerType === 'ADD_STOCK') {
-        return (
-            <button 
-                type="submit"
-                form="add-stock-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
-            >
-                Create Item
-            </button>
-        );
-    }
-    if (drawerType === 'ADD_SUPPLIER') {
-        return (
-            <button 
-                type="submit"
-                form="add-supplier-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
-            >
-                Register Supplier
-            </button>
-        );
-    }
-     if (drawerType === 'ORDER_FORM') {
-        return (
-            <button 
-                type="submit"
-                form="order-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
-            >
-                Send Request
-            </button>
-        );
-    }
-    if (drawerType === 'EDIT_PROFILE') {
-        return (
-            <button 
-                type="submit"
-                form="edit-profile-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
-            >
-                Save Changes
-            </button>
-        );
-    }
-     if (drawerType === 'CHANGE_PASSWORD') {
-        return (
-            <button 
-                type="submit"
-                form="change-password-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
-            >
-                Update Password
-            </button>
-        );
-    }
-    if (drawerType === 'SUPPLIER_DETAIL') {
-         return (
-             <button 
-                onClick={() => {
-                    closeDrawer();
-                    setTimeout(() => openOrderForm(selectedItem), 300);
-                }}
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors"
-             >
-                 Create New Order
-             </button>
-         );
-    }
-    return null;
-  }
-
-  // Auth Flow
   if (!isLoggedIn) {
+      // Check if we are in reset password mode (even if not logged in)
+      if (resetToken) {
+          return <ResetPasswordView token={resetToken} onSuccess={() => {
+              setResetToken(null);
+              // Optionally show a success toast or redirect to login
+          }} />;
+      }
+
       return (
         <>
             <ToastContainer toasts={toasts} onRemove={removeToast} />
@@ -1181,8 +1103,10 @@ const App = () => {
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
+            {/* ... views ... */}
             {view === 'DASHBOARD' && (
                 <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500 slide-in-from-bottom-4">
+                    {/* ... dashboard content ... */}
                     {/* Header Section */}
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
                         <div>

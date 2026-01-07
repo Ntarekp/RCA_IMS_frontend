@@ -24,6 +24,12 @@ export interface ForgotPasswordRequest {
   email: string;
 }
 
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 /**
  * Login user
  */
@@ -38,6 +44,15 @@ export const forgotPassword = async (
   payload: ForgotPasswordRequest
 ): Promise<void> => {
   return post<void>(`${ENDPOINT}/forgot-password`, payload);
+};
+
+/**
+ * Reset password with token
+ */
+export const resetPassword = async (
+  payload: ResetPasswordRequest
+): Promise<void> => {
+  return post<void>(`${ENDPOINT}/reset-password`, payload);
 };
 
 /**
