@@ -68,27 +68,23 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F7F8FD] flex items-center justify-center p-4">
       <div className="flex flex-col md:flex-row items-center justify-center gap-12 w-full max-w-4xl animate-in fade-in zoom-in duration-500">
         
         {/* Logo Section (Left Side) */}
         <div className="flex flex-col items-center md:items-start gap-4 text-center md:text-left">
-            <div className="w-32 h-32 bg-white rounded-2xl flex items-center justify-center shadow-xl border border-slate-100 p-4">
+            <div className="w-48 h-48 flex items-center justify-center p-4">
                  <img src="/rca-logo.png" alt="RCA Logo" className="w-full h-full object-contain" />
             </div>
-            {/*<div>*/}
-            {/*    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">RCA Inventory</h1>*/}
-            {/*    <p className="text-slate-500 mt-2 max-w-xs">Secure stock management system for Rwanda Coding Academy.</p>*/}
-            {/*</div>*/}
         </div>
 
         {/* Login Card (Right Side) */}
-        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8 w-full max-w-md">
+        <div className="bg-[#F7F8FD] rounded-2xl border border-[#E5E7EB] p-8 w-full max-w-md">
             {forgotPasswordMode ? (
                 <>
-                    <div className="text-center mb-8">
-                        <h1 className="text-xl font-bold text-slate-800 uppercase tracking-wide">Reset Password</h1>
-                        <p className="text-sm text-slate-400 mt-2 font-medium">Enter your email to receive a reset link</p>
+                    <div className="text-left mb-8">
+                        <h1 className="text-xl font-bold text-[#797A7C] uppercase tracking-wide">Reset Password</h1>
+                        <p className="text-sm text-[#9CA3AF] mt-2 font-medium">Enter your email to receive a reset link</p>
                     </div>
                     <form onSubmit={handleForgotPassword} className="space-y-5">
                         <div className="space-y-1">
@@ -97,7 +93,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                                 value={forgotPasswordEmail}
                                 onChange={(e) => setForgotPasswordEmail(e.target.value)}
                                 placeholder="Email" 
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-slate-400 text-slate-700"
+                                className="w-full px-4 py-3 bg-[#EDEEF3] border border-[#D1D5DB] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-[#9CA3AF] text-slate-700"
                                 required 
                             />
                         </div>
@@ -108,16 +104,18 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                             </div>
                         )}
 
-                        <button 
-                            type="submit" 
-                            disabled={loading}
-                            className="w-full bg-[#1e293b] text-white py-3 rounded-xl font-medium text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
-                        >
-                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Reset Link'}
-                        </button>
+                        <div className="flex justify-center mt-6">
+                            <button 
+                                type="submit" 
+                                disabled={loading}
+                                className="w-2/5 bg-[#1e293b] text-white py-3 rounded-2xl font-medium text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Reset Link'}
+                            </button>
+                        </div>
 
                         <div className="text-center text-xs pt-1">
-                            <button type="button" onClick={() => { setForgotPasswordMode(false); setError(null); }} className="text-slate-500 hover:text-[#1e293b] font-medium transition-colors">
+                            <button type="button" onClick={() => { setForgotPasswordMode(false); setError(null); }} className="text-[#1E293B] hover:text-[#1e293b] font-medium transition-colors">
                                 Back to Login
                             </button>
                         </div>
@@ -125,9 +123,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                 </>
             ) : (
                 <>
-                    <div className="text-center mb-8">
-                        <h1 className="text-xl font-bold text-slate-800 uppercase tracking-wide">Welcome Back</h1>
-                        <p className="text-sm text-slate-400 mt-2 font-medium">Log into your account to continue</p>
+                    <div className="text-left mb-8">
+                        <h1 className="text-xl font-bold text-[#797A7C] uppercase tracking-wide">Welcome Back</h1>
+                        <p className="text-sm text-[#9CA3AF] mt-2 font-medium">Log into your account to continue</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
@@ -137,7 +135,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Email" 
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-slate-400 text-slate-700"
+                                className="w-full px-4 py-3 bg-[#EDEEF3] border border-[#D1D5DB] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-[#9CA3AF] text-slate-700"
                                 required 
                             />
                         </div>
@@ -147,13 +145,13 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Password" 
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-slate-400 text-slate-700"
+                                className="w-full px-4 py-3 bg-[#EDEEF3] border border-[#D1D5DB] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#1e293b]/20 focus:border-[#1e293b] transition-all placeholder:text-[#9CA3AF] text-slate-700"
                                 required 
                             />
                             <button 
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors"
                             >
                                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
@@ -165,23 +163,25 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                             </div>
                         )}
 
-                        <div className="flex items-center justify-between text-.xs pt-1">
-                            <label className="flex items-center gap-2 text-slate-500 cursor-pointer hover:text-slate-700 select-none">
-                                <input type="checkbox" className="rounded border-slate-300 text-[#1e293b] focus:ring-[#1e293b] w-3.5 h-3.5" />
+                        <div className="flex items-center justify-between text-xs pt-1">
+                            <label className="flex items-center gap-2 text-[#9CA3AF] cursor-pointer hover:text-slate-700 select-none">
+                                <input type="checkbox" className="rounded border-[#D1D5DB] text-[#1e293b] focus:ring-[#1e293b] w-3.5 h-3.5 bg-[#EDEEF3]" />
                                 Remember me
                             </label>
-                            <button type="button" onClick={() => { setForgotPasswordMode(true); setError(null); }} className="text-slate-500 hover:text-[#1e293b] font-medium transition-colors">
+                            <button type="button" onClick={() => { setForgotPasswordMode(true); setError(null); }} className="text-[#1E293B] hover:text-[#1e293b] font-medium transition-colors">
                                 Forgot Password
                             </button>
                         </div>
 
-                        <button 
-                            type="submit" 
-                            disabled={loading}
-                            className="w-full bg-[#1e293b] text-white py-3 rounded-xl font-medium text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
-                        >
-                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Login'}
-                        </button>
+                        <div className="flex justify-center mt-6">
+                            <button 
+                                type="submit" 
+                                disabled={loading}
+                                className="w-2/5 bg-[#1e293b] text-white py-3 rounded-2xl font-medium text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Login'}
+                            </button>
+                        </div>
                     </form>
                 </>
             )}
