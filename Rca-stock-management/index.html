@@ -6,6 +6,18 @@
     <link rel="icon" type="image/png" href="/rca-logo.png" />
     <title>RcaIMS - IMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+          }
+        }
+      }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
       body {
@@ -28,6 +40,14 @@
       ::-webkit-scrollbar-thumb:hover {
         background: #94a3b8;
       }
+
+      /* Dark mode scrollbar */
+      .dark ::-webkit-scrollbar-thumb {
+        background: #475569;
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+      }
     </style>
   <script type="importmap">
 {
@@ -43,7 +63,7 @@
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-slate-50 text-slate-900 overflow-hidden selection:bg-blue-100 selection:text-blue-900">
+  <body class="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-white overflow-hidden selection:bg-blue-100 selection:text-blue-900">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

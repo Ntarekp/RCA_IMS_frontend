@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserSettings, UserProfile } from '../types';
-import { Bell, Shield, Moon, Globe, Save, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Bell, Shield, Moon, Globe, Save, Loader2, CheckCircle2, AlertCircle, Sun } from 'lucide-react';
 import { getProfile, updateProfile, UpdateProfileRequest } from '../api/services/userService';
 import { ApiError } from '../api/client';
 
@@ -14,11 +14,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   
+  // Initialize theme based on current DOM state to prevent flash
   const [settings, setSettings] = useState<UserSettings>({
       emailNotifications: true,
       smsNotifications: false,
       twoFactorAuth: false,
-      theme: 'LIGHT',
+      theme: document.documentElement.classList.contains('dark') ? 'DARK' : 'LIGHT',
       language: 'en'
   });
 
@@ -29,6 +30,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
           try {
               const userProfile = await getProfile();
               setProfile(userProfile);
+              
+              // Sync state with profile
               setSettings(prev => ({
                   ...prev,
                   emailNotifications: userProfile.emailNotifications ?? true,
@@ -38,7 +41,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
                   language: userProfile.language ?? 'en'
               }));
               
-              // Apply theme on initial load
+              // Enforce theme from profile on load
               if (userProfile.theme === 'DARK') {
                   document.documentElement.classList.add('dark');
               } else {
@@ -56,17 +59,23 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
 
   const handleToggle = (key: keyof UserSettings) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }));
-    // Clear success message when user makes changes
     if (success) setSuccess(null);
   };
 
-  const handleThemeChange = (theme: 'LIGHT' | 'DARK') => {
-      setSettings(prev => ({ ...prev, theme }));
-      if (theme === 'DARK') {
+  // Direct theme toggle handler
+  const handleThemeChange = (newTheme: 'LIGHT' | 'DARK') => {
+      // 1. Update React State
+      setSettings(prev => ({ ...prev, theme: newTheme }));
+      
+      // 2. Update DOM immediately
+      if (newTheme === 'DARK') {
           document.documentElement.classList.add('dark');
+          localStorage.setItem('theme', 'DARK'); // Optional: Local persistence
       } else {
           document.documentElement.classList.remove('dark');
+          localStorage.setItem('theme', 'LIGHT'); // Optional: Local persistence
       }
+      
       if (success) setSuccess(null);
   };
 
@@ -77,10 +86,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
       
       try {
           const updateData: UpdateProfileRequest = {
-              // Preserve existing profile data if available, otherwise undefined (backend handles partial updates)
-              // But updateProfile API expects fields. If we send undefined, backend might ignore or set null.
-              // Our backend implementation checks for null and only updates if not null.
-              // So we can just send the settings fields.
               emailNotifications: settings.emailNotifications,
               smsNotifications: settings.smsNotifications,
               twoFactorAuth: settings.twoFactorAuth,
@@ -243,25 +248,50 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
             
              <div className="flex items-center justify-between pt-6 border-t border-slate-50 dark:border-slate-700">
                 <div className="flex items-center gap-3">
-                    <Moon className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+                    {settings.theme === 'LIGHT' ? (
+                        <Sun className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+                    ) : (
+                        <Moon className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+                    )}
                     <div>
                         <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Theme</h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Choose your interface theme</p>
                     </div>
                 </div>
-                <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl">
-                    <button 
+                
+                {/* Radio Button Group for Theme */}
+                <div className="flex items-center gap-4 bg-slate-100 dark:bg-slate-700 p-1.5 rounded-xl">
+                    <label 
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                            settings.theme === 'LIGHT' 
+                                ? 'bg-white text-slate-800 shadow-sm' 
+                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                        }`}
                         onClick={() => handleThemeChange('LIGHT')}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${settings.theme === 'LIGHT' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
                     >
-                        Light
-                    </button>
-                    <button 
+                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                            settings.theme === 'LIGHT' ? 'border-[#1E293B]' : 'border-slate-400'
+                        }`}>
+                            {settings.theme === 'LIGHT' && <div className="w-2 h-2 rounded-full bg-[#1E293B]" />}
+                        </div>
+                        <span className="text-sm font-medium">Light</span>
+                    </label>
+
+                    <label 
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                            settings.theme === 'DARK' 
+                                ? 'bg-slate-600 text-white shadow-sm' 
+                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                        }`}
                         onClick={() => handleThemeChange('DARK')}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${settings.theme === 'DARK' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
                     >
-                        Dark
-                    </button>
+                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                            settings.theme === 'DARK' ? 'border-blue-400' : 'border-slate-400'
+                        }`}>
+                            {settings.theme === 'DARK' && <div className="w-2 h-2 rounded-full bg-blue-400" />}
+                        </div>
+                        <span className="text-sm font-medium">Dark</span>
+                    </label>
                 </div>
             </div>
         </div>

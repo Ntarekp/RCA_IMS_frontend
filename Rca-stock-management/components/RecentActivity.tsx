@@ -66,22 +66,22 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({ onViewAll }) => 
   const displayedActivities = activities.slice(0, 3);
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-[#E5E7EB] shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] h-full flex flex-col">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-[#E5E7EB] dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="font-bold text-[#1E293B]">Recent Activity</h3>
-        <div className="text-xs font-medium text-[#1E293B] bg-[#F7F8FD] px-2 py-1 rounded-lg">Live</div>
+        <h3 className="font-bold text-[#1E293B] dark:text-white">Recent Activity</h3>
+        <div className="text-xs font-medium text-[#1E293B] dark:text-white bg-[#F7F8FD] dark:bg-slate-700 px-2 py-1 rounded-lg">Live</div>
       </div>
       
       {loading ? (
         <div className="flex items-center justify-center py-12 flex-1">
-          <Loader2 className="w-6 h-6 animate-spin text-[#9CA3AF]" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#9CA3AF] dark:text-slate-500" />
         </div>
       ) : activities.length === 0 ? (
-        <div className="text-center py-12 text-[#9CA3AF] text-sm flex-1">
+        <div className="text-center py-12 text-[#9CA3AF] dark:text-slate-500 text-sm flex-1">
           <p>No recent activity</p>
         </div>
       ) : (
-        <div className="space-y-6 relative before:absolute before:left-3.5 before:top-2 before:bottom-4 before:w-px before:bg-[#F7F8FD] flex-1">
+        <div className="space-y-6 relative before:absolute before:left-3.5 before:top-2 before:bottom-4 before:w-px before:bg-[#F7F8FD] dark:before:bg-slate-700 flex-1">
           {displayedActivities.map((activity, idx) => {
               const damaged = isDamaged(activity);
               // Prefer createdAt for time ago calculation if available, else transactionDate
@@ -90,9 +90,9 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({ onViewAll }) => 
               return (
               <div key={activity.id || idx} className="relative pl-10 group">
                   {/* Timeline Dot */}
-                  <div className={`absolute left-0 top-1.5 w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow-sm z-10 ${
-                      damaged ? 'bg-red-100 text-red-600' :
-                      activity.transactionType === 'IN' ? 'bg-[#1E293B] text-white' : 'bg-[#EDEEF3] text-[#9CA3AF]'
+                  <div className={`absolute left-0 top-1.5 w-7 h-7 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-sm z-10 ${
+                      damaged ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                      activity.transactionType === 'IN' ? 'bg-[#1E293B] dark:bg-blue-600 text-white' : 'bg-[#EDEEF3] dark:bg-slate-700 text-[#9CA3AF] dark:text-slate-400'
                   }`}>
                       {damaged ? <AlertTriangle className="w-3.5 h-3.5" /> :
                        activity.transactionType === 'IN' ? <ArrowDownRight className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
@@ -100,23 +100,23 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({ onViewAll }) => 
 
                   <div className="flex flex-col">
                       <div className="flex justify-between items-start mb-1">
-                          <span className="text-xs font-bold text-[#1E293B]">{activity.quantity} {activity.itemName ? activity.itemName.split(' ')[0] : ''}</span>
-                          <div className="flex items-center gap-1 text-[10px] text-[#9CA3AF] bg-[#F7F8FD] px-2 py-0.5 rounded-full whitespace-nowrap">
+                          <span className="text-xs font-bold text-[#1E293B] dark:text-white">{activity.quantity} {activity.itemName ? activity.itemName.split(' ')[0] : ''}</span>
+                          <div className="flex items-center gap-1 text-[10px] text-[#9CA3AF] dark:text-slate-400 bg-[#F7F8FD] dark:bg-slate-700 px-2 py-0.5 rounded-full whitespace-nowrap">
                               <Clock className="w-3 h-3" />
                               {timeDisplay}
                           </div>
                       </div>
-                      <p className="text-xs text-[#9CA3AF] font-medium mb-1 line-clamp-1">
+                      <p className="text-xs text-[#9CA3AF] dark:text-slate-400 font-medium mb-1 line-clamp-1">
                           {damaged ? 'Reported Damaged' :
                            activity.transactionType === 'IN' ? 'Stock In' : 'Stock Out'} 
-                           &bull; <span className="text-[#9CA3AF] font-normal">{activity.notes || activity.itemName || 'Transaction'}</span>
+                           &bull; <span className="text-[#9CA3AF] dark:text-slate-500 font-normal">{activity.notes || activity.itemName || 'Transaction'}</span>
                       </p>
                       {activity.recordedBy && (
                            <div className="flex items-center gap-1.5 mt-1">
-                               <div className="w-4 h-4 rounded-full bg-[#EDEEF3] flex items-center justify-center text-[8px] font-bold text-[#9CA3AF]">
+                               <div className="w-4 h-4 rounded-full bg-[#EDEEF3] dark:bg-slate-700 flex items-center justify-center text-[8px] font-bold text-[#9CA3AF] dark:text-slate-400">
                                   {activity.recordedBy.charAt(0).toUpperCase()}
                                </div>
-                               <span className="text-[10px] text-[#9CA3AF]">by {activity.recordedBy}</span>
+                               <span className="text-[10px] text-[#9CA3AF] dark:text-slate-500">by {activity.recordedBy}</span>
                            </div>
                       )}
                   </div>
@@ -126,10 +126,10 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({ onViewAll }) => 
       )}
       
       {/* View All Button */}
-      <div className="mt-6 pt-4 border-t border-[#F7F8FD]">
+      <div className="mt-6 pt-4 border-t border-[#F7F8FD] dark:border-slate-700">
         <button 
             onClick={onViewAll}
-            className="w-full flex items-center justify-center gap-2 text-xs font-medium text-[#1E293B] hover:bg-[#F7F8FD] py-2 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 text-xs font-medium text-[#1E293B] dark:text-white hover:bg-[#F7F8FD] dark:hover:bg-slate-700 py-2 rounded-lg transition-colors"
         >
             View Full History
             <ChevronRight className="w-3 h-3" />

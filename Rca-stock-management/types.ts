@@ -46,6 +46,7 @@ export interface UserProfile {
   phone: string;
   joinDate: string;
   avatarUrl?: string;
+  location?: string; // Added for profile view
   // Settings
   emailNotifications?: boolean;
   smsNotifications?: boolean;
