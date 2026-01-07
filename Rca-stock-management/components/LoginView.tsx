@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { login, LoginRequest } from '../api/services/authService';
+import { login, forgotPassword, LoginRequest } from '../api/services/authService';
 import { ApiError } from '../api/client';
 
 interface LoginViewProps {
@@ -57,8 +57,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
     setLoading(true);
     setError(null);
     try {
-      // Here you would call your API to send a password reset link
-      // await forgotPassword({ email: forgotPasswordEmail });
+      await forgotPassword({ email: forgotPasswordEmail });
       setError('If an account with that email exists, a password reset link has been sent.');
     } catch (err) {
       setError('Failed to send password reset link. Please try again.');
