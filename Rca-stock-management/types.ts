@@ -1,7 +1,7 @@
 
 export type ViewState = 'DASHBOARD' | 'STOCK' | 'TRANSACTIONS' | 'ANALYTICS' | 'REPORT' | 'SUPPLIERS' | 'SETTINGS' | 'NOTIFICATIONS' | 'PROFILE';
 
-export type DrawerType = 'NONE' | 'STOCK_DETAIL' | 'SUPPLIER_DETAIL' | 'ORDER_FORM' | 'ADD_STOCK' | 'ADD_SUPPLIER' | 'EDIT_PROFILE' | 'CHANGE_PASSWORD';
+export type DrawerType = 'NONE' | 'STOCK_DETAIL' | 'SUPPLIER_DETAIL' | 'ORDER_FORM' | 'ADD_STOCK' | 'ADD_SUPPLIER' | 'EDIT_PROFILE' | 'CHANGE_PASSWORD' | 'STOCK_IN' | 'STOCK_OUT' | 'DELETE_ITEM';
 
 export interface StockItem {
   id: string;
@@ -46,6 +46,10 @@ export interface UserProfile {
   phone: string;
   joinDate: string;
   avatarUrl?: string;
+  // Settings
+  emailNotifications?: boolean;
+  smsNotifications?: boolean;
+  twoFactorAuth?: boolean;
 }
 
 export interface Supplier {
