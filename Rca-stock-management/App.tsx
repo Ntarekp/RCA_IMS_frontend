@@ -226,8 +226,9 @@ const App = () => {
     addToast(`Filter updated: ${range}`, 'success');
   };
 
-  const handleStockIn = async () => {
-    if (!selectedItem || !stockInQuantity || !('currentQuantity' in selectedItem)) return;
+  const handleStockIn = async (itemOverride?: StockItem) => {
+    const item = itemOverride || selectedItem;
+    if (!item || !stockInQuantity || !('currentQuantity' in item)) return;
     const quantity = parseInt(stockInQuantity);
     if (quantity <= 0) {
       addToast('Please enter a valid quantity.', 'error');
@@ -235,7 +236,7 @@ const App = () => {
     }
 
     const transactionData: CreateTransactionRequest = {
-      itemId: Number(selectedItem.id),
+      itemId: Number(item.id),
       transactionType: 'IN',
       quantity,
       transactionDate,
@@ -257,21 +258,22 @@ const App = () => {
     }
   };
 
-  const handleStockOut = async () => {
-    if (!selectedItem || !stockOutQuantity || !('currentQuantity' in selectedItem)) return;
+  const handleStockOut = async (itemOverride?: StockItem) => {
+    const item = itemOverride || selectedItem;
+    if (!item || !stockOutQuantity || !('currentQuantity' in item)) return;
     const quantity = parseInt(stockOutQuantity);
     if (quantity <= 0) {
       addToast('Please enter a valid quantity.', 'error');
       return;
     }
 
-    if (quantity > selectedItem.currentQuantity) {
+    if (quantity > item.currentQuantity) {
         addToast('Stock out quantity cannot be greater than current stock.', 'error');
         return;
     }
 
     const transactionData: CreateTransactionRequest = {
-      itemId: Number(selectedItem.id),
+      itemId: Number(item.id),
       transactionType: 'OUT',
       quantity,
       transactionDate,
@@ -422,8 +424,8 @@ const App = () => {
                         addToast('Please select an item.', 'error');
                         return;
                     }
-                    setSelectedItem(item); // Temporarily set for handler
-                    setTimeout(() => handleStockIn(), 0);
+                    setSelectedItem(item); 
+                    handleStockIn(item); // Pass item directly
                 } else {
                     // Simplified handleStockOut logic
                     const selectedItemId = (document.getElementById('item-select') as HTMLSelectElement).value;
@@ -432,8 +434,8 @@ const App = () => {
                         addToast('Please select an item.', 'error');
                         return;
                     }
-                    setSelectedItem(item); // Temporarily set for handler
-                    setTimeout(() => handleStockOut(), 0);
+                    setSelectedItem(item);
+                    handleStockOut(item); // Pass item directly
                 }
             }}>
                 <div>
@@ -1060,13 +1062,119 @@ const App = () => {
     return <div className="text-slate-400 text-center py-10">Select an item to view details</div>;
   };
 
-  // ... rest of the component
-  // (I need to make sure the return statement of App uses the resetToken check logic I added above, 
-  // but wait, I put the check inside renderDrawerContent which is wrong.
-  // The check should be at the top level of App return.)
+  const getDrawerTitle = () => {
+    switch(drawerType) {
+        case 'STOCK_IN': return 'Record Stock In';
+        case 'STOCK_OUT': return 'Record Stock Out';
+        case 'STOCK_DETAIL': return 'Item Details';
+        case 'DELETE_ITEM': return 'Delete Item';
+        case 'SUPPLIER_DETAIL': return 'Supplier Profile';
+        case 'ADD_STOCK': return 'New Stock Item';
+        case 'ADD_SUPPLIER': return 'Register Supplier';
+        case 'ORDER_FORM': return 'New Order';
+        case 'EDIT_PROFILE': return 'Edit Profile';
+        case 'CHANGE_PASSWORD': return 'Change Password';
+        default: return 'Details';
+    }
+  };
 
-  // Let's fix the return statement of App.
+  const getDrawerSubtitle = () => {
+     if (selectedItem && selectedItem.name) return selectedItem.name;
+     if (drawerType === 'ADD_STOCK') return 'Add a new product to inventory';
+     if (drawerType === 'ADD_SUPPLIER') return 'Create a new partnership';
+     if (drawerType === 'EDIT_PROFILE') return 'Update your personal information';
+     if (drawerType === 'CHANGE_PASSWORD') return 'Secure your account';
+     if (drawerType === 'STOCK_IN') return 'Add new inventory to the stock';
+     if (drawerType === 'STOCK_OUT') return 'Remove inventory from the stock';
+     if (drawerType === 'DELETE_ITEM') return 'Permanently remove this item';
+     return '';
+  };
 
+  // Drawer Footer Logic
+  const getDrawerFooter = () => {
+    if (drawerType === 'STOCK_IN' || drawerType === 'STOCK_OUT') {
+        return (
+            <button 
+                type="submit"
+                form="transaction-form"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+            >
+                {drawerType === 'STOCK_IN' ? 'Record Stock In' : 'Record Stock Out'}
+            </button>
+        );
+    }
+    if (drawerType === 'ADD_STOCK') {
+        return (
+            <button 
+                type="submit"
+                form="add-stock-form"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+            >
+                Create Item
+            </button>
+        );
+    }
+    if (drawerType === 'ADD_SUPPLIER') {
+        return (
+            <button 
+                type="submit"
+                form="add-supplier-form"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+            >
+                Register Supplier
+            </button>
+        );
+    }
+     if (drawerType === 'ORDER_FORM') {
+        return (
+            <button 
+                type="submit"
+                form="order-form"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+            >
+                Send Request
+            </button>
+        );
+    }
+    if (drawerType === 'EDIT_PROFILE') {
+        return (
+            <button 
+                type="submit"
+                form="edit-profile-form"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+            >
+                Save Changes
+            </button>
+        );
+    }
+     if (drawerType === 'CHANGE_PASSWORD') {
+        return (
+            <button 
+                type="submit"
+                form="change-password-form"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+            >
+                Update Password
+            </button>
+        );
+    }
+    if (drawerType === 'SUPPLIER_DETAIL') {
+         return (
+             <button 
+                onClick={() => {
+                    closeDrawer();
+                    setTimeout(() => openOrderForm(selectedItem), 300);
+                }}
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors"
+             >
+                 Create New Order
+             </button>
+         );
+    }
+    return null;
+  }
+
+  // Auth Flow
   if (!isLoggedIn) {
       // Check if we are in reset password mode (even if not logged in)
       if (resetToken) {
