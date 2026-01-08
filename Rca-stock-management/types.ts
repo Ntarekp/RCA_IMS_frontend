@@ -1,7 +1,7 @@
 
-export type ViewState = 'DASHBOARD' | 'STOCK' | 'TRANSACTIONS' | 'ANALYTICS' | 'REPORT' | 'SUPPLIERS' | 'SETTINGS' | 'NOTIFICATIONS' | 'PROFILE';
+export type ViewState = 'DASHBOARD' | 'STOCK' | 'TRANSACTIONS' | 'ANALYTICS' | 'REPORT' | 'SUPPLIERS' | 'SETTINGS' | 'NOTIFICATIONS' | 'PROFILE' | 'USERS';
 
-export type DrawerType = 'NONE' | 'STOCK_DETAIL' | 'SUPPLIER_DETAIL' | 'ORDER_FORM' | 'ADD_STOCK' | 'ADD_SUPPLIER' | 'EDIT_PROFILE' | 'CHANGE_PASSWORD' | 'STOCK_IN' | 'STOCK_OUT' | 'DELETE_ITEM';
+export type DrawerType = 'NONE' | 'STOCK_DETAIL' | 'SUPPLIER_DETAIL' | 'ORDER_FORM' | 'ADD_STOCK' | 'ADD_SUPPLIER' | 'EDIT_PROFILE' | 'CHANGE_PASSWORD' | 'STOCK_IN' | 'STOCK_OUT' | 'DELETE_ITEM' | 'ADD_USER';
 
 export interface StockItem {
   id: string;
@@ -39,6 +39,7 @@ export interface Activity {
 }
 
 export interface UserProfile {
+  id?: number;
   name: string;
   role: string;
   email: string;

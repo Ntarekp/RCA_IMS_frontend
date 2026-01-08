@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ViewState } from '../types';
 import {
     LayoutDashboard,
@@ -8,7 +8,11 @@ import {
     FileText,
     Truck,
     Settings,
-    X
+    X,
+    Users,
+    Cpu,
+    ChevronDown,
+    ChevronRight
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -16,18 +20,28 @@ interface SidebarProps {
     onChangeView: (view: ViewState) => void;
     isOpen: boolean;
     onClose: () => void;
+    userRole?: string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isOpen, onClose }) => {
-    const menuItems: { id: ViewState; label: string; icon: React.ElementType }[] = [
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isOpen, onClose, userRole }) => {
+    const [expandedSystem, setExpandedSystem] = useState(false);
+
+    const menuItems = [
         { id: 'DASHBOARD', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'STOCK', label: 'Stock', icon: Package },
         { id: 'TRANSACTIONS', label: 'Transactions', icon: ArrowRightLeft },
         { id: 'ANALYTICS', label: 'Analytics', icon: BarChart3 },
         { id: 'REPORT', label: 'Report', icon: FileText },
         { id: 'SUPPLIERS', label: 'Suppliers', icon: Truck },
+    ];
+
+    const systemSubItems = [
+        { id: 'USERS', label: 'Users', icon: Users, adminOnly: true },
         { id: 'SETTINGS', label: 'Settings', icon: Settings },
     ];
+
+    const filteredSystemItems = systemSubItems.filter(item => !item.adminOnly || userRole === 'ADMIN');
+    const isSystemActive = filteredSystemItems.some(item => item.id === currentView);
 
     // Shared Nav Content
     const NavContent = ({ isCollapsed = false, showLogo = true }) => (
@@ -51,11 +65,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
                         <button
                             key={item.id}
                             onClick={() => {
-                                onChangeView(item.id);
-                                // Close mobile menu on selection if open
-                                if (window.innerWidth < 768) {
-                                    onClose();
-                                }
+                                onChangeView(item.id as ViewState);
+                                if (window.innerWidth < 768) onClose();
                             }}
                             title={isCollapsed ? item.label : undefined}
                             className={`w-full flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-[12px] transition-all duration-200 group relative ${
@@ -66,10 +77,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
                         >
                             <item.icon className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive ? 'text-white' : 'text-[#9CA3AF] dark:text-slate-400 group-hover:text-[#1E293B] dark:group-hover:text-white'}`} strokeWidth={2} />
                             <span className={`${isCollapsed ? 'hidden' : 'block'} whitespace-nowrap`}>
-                  {item.label}
-              </span>
-
-                            {/* Tooltip for collapsed mode */}
+                                {item.label}
+                            </span>
                             {isCollapsed && (
                                 <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-[#1E293B] dark:bg-slate-800 text-white text-xs px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 whitespace-nowrap shadow-xl translate-x-[-5px] group-hover:translate-x-0">
                                     {item.label}
@@ -78,6 +87,74 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
                         </button>
                     );
                 })}
+
+                {/* System Group */}
+                <div className="pt-2">
+                    <button
+                        onClick={() => setExpandedSystem(!expandedSystem)}
+                        title={isCollapsed ? "System" : undefined}
+                        className={`w-full flex items-center justify-between gap-3 px-3 py-3 text-sm font-medium rounded-[12px] transition-all duration-200 group relative ${
+                            isSystemActive && !expandedSystem
+                                ? 'bg-[#EDEEF3] dark:bg-slate-700 text-[#1E293B] dark:text-white'
+                                : 'text-[#9CA3AF] dark:text-slate-400 hover:bg-[#EDEEF3] dark:hover:bg-slate-700 hover:text-[#1E293B] dark:hover:text-white'
+                        } ${isCollapsed ? 'justify-center px-2' : ''}`}
+                    >
+                        <div className="flex items-center gap-3">
+                            <Cpu className={`w-5 h-5 flex-shrink-0 transition-colors ${isSystemActive ? 'text-[#1E293B] dark:text-white' : 'text-[#9CA3AF] dark:text-slate-400 group-hover:text-[#1E293B] dark:group-hover:text-white'}`} strokeWidth={2} />
+                            <span className={`${isCollapsed ? 'hidden' : 'block'} whitespace-nowrap`}>System</span>
+                        </div>
+                        {!isCollapsed && (
+                            <div className="text-[#9CA3AF] dark:text-slate-500">
+                                {expandedSystem ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                            </div>
+                        )}
+                        
+                        {isCollapsed && (
+                             <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-[#1E293B] dark:bg-slate-800 text-white text-xs px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 whitespace-nowrap shadow-xl translate-x-[-5px] group-hover:translate-x-0">
+                                System
+                            </div>
+                        )}
+                    </button>
+
+                    {/* Sub Items */}
+                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${expandedSystem ? 'max-h-40 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+                        {filteredSystemItems.map((item) => {
+                            const isActive = currentView === item.id;
+                            return (
+                                <button
+                                    key={item.id}
+                                    onClick={() => {
+                                        onChangeView(item.id as ViewState);
+                                        if (window.innerWidth < 768) onClose();
+                                    }}
+                                    title={isCollapsed ? item.label : undefined}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-[12px] transition-all duration-200 group relative ${
+                                        isCollapsed ? 'justify-center' : 'pl-11'
+                                    } ${
+                                        isActive
+                                            ? 'text-[#1E293B] dark:text-blue-400 bg-white dark:bg-slate-800 shadow-sm'
+                                            : 'text-[#9CA3AF] dark:text-slate-500 hover:text-[#1E293B] dark:hover:text-slate-300'
+                                    }`}
+                                >
+                                    {isCollapsed ? (
+                                        <item.icon className={`w-4 h-4 ${isActive ? 'text-[#1E293B] dark:text-blue-400' : 'text-[#9CA3AF] dark:text-slate-500'}`} />
+                                    ) : (
+                                        <>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#1E293B] dark:bg-blue-500' : 'bg-slate-300 dark:bg-slate-600 group-hover:bg-slate-400'}`}></span>
+                                            <span>{item.label}</span>
+                                        </>
+                                    )}
+                                    
+                                    {isCollapsed && (
+                                        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-[#1E293B] dark:bg-slate-800 text-white text-xs px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 whitespace-nowrap shadow-xl translate-x-[-5px] group-hover:translate-x-0">
+                                            {item.label}
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
             </nav>
         </>
     );

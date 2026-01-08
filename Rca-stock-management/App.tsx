@@ -1056,7 +1056,10 @@ const App = () => {
 
     // Check for reset password token
     if (resetToken) {
-        return <ResetPasswordView token={resetToken} onSuccess={() => setResetToken(null)} />;
+        return <ResetPasswordView token={resetToken} onSuccess={() => {
+            setResetToken(null);
+            handleLogout(); // Ensure user is logged out after reset
+        }} />;
     }
 
     return <div className="text-slate-400 text-center py-10">Select an item to view details</div>;
@@ -1180,7 +1183,7 @@ const App = () => {
       if (resetToken) {
           return <ResetPasswordView token={resetToken} onSuccess={() => {
               setResetToken(null);
-              // Optionally show a success toast or redirect to login
+              handleLogout(); // Ensure user is logged out after reset
           }} />;
       }
 
