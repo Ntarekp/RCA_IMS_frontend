@@ -3,10 +3,11 @@
  * API service for user profile and password management
  */
 
-import { get, put, post } from '../client';
-import { API_CONFIG } from '../config';
+import { get, put, post, del } from '../client';
+import { UserProfile } from '../../types';
 
 const ENDPOINT = '/api/auth';
+const ADMIN_ENDPOINT = '/api/admin/users';
 
 export interface UserProfileResponse {
   email: string;
@@ -27,11 +28,20 @@ export interface ChangePasswordRequest {
   confirmPassword: string;
 }
 
+export interface CreateUserRequest {
+    name: string;
+    email: string;
+    password?: string;
+    role: 'ADMIN' | 'USER';
+    department?: string;
+    phone?: string;
+}
+
 /**
  * Get current user profile
  */
-export const getProfile = async (): Promise<UserProfileResponse> => {
-  return get<UserProfileResponse>(`${ENDPOINT}/profile`);
+export const getProfile = async (): Promise<UserProfile> => {
+  return get<UserProfile>(`${ENDPOINT}/profile`);
 };
 
 /**
@@ -48,3 +58,23 @@ export const changePassword = async (request: ChangePasswordRequest): Promise<an
   return post<any>(`${ENDPOINT}/change-password`, request);
 };
 
+/**
+ * Get all users (Admin only)
+ */
+export const getUsers = async (): Promise<UserProfile[]> => {
+    return get<UserProfile[]>(ADMIN_ENDPOINT);
+};
+
+/**
+ * Create a new user (Admin only)
+ */
+export const createUser = async (user: CreateUserRequest): Promise<UserProfile> => {
+    return post<UserProfile>(ADMIN_ENDPOINT, user);
+};
+
+/**
+ * Delete a user (Admin only)
+ */
+export const deleteUser = async (userId: number): Promise<void> => {
+    return del<void>(`${ADMIN_ENDPOINT}/${userId}`);
+};

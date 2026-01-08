@@ -129,20 +129,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
                                     }}
                                     title={isCollapsed ? item.label : undefined}
                                     className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-[12px] transition-all duration-200 group relative ${
-                                        isCollapsed ? 'justify-center' : 'pl-11'
+                                        isCollapsed ? 'justify-center' : 'pl-4'
                                     } ${
                                         isActive
                                             ? 'text-[#1E293B] dark:text-blue-400 bg-white dark:bg-slate-800 shadow-sm'
                                             : 'text-[#9CA3AF] dark:text-slate-500 hover:text-[#1E293B] dark:hover:text-slate-300'
                                     }`}
                                 >
-                                    {isCollapsed ? (
-                                        <item.icon className={`w-4 h-4 ${isActive ? 'text-[#1E293B] dark:text-blue-400' : 'text-[#9CA3AF] dark:text-slate-500'}`} />
-                                    ) : (
-                                        <>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#1E293B] dark:bg-blue-500' : 'bg-slate-300 dark:bg-slate-600 group-hover:bg-slate-400'}`}></span>
-                                            <span>{item.label}</span>
-                                        </>
+                                    {/* Icon added here */}
+                                    <item.icon className={`w-4 h-4 ${isActive ? 'text-[#1E293B] dark:text-blue-400' : 'text-[#9CA3AF] dark:text-slate-500'}`} />
+                                    
+                                    {!isCollapsed && (
+                                        <span>{item.label}</span>
                                     )}
                                     
                                     {isCollapsed && (

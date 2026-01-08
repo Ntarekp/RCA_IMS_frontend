@@ -16,6 +16,7 @@ import { SettingsView } from './components/SettingsView';
 import { NotificationsView } from './components/NotificationsView';
 import { ProfileView } from './components/ProfileView';
 import { ReportsView } from './components/ReportsView';
+import { UsersView } from './components/UsersView';
 import { DetailDrawer } from './components/DetailDrawer';
 import { ToastContainer, ToastMessage } from './components/Toast';
 import { LoginView } from './components/LoginView';
@@ -27,7 +28,7 @@ import { useTransactions } from './hooks/useTransactions';
 import { useSuppliers } from './hooks/useSuppliers';
 import { CreateItemRequest, CreateTransactionRequest, UpdateItemRequest } from './api/types';
 import { ApiError } from './api/client';
-import { updateProfile, changePassword, UpdateProfileRequest, ChangePasswordRequest } from './api/services/userService';
+import { updateProfile, changePassword, UpdateProfileRequest, ChangePasswordRequest, createUser, CreateUserRequest } from './api/services/userService';
 import { getAnalyticsSummary } from './api/services/analyticsService';
 import { 
   Calendar, 
@@ -386,6 +387,12 @@ const App = () => {
   const openChangePassword = () => {
       setSelectedItem(null);
       setDrawerType('CHANGE_PASSWORD');
+      setDrawerOpen(true);
+  };
+
+  const openAddUser = () => {
+      setSelectedItem(null);
+      setDrawerType('ADD_USER');
       setDrawerOpen(true);
   };
 
@@ -1054,6 +1061,74 @@ const App = () => {
         );
     }
 
+    if (drawerType === 'ADD_USER') {
+        return (
+            <form id="add-user-form" className="space-y-5" onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.target as HTMLFormElement;
+                const formData = new FormData(form);
+
+                const userData: CreateUserRequest = {
+                    name: formData.get('name') as string,
+                    email: formData.get('email') as string,
+                    role: formData.get('role') as 'ADMIN' | 'USER',
+                    department: formData.get('department') as string,
+                    phone: formData.get('phone') as string,
+                };
+
+                try {
+                    const toastId = addToast("Creating user...", 'loading');
+                    await createUser(userData);
+                    removeToast(toastId);
+                    addToast("User created successfully. An email has been sent to set their password.", 'success');
+                    closeDrawer();
+                    // Refresh users list if currently on Users view
+                    if (view === 'USERS') {
+                        // This will trigger a re-render of UsersView which fetches users on mount
+                        // A better approach would be to pass a refresh callback to UsersView
+                        setView('DASHBOARD'); // Temporary hack to force refresh when going back
+                        setTimeout(() => setView('USERS'), 50);
+                    }
+                } catch (error) {
+                    const errorMessage = error instanceof ApiError 
+                        ? error.message 
+                        : 'Failed to create user. Please try again.';
+                    addToast(errorMessage, 'error');
+                }
+            }}>
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
+                    <input name="name" type="text" placeholder="John Doe" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email Address</label>
+                    <input name="email" type="email" placeholder="john@example.com" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Role</label>
+                        <select name="role" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required>
+                            <option value="USER">User</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Department</label>
+                        <input name="department" type="text" placeholder="Logistics" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" />
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Phone Number</label>
+                    <input name="phone" type="tel" placeholder="+250 7..." className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" />
+                </div>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-xs text-blue-700 dark:text-blue-300 flex gap-2">
+                    <div className="mt-0.5"><Shield className="w-4 h-4" /></div>
+                    <p>New users will receive an email with instructions to set their password. They will have limited access based on the selected role.</p>
+                </div>
+            </form>
+        );
+    }
+
     // Check for reset password token
     if (resetToken) {
         return <ResetPasswordView token={resetToken} onSuccess={() => {
@@ -1077,6 +1152,7 @@ const App = () => {
         case 'ORDER_FORM': return 'New Order';
         case 'EDIT_PROFILE': return 'Edit Profile';
         case 'CHANGE_PASSWORD': return 'Change Password';
+        case 'ADD_USER': return 'Create New User';
         default: return 'Details';
     }
   };
@@ -1090,6 +1166,7 @@ const App = () => {
      if (drawerType === 'STOCK_IN') return 'Add new inventory to the stock';
      if (drawerType === 'STOCK_OUT') return 'Remove inventory from the stock';
      if (drawerType === 'DELETE_ITEM') return 'Permanently remove this item';
+     if (drawerType === 'ADD_USER') return 'Add a new member to the system';
      return '';
   };
 
@@ -1161,6 +1238,17 @@ const App = () => {
             </button>
         );
     }
+    if (drawerType === 'ADD_USER') {
+        return (
+            <button 
+                type="submit"
+                form="add-user-form"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+            >
+                Create User
+            </button>
+        );
+    }
     if (drawerType === 'SUPPLIER_DETAIL') {
          return (
              <button 
@@ -1210,6 +1298,7 @@ const App = () => {
             onChangeView={setView}
             isOpen={isMobileMenuOpen}
             onClose={() => setIsMobileMenuOpen(false)}
+            userRole={userProfile?.role}
         />
 
         {/* Scrollable Content */}
@@ -1222,7 +1311,7 @@ const App = () => {
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
                         <div>
                              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Overview</h1>
-                             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Welcome back, Prince Neza</p>
+                             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Welcome back, {userProfile?.name || 'User'}</p>
                         </div>
                         
                         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
@@ -1640,12 +1729,13 @@ const App = () => {
                 </div>
             )}
 
+            {view === 'USERS' && <UsersView onAddUser={openAddUser} />}
             {view === 'REPORT' && <ReportsView onGenerateReport={() => addToast('Generate Report feature is coming soon!', 'info')} />}
             {view === 'SETTINGS' && <SettingsView onChangePassword={openChangePassword} />}
             {view === 'NOTIFICATIONS' && <NotificationsView />}
             {view === 'PROFILE' && <ProfileView onEditProfile={openEditProfile} onChangePassword={openChangePassword} onLogout={handleLogout} />}
 
-            {view !== 'DASHBOARD' && view !== 'STOCK' && view !== 'TRANSACTIONS' && view !== 'ANALYTICS' && view !== 'SUPPLIERS' && view !== 'REPORT' && view !== 'SETTINGS' && view !== 'NOTIFICATIONS' && view !== 'PROFILE' && (
+            {view !== 'DASHBOARD' && view !== 'STOCK' && view !== 'TRANSACTIONS' && view !== 'ANALYTICS' && view !== 'SUPPLIERS' && view !== 'REPORT' && view !== 'SETTINGS' && view !== 'NOTIFICATIONS' && view !== 'PROFILE' && view !== 'USERS' && (
                 <div className="flex flex-col items-center justify-center h-full text-slate-400">
                     <p className="text-lg font-medium">Page under construction</p>
                     <p className="text-sm">Select a valid page from the sidebar.</p>
