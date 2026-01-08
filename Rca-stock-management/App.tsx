@@ -510,7 +510,7 @@ const App = () => {
             <div className="space-y-6">
                 <div className="flex border-b border-slate-200 dark:border-slate-600 -mx-6 px-6">
                     <TabButton tabName="details" label="Details" />
-                    <TabButton tabName="edit" label="Edit Item" />
+                    {userProfile?.role === 'ADMIN' && <TabButton tabName="edit" label="Edit Item" />}
                 </div>
 
                 {activeTab === 'details' && (
@@ -554,7 +554,7 @@ const App = () => {
                     </div>
                 )}
 
-                {activeTab === 'edit' && (
+                {activeTab === 'edit' && userProfile?.role === 'ADMIN' && (
                     <form id="edit-stock-form" className="space-y-5" onSubmit={async (e) => {
                         e.preventDefault();
                         const form = e.target as HTMLFormElement;
@@ -881,27 +881,29 @@ const App = () => {
                     </div>
                 </div>
                 
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-                    <button 
-                        onClick={async () => {
-                            if (confirm('Are you sure you want to deactivate this supplier?')) {
-                                try {
-                                    const toastId = addToast("Deactivating supplier...", 'loading');
-                                    await deactivateSupplier(supplier.id);
-                                    removeToast(toastId);
-                                    addToast("Supplier deactivated.", 'success');
-                                    closeDrawer();
-                                    refetchSuppliers();
-                                } catch (e) {
-                                    addToast("Failed to deactivate supplier.", 'error');
+                {userProfile?.role === 'ADMIN' && (
+                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
+                        <button
+                            onClick={async () => {
+                                if (confirm('Are you sure you want to deactivate this supplier?')) {
+                                    try {
+                                        const toastId = addToast("Deactivating supplier...", 'loading');
+                                        await deactivateSupplier(supplier.id);
+                                        removeToast(toastId);
+                                        addToast("Supplier deactivated.", 'success');
+                                        closeDrawer();
+                                        refetchSuppliers();
+                                    } catch (e) {
+                                        addToast("Failed to deactivate supplier.", 'error');
+                                    }
                                 }
-                            }
-                        }}
-                        className="w-full text-center text-rose-600 dark:text-rose-400 text-sm font-medium hover:text-rose-700 dark:hover:text-rose-300"
-                    >
-                        Deactivate Supplier
-                    </button>
-                </div>
+                            }}
+                            className="w-full text-center text-rose-600 dark:text-rose-400 text-sm font-medium hover:text-rose-700 dark:hover:text-rose-300"
+                        >
+                            Deactivate Supplier
+                        </button>
+                    </div>
+                )}
             </div>
         );
     }
@@ -1323,15 +1325,17 @@ const App = () => {
                                 <span>{dateRange}</span>
                             </button>
                             
-                            <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-                                <button 
-                                    onClick={openAddStock}
-                                    className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 hover:shadow-lg hover:shadow-slate-900/20 transition-all whitespace-nowrap active:scale-95"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                    <span>New Entry</span>
-                                </button>
-                            </div>
+                            {userProfile?.role === 'ADMIN' && (
+                                <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+                                    <button
+                                        onClick={openAddStock}
+                                        className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 hover:shadow-lg hover:shadow-slate-900/20 transition-all whitespace-nowrap active:scale-95"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        <span>New Entry</span>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -1387,13 +1391,15 @@ const App = () => {
                                 <span>Export CSV</span>
                                 <FileSpreadsheet className="w-4 h-4" />
                             </button>
-                            <button 
-                                onClick={openAddStock}
-                                className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-900/20 active:scale-95"
-                            >
-                                <span>Add Item</span>
-                                <PlusCircle className="w-4 h-4" />
-                            </button>
+                            {userProfile?.role === 'ADMIN' && (
+                                <button
+                                    onClick={openAddStock}
+                                    className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-900/20 active:scale-95"
+                                >
+                                    <span>Add Item</span>
+                                    <PlusCircle className="w-4 h-4" />
+                                </button>
+                            )}
                         </div>
                     </div>
                     
@@ -1515,12 +1521,14 @@ const App = () => {
                                                     >
                                                         Edit
                                                     </button>
-                                                    <button 
-                                                        onClick={() => openDeleteItem(item)}
-                                                        className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 font-medium text-xs"
-                                                    >
-                                                        Delete
-                                                    </button>
+                                                    {userProfile?.role === 'ADMIN' && (
+                                                        <button
+                                                            onClick={() => openDeleteItem(item)}
+                                                            className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 font-medium text-xs"
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -1705,15 +1713,17 @@ const App = () => {
                              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage your partnerships</p>
                         </div>
 
-                        <div className="flex items-center gap-3 w-full md:w-auto">
-                            <button 
-                                onClick={openAddSupplier}
-                                className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-900/20 active:scale-95"
-                            >
-                                <span>Add Supplier</span>
-                                <PlusCircle className="w-4 h-4" />
-                            </button>
-                        </div>
+                        {userProfile?.role === 'ADMIN' && (
+                            <div className="flex items-center gap-3 w-full md:w-auto">
+                                <button
+                                    onClick={openAddSupplier}
+                                    className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-900/20 active:scale-95"
+                                >
+                                    <span>Add Supplier</span>
+                                    <PlusCircle className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

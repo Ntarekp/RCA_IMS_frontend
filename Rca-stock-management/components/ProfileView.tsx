@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UserProfile } from '../types';
-import { User, Mail, Phone, MapPin, Shield, Calendar, Edit, Lock, LogOut, Briefcase, Camera, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Shield, Calendar, Edit, Lock, LogOut, Briefcase, Camera, Loader2, Upload } from 'lucide-react';
 import { getProfile } from '../api/services/userService';
 
 interface ProfileViewProps {
@@ -12,6 +12,9 @@ interface ProfileViewProps {
 export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChangePassword, onLogout }) => {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const coverInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -27,6 +30,25 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
         fetchProfile();
     }, []);
 
+    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover') => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // In a real app, you would upload this file to a server/S3
+        // For now, we'll use a local object URL to simulate the update
+        const imageUrl = URL.createObjectURL(file);
+        
+        setProfile(prev => prev ? {
+            ...prev,
+            [type === 'avatar' ? 'avatarUrl' : 'coverUrl']: imageUrl
+        } : null);
+
+        // TODO: Implement actual API call to update profile image
+        // const formData = new FormData();
+        // formData.append('file', file);
+        // await updateProfileImage(formData);
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
@@ -40,133 +62,208 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500 pb-10">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">My Profile</h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage your account settings and preferences</p>
-                </div>
-                <button 
-                    onClick={onLogout}
-                    className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-red-600 dark:hover:text-red-400 transition-all shadow-sm"
-                >
-                    <LogOut className="w-4 h-4" />
-                    <span>Sign Out</span>
-                </button>
-            </div>
+        <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500 pb-10">
+            {/* Hidden File Inputs */}
+            <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e, 'avatar')}
+            />
+            <input 
+                type="file" 
+                ref={coverInputRef} 
+                className="hidden" 
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e, 'cover')}
+            />
 
             {/* Profile Header Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-slate-800 to-slate-900 dark:from-blue-900 dark:to-slate-900"></div>
+            <div className="bg-white dark:bg-slate-800 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group/cover">
+                {/* Cover Image */}
+                <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-r from-slate-800 to-slate-900 dark:from-blue-900 dark:to-slate-900">
+                    {profile.coverUrl && (
+                        <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover opacity-80" />
+                    )}
+                    <div className="absolute inset-0 bg-black/10 group-hover/cover:bg-black/30 transition-colors"></div>
+                    <button 
+                        onClick={() => coverInputRef.current?.click()}
+                        className="absolute top-4 right-4 p-2 bg-black/30 hover:bg-black/50 text-white rounded-xl backdrop-blur-sm transition-all opacity-0 group-hover/cover:opacity-100 flex items-center gap-2 text-xs font-medium"
+                    >
+                        <Camera className="w-4 h-4" />
+                        <span>Change Cover</span>
+                    </button>
+                </div>
                 
-                <div className="relative flex flex-col md:flex-row items-start md:items-end gap-6 mt-12">
-                    <div className="relative group">
-                        <div className="w-32 h-32 rounded-3xl bg-white dark:bg-slate-800 p-1.5 shadow-xl">
-                            <div className="w-full h-full rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-4xl font-bold text-slate-400 dark:text-slate-500 overflow-hidden">
+                <div className="relative px-8 pb-8 pt-32 flex flex-col md:flex-row items-end gap-6">
+                    {/* Avatar */}
+                    <div className="relative group/avatar">
+                        <div className="w-36 h-36 rounded-[2rem] bg-white dark:bg-slate-800 p-1.5 shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-300">
+                            <div className="w-full h-full rounded-[1.6rem] bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-5xl font-bold text-slate-400 dark:text-slate-500 overflow-hidden relative">
                                 {profile.avatarUrl ? (
                                     <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
                                 ) : (
-                                    profile.name ? profile.name.charAt(0).toUpperCase() : <User className="w-12 h-12" />
+                                    <span className="text-slate-300 dark:text-slate-600">{profile.name ? profile.name.charAt(0).toUpperCase() : <User className="w-16 h-16" />}</span>
                                 )}
+                                
+                                {/* Avatar Overlay */}
+                                <div 
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer"
+                                >
+                                    <Camera className="w-8 h-8 text-white" />
+                                </div>
                             </div>
                         </div>
-                        <button className="absolute bottom-2 right-2 p-2 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-colors opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100">
-                            <Camera className="w-4 h-4" />
-                        </button>
+                        <div className="absolute bottom-4 right-0 w-6 h-6 bg-green-500 border-4 border-white dark:border-slate-800 rounded-full z-10"></div>
                     </div>
                     
-                    <div className="flex-1 mb-2">
+                    {/* User Info */}
+                    <div className="flex-1 mb-2 text-center md:text-left">
                         <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{profile.name || 'User'}</h2>
-                        <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-slate-600 dark:text-slate-400">
-                            <div className="flex items-center gap-1.5">
-                                <Briefcase className="w-4 h-4" />
+                        <p className="text-slate-500 dark:text-slate-400 font-medium">{profile.email}</p>
+                        
+                        <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 mt-4">
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 text-xs font-medium">
+                                <Briefcase className="w-3.5 h-3.5" />
                                 <span>{profile.department || 'No Department'}</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <MapPin className="w-4 h-4" />
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 text-xs font-medium">
+                                <MapPin className="w-3.5 h-3.5" />
                                 <span>{profile.location || 'Kigali, Rwanda'}</span>
                             </div>
-                            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800 text-xs font-bold uppercase tracking-wide">
+                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${
+                                profile.role === 'ADMIN' 
+                                    ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-800' 
+                                    : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-800'
+                            }`}>
                                 <Shield className="w-3 h-3" />
                                 <span>{profile.role}</span>
                             </div>
                         </div>
                     </div>
 
+                    {/* Actions */}
                     <div className="flex gap-3 w-full md:w-auto mt-4 md:mt-0">
                         <button 
                             onClick={onEditProfile}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#1e293b] dark:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-all shadow-lg shadow-slate-900/20 active:scale-95"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-all shadow-lg shadow-slate-900/20 active:scale-95"
                         >
                             <Edit className="w-4 h-4" />
                             <span>Edit Profile</span>
                         </button>
                         <button 
-                            onClick={onChangePassword}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-600 transition-all shadow-sm active:scale-95"
+                            onClick={onLogout}
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-white px-4 py-3 rounded-xl text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-600 transition-all shadow-sm active:scale-95 hover:text-red-600 dark:hover:text-red-400"
                         >
-                            <Lock className="w-4 h-4" />
-                            <span>Password</span>
+                            <LogOut className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Details Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Contact Info */}
-                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                        <User className="w-5 h-5 text-blue-500" />
-                        Contact Information
-                    </h3>
-                    <div className="space-y-6">
-                        <div className="flex items-start gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700/50 flex items-center justify-center text-slate-400 flex-shrink-0">
-                                <Mail className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-0.5">Email Address</p>
-                                <p className="text-slate-700 dark:text-slate-200 font-medium">{profile.email}</p>
-                            </div>
+            {/* Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Column - Personal Info */}
+                <div className="lg:col-span-2 space-y-8">
+                    <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <User className="w-5 h-5 text-blue-500" />
+                                Personal Information
+                            </h3>
+                            <button onClick={onChangePassword} className="text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline flex items-center gap-1">
+                                <Lock className="w-3 h-3" />
+                                Change Password
+                            </button>
                         </div>
-                        <div className="flex items-start gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700/50 flex items-center justify-center text-slate-400 flex-shrink-0">
-                                <Phone className="w-5 h-5" />
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Full Name</label>
+                                <p className="text-slate-900 dark:text-white font-medium text-lg">{profile.name || 'Not set'}</p>
                             </div>
-                            <div>
-                                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-0.5">Phone Number</p>
-                                <p className="text-slate-700 dark:text-slate-200 font-medium">{profile.phone || 'Not provided'}</p>
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Email Address</label>
+                                <p className="text-slate-900 dark:text-white font-medium text-lg">{profile.email}</p>
                             </div>
-                        </div>
-                        <div className="flex items-start gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700/50 flex items-center justify-center text-slate-400 flex-shrink-0">
-                                <Calendar className="w-5 h-5" />
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Phone Number</label>
+                                <p className="text-slate-900 dark:text-white font-medium text-lg">{profile.phone || 'Not set'}</p>
                             </div>
-                            <div>
-                                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-0.5">Member Since</p>
-                                <p className="text-slate-700 dark:text-slate-200 font-medium">{profile.joinDate ? new Date(profile.joinDate).toLocaleDateString() : 'N/A'}</p>
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Department</label>
+                                <p className="text-slate-900 dark:text-white font-medium text-lg">{profile.department || 'Not set'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Location</label>
+                                <p className="text-slate-900 dark:text-white font-medium text-lg">{profile.location || 'Not set'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Member Since</label>
+                                <p className="text-slate-900 dark:text-white font-medium text-lg">
+                                    {profile.joinDate ? new Date(profile.joinDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Account Stats / Activity Placeholder */}
-                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-center items-center text-center">
-                    <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500 mb-4">
-                        <Shield className="w-8 h-8" />
-                    </div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Account Status</h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs mx-auto mb-6">
-                        Your account is fully active. You have {profile.role === 'ADMIN' ? 'full administrative' : 'standard'} access to the system.
-                    </p>
-                    <div className="w-full bg-slate-50 dark:bg-slate-700/30 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-500 dark:text-slate-400">Security Level</span>
-                            <span className="font-bold text-emerald-600 dark:text-emerald-400">Strong</span>
+                {/* Right Column - Stats & Settings */}
+                <div className="space-y-8">
+                    {/* Account Status */}
+                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2rem] p-8 text-white shadow-lg shadow-blue-500/20 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-10 -mb-10 blur-xl"></div>
+                        
+                        <div className="relative z-10">
+                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
+                                <Shield className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-xl font-bold mb-2">Account Status</h3>
+                            <p className="text-blue-100 text-sm mb-6 leading-relaxed">
+                                Your account is fully active with {profile.role === 'ADMIN' ? 'administrative' : 'standard'} privileges.
+                            </p>
+                            
+                            <div className="space-y-3">
+                                <div className="flex justify-between text-sm font-medium">
+                                    <span className="text-blue-100">Security Score</span>
+                                    <span>98%</span>
+                                </div>
+                                <div className="w-full bg-black/20 h-2 rounded-full overflow-hidden">
+                                    <div className="bg-white h-full w-[98%] rounded-full"></div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="w-full bg-slate-200 dark:bg-slate-600 h-1.5 rounded-full mt-3 overflow-hidden">
-                            <div className="bg-emerald-500 h-full rounded-full w-full"></div>
+                    </div>
+
+                    {/* Quick Settings */}
+                    <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">Preferences</h3>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-400 shadow-sm">
+                                        <Mail className="w-4 h-4" />
+                                    </div>
+                                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Email Notifications</span>
+                                </div>
+                                <div className={`w-10 h-6 rounded-full p-1 transition-colors ${profile.emailNotifications ? 'bg-blue-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${profile.emailNotifications ? 'translate-x-4' : ''}`}></div>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-400 shadow-sm">
+                                        <Phone className="w-4 h-4" />
+                                    </div>
+                                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">SMS Alerts</span>
+                                </div>
+                                <div className={`w-10 h-6 rounded-full p-1 transition-colors ${profile.smsNotifications ? 'bg-blue-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${profile.smsNotifications ? 'translate-x-4' : ''}`}></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
