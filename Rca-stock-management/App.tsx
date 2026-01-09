@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// TODO: The user needs to run "npm install react-datepicker @types/react-datepicker" to install the date picker library.
 import ReactMarkdown from 'react-markdown';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -32,12 +31,10 @@ import { updateProfile, changePassword, UpdateProfileRequest, ChangePasswordRequ
 import { getAnalyticsSummary } from './api/services/analyticsService';
 import { 
   Calendar, 
-  ChevronDown, 
   List, 
   FileSpreadsheet, 
   PlusCircle, 
   Plus, 
-  Upload, 
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
@@ -55,7 +52,6 @@ import {
   Truck,
   User,
   Shield,
-  Briefcase,
   ArrowDown,
   ArrowUp,
   AlertTriangle,
@@ -167,6 +163,10 @@ const App = () => {
                     } else {
                         document.documentElement.classList.remove('dark');
                     }
+                }).catch(error => {
+                    // If profile fetch fails (e.g. 401 Unauthorized), logout the user
+                    console.error("Failed to fetch profile:", error);
+                    handleLogout();
                 });
             });
             refetchSuppliers();
@@ -883,7 +883,7 @@ const App = () => {
                 
                 {userProfile?.role === 'ADMIN' && (
                     <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-                        <button
+                        <button 
                             onClick={async () => {
                                 if (confirm('Are you sure you want to deactivate this supplier?')) {
                                     try {
@@ -1327,7 +1327,7 @@ const App = () => {
                             
                             {userProfile?.role === 'ADMIN' && (
                                 <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-                                    <button
+                                    <button 
                                         onClick={openAddStock}
                                         className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 hover:shadow-lg hover:shadow-slate-900/20 transition-all whitespace-nowrap active:scale-95"
                                     >
@@ -1392,7 +1392,7 @@ const App = () => {
                                 <FileSpreadsheet className="w-4 h-4" />
                             </button>
                             {userProfile?.role === 'ADMIN' && (
-                                <button
+                                <button 
                                     onClick={openAddStock}
                                     className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-900/20 active:scale-95"
                                 >
@@ -1522,7 +1522,7 @@ const App = () => {
                                                         Edit
                                                     </button>
                                                     {userProfile?.role === 'ADMIN' && (
-                                                        <button
+                                                        <button 
                                                             onClick={() => openDeleteItem(item)}
                                                             className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 font-medium text-xs"
                                                         >
