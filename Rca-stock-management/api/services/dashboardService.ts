@@ -4,10 +4,13 @@
  */
 
 import { get } from '../client';
+import { API_CONFIG } from '../config';
 import { StockMetricsDTO } from '../types';
 import { StockTransactionDTO } from '../types';
 
-const ENDPOINT = '/api/dashboard';
+// Dashboard endpoints are often custom or aggregations
+// Assuming they are under /api/dashboard or similar
+const ENDPOINT = `${API_CONFIG.BASE_URL.endsWith('/') ? API_CONFIG.BASE_URL.slice(0, -1) : API_CONFIG.BASE_URL}/dashboard`;
 
 /**
  * Get dashboard metrics
@@ -30,4 +33,3 @@ export const getChartData = async (year?: number): Promise<any[]> => {
 export const getRecentTransactions = async (limit: number = 10): Promise<StockTransactionDTO[]> => {
   return get<StockTransactionDTO[]>(`${ENDPOINT}/recent-transactions?limit=${limit}`);
 };
-

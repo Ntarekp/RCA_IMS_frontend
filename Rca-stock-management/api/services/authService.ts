@@ -6,7 +6,7 @@
 import { post } from '../client';
 import { API_CONFIG } from '../config';
 
-const ENDPOINT = '/api/auth';
+const ENDPOINT = API_CONFIG.ENDPOINTS.AUTH;
 
 export interface LoginRequest {
   email: string;

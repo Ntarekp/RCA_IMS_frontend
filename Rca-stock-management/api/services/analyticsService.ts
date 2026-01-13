@@ -4,8 +4,9 @@
  */
 
 import { get } from '../client';
+import { API_CONFIG } from '../config';
 
-const ENDPOINT = '/api/analytics';
+const ENDPOINT = API_CONFIG.ENDPOINTS.ANALYTICS;
 
 export interface MonthlyTrend {
   month: string;

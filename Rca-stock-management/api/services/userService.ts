@@ -5,9 +5,10 @@
 
 import { get, put, post, del } from '../client';
 import { UserProfile } from '../../types';
+import { API_CONFIG } from '../config';
 
-const ENDPOINT = '/api/auth';
-const ADMIN_ENDPOINT = '/api/admin/users';
+const ENDPOINT = API_CONFIG.ENDPOINTS.AUTH;
+const ADMIN_ENDPOINT = API_CONFIG.ENDPOINTS.ADMIN + '/users';
 
 export interface UserProfileResponse {
   email: string;
@@ -20,6 +21,12 @@ export interface UpdateProfileRequest {
   email?: string;
   phone?: string;
   department?: string;
+  location?: string;
+  emailNotifications?: boolean;
+  smsNotifications?: boolean;
+  twoFactorAuth?: boolean;
+  theme?: string;
+  language?: string;
 }
 
 export interface ChangePasswordRequest {

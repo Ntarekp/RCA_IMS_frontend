@@ -7,7 +7,7 @@ import { get, post, put, del } from '../client';
 import { API_CONFIG } from '../config';
 import { Supplier } from '../../types';
 
-const ENDPOINT = '/api/suppliers';
+const ENDPOINT = API_CONFIG.ENDPOINTS.SUPPLIERS;
 
 export interface SupplierDTO {
   id?: number;
@@ -30,39 +30,18 @@ export const getAllSuppliers = async (): Promise<Supplier[]> => {
 /**
  * Create new supplier
  */
-export const createSupplier = async (supplier: Omit<Supplier, 'id'>): Promise<Supplier> => {
+export const createSupplier = async (supplier: any): Promise<Supplier> => {
+  // The UI form sends: name, contact (phone), email, itemsSupplied (array), contactPerson
   const dto: SupplierDTO = {
     name: supplier.name,
-    contactPerson: supplier.contact, // Mapping contact to contactPerson
-    phone: '0000000000', // Placeholder if not in UI, or map from UI
+    contactPerson: supplier.contactPerson || supplier.name, // Use contactPerson from form or fallback
+    phone: supplier.contact, // 'contact' in frontend type maps to phone
     email: supplier.email,
-    itemsSupplied: supplier.itemsSupplied.join(', '),
+    itemsSupplied: Array.isArray(supplier.itemsSupplied) ? supplier.itemsSupplied.join(', ') : supplier.itemsSupplied,
     active: true
   };
-  
-  // If UI has phone, use it. The Supplier interface has 'contact' which seems to be phone or person.
-  // Let's assume 'contact' in Supplier interface is phone number based on MOCK data, 
-  // but backend expects contactPerson AND phone.
-  // We need to update the frontend form to capture both or map intelligently.
-  // For now, let's map 'contact' to 'phone' and use 'name' or a placeholder for contactPerson if missing.
-  
-  // Correction based on SupplierCard.tsx:
-  // SupplierCard shows `supplier.contact` with a Phone icon. So `contact` is phone.
-  // It shows `supplier.name` as company name.
-  // It doesn't seem to have a separate contact person field in the UI yet.
-  // We should update the UI to capture contact person.
-  
-  // Let's update the DTO mapping to be robust
-  const payload: SupplierDTO = {
-      name: supplier.name,
-      contactPerson: supplier.name, // Fallback if not provided
-      phone: supplier.contact,
-      email: supplier.email,
-      itemsSupplied: supplier.itemsSupplied.join(', '),
-      active: true
-  };
 
-  const response = await post<SupplierDTO>(ENDPOINT, payload);
+  const response = await post<SupplierDTO>(ENDPOINT, dto);
   return mapDTOToSupplier(response);
 };
 

@@ -47,15 +47,24 @@ export const generatePdfReport = async (
   dateRange?: { startDate: string; endDate: string }
 ): Promise<void> => {
   try {
-    let url = `${API_CONFIG.BASE_URL}/api/reports/export/pdf`;
+    // Use API_CONFIG.BASE_URL which now includes /api if configured
+    // But we need to be careful not to double up /api if it's already in BASE_URL
+    // The safest way is to use relative paths if our client handles base URL, 
+    // but here we are using fetch directly so we need the full URL.
+    
+    // Let's construct the base path for reports
+    // If BASE_URL is http://localhost:8081/api, we want http://localhost:8081/api/reports/export/...
+    const reportsBaseUrl = `${API_CONFIG.BASE_URL}/reports/export`;
+    
+    let url = `${reportsBaseUrl}/pdf`;
     
     // Handle different report types
     if (reportType === 'suppliers') {
-        url = `${API_CONFIG.BASE_URL}/api/reports/export/suppliers/pdf`;
+        url = `${reportsBaseUrl}/suppliers/pdf`;
     } else if (reportType === 'balance') {
-        url = `${API_CONFIG.BASE_URL}/api/reports/export/balance/pdf`;
+        url = `${reportsBaseUrl}/balance/pdf`;
     } else if (reportType === 'low-stock') {
-        url = `${API_CONFIG.BASE_URL}/api/reports/export/low-stock/pdf`;
+        url = `${reportsBaseUrl}/low-stock/pdf`;
     } else {
         // Add query params for transaction reports
         const params = new URLSearchParams();
@@ -95,15 +104,16 @@ export const generateCsvReport = async (
   dateRange?: { startDate: string; endDate: string }
 ): Promise<void> => {
   try {
-    let url = `${API_CONFIG.BASE_URL}/api/reports/export/excel`;
+    const reportsBaseUrl = `${API_CONFIG.BASE_URL}/reports/export`;
+    let url = `${reportsBaseUrl}/excel`;
 
     // Handle different report types
     if (reportType === 'suppliers') {
-        url = `${API_CONFIG.BASE_URL}/api/reports/export/suppliers/excel`;
+        url = `${reportsBaseUrl}/suppliers/excel`;
     } else if (reportType === 'balance') {
-        url = `${API_CONFIG.BASE_URL}/api/reports/export/balance/excel`;
+        url = `${reportsBaseUrl}/balance/excel`;
     } else if (reportType === 'low-stock') {
-        url = `${API_CONFIG.BASE_URL}/api/reports/export/low-stock/excel`;
+        url = `${reportsBaseUrl}/low-stock/excel`;
     } else {
         // Add query params for transaction reports
         const params = new URLSearchParams();
