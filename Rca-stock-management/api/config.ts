@@ -36,6 +36,11 @@ export const API_CONFIG = {
  * Get full API URL for an endpoint
  */
 export const getApiUrl = (endpoint: string): string => {
+  // Check if endpoint is already a full URL
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+    return endpoint;
+  }
+
   // Remove leading slash from endpoint if base url ends with slash
   const baseUrl = API_CONFIG.BASE_URL.endsWith('/') 
     ? API_CONFIG.BASE_URL.slice(0, -1) 

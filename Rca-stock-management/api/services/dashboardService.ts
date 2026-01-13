@@ -10,7 +10,7 @@ import { StockTransactionDTO } from '../types';
 
 // Dashboard endpoints are often custom or aggregations
 // Assuming they are under /api/dashboard or similar
-const ENDPOINT = `${API_CONFIG.BASE_URL.endsWith('/') ? API_CONFIG.BASE_URL.slice(0, -1) : API_CONFIG.BASE_URL}/dashboard`;
+const ENDPOINT = '/dashboard';
 
 /**
  * Get dashboard metrics

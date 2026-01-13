@@ -20,6 +20,9 @@ export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => 
     const [showResults, setShowResults] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
 
+    // Use import.meta.env.BASE_URL to correctly resolve the image path
+    const logoPath = `${import.meta.env.BASE_URL}rca-logo.png`;
+
     const searchItems: SearchResult[] = [
         { id: '1', title: 'Dashboard', description: 'Go to Dashboard page', view: 'DASHBOARD', icon: LayoutDashboard },
         { id: '2', title: 'Stock', description: 'Manage inventory items', view: 'STOCK', icon: Package },
@@ -69,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => 
         <div className="flex items-center gap-4 bg-[#F1F2F7] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-2xl p-2 shadow-sm w-full relative">
             {/* Logo Section */}
             <div className="flex items-center gap-3 pl-2 pr-4 border-r border-[#E5E7EB] dark:border-slate-700 flex-shrink-0">
-                <img src="/rca-logo.png" alt="RCA Logo" className="w-8 h-8 object-contain" />
+                <img src={logoPath} alt="RCA Logo" className="w-8 h-8 object-contain" />
                 <div className="hidden sm:block leading-tight">
                     <h1 className="font-bold text-xs text-[#1E293B] dark:text-white tracking-tight">RCA</h1>
                     <h1 className="font-medium text-[10px] text-[#9CA3AF] dark:text-slate-400 tracking-wide">IMS</h1>

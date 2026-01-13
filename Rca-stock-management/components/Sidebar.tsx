@@ -26,6 +26,9 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isOpen, onClose, userRole }) => {
     const [expandedSystem, setExpandedSystem] = useState(false);
 
+    // Use import.meta.env.BASE_URL to correctly resolve the image path
+    const logoPath = `${import.meta.env.BASE_URL}rca-logo.png`;
+
     const menuItems = [
         { id: 'DASHBOARD', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'STOCK', label: 'Stock', icon: Package },
@@ -49,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
             {showLogo && (
                 <div className={`h-20 flex items-center gap-3 mb-2 ${isCollapsed ? 'justify-center px-2' : 'px-6'}`}>
                     <div className="p-1">
-                        <img src="/rca-logo.png" alt="RCA Logo" className="w-10 h-10 object-contain" />
+                        <img src={logoPath} alt="RCA Logo" className="w-10 h-10 object-contain" />
                     </div>
                     <div className={`leading-tight ${isCollapsed ? 'hidden' : 'block'}`}>
                         <h1 className="font-bold text-sm text-[#1E293B] dark:text-white tracking-tight">RCA</h1>

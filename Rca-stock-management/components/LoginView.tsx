@@ -16,6 +16,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
 
+  // Use import.meta.env.BASE_URL to correctly resolve the image path
+  const logoPath = `${import.meta.env.BASE_URL}rca-logo.png`;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -73,7 +76,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
         {/* Logo Section (Left Side) */}
         <div className="flex flex-col items-center md:items-start gap-4 text-center md:text-left">
             <div className="w-48 h-48 flex items-center justify-center p-4">
-                 <img src="/rca-logo.png" alt="RCA Logo" className="w-full h-full object-contain" />
+                 <img src={logoPath} alt="RCA Logo" className="w-full h-full object-contain" />
             </div>
         </div>
 
