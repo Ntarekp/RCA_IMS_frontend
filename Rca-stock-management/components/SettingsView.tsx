@@ -100,6 +100,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
           const updatedProfile = await getProfile();
           setProfile(updatedProfile);
           
+          // Dispatch event to notify other components (like ProfileView)
+          window.dispatchEvent(new Event('profile-updated'));
+          
       } catch (err) {
           const message = err instanceof ApiError ? err.message : "Failed to save settings.";
           setError(message);

@@ -952,11 +952,14 @@ const App = () => {
                     await updateProfile(profileData);
                     removeToast(toastId);
                     addToast("Profile updated successfully", 'success');
+                    
                     // Refetch profile and update state
                     import('./api/services/userService').then(({ getProfile }) => {
                       getProfile().then((data) => {
                         setUserProfile(data);
                         closeDrawer();
+                        // Dispatch event to notify other components
+                        window.dispatchEvent(new Event('profile-updated'));
                       });
                     });
                 } catch (error) {

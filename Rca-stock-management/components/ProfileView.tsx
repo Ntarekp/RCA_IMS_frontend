@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UserProfile } from '../types';
 import { User, Mail, Phone, MapPin, Shield, Calendar, Edit, Lock, LogOut, Briefcase, Camera, Loader2, Upload } from 'lucide-react';
-import { getProfile } from '../api/services/userService';
+import { getProfile, updateProfile } from '../api/services/userService';
+import { ApiError } from '../api/client';
 
 interface ProfileViewProps {
     onEditProfile: () => void;
@@ -30,7 +31,33 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
         fetchProfile();
     }, []);
 
-    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover') => {
+    // Function to refresh profile data
+    const refreshProfile = async () => {
+        try {
+            const data = await getProfile();
+            setProfile(data);
+        } catch (error) {
+            console.error("Failed to refresh profile", error);
+        }
+    };
+
+    // Expose refresh function to parent via custom event or context if needed
+    // For now, we'll rely on the fact that onEditProfile triggers a drawer that updates the profile on success
+    // But we can also listen for profile updates if we implement a global state or event bus
+
+    // Listen for profile updates from other components
+    useEffect(() => {
+        const handleProfileUpdate = () => {
+            refreshProfile();
+        };
+
+        window.addEventListener('profile-updated', handleProfileUpdate);
+        return () => {
+            window.removeEventListener('profile-updated', handleProfileUpdate);
+        };
+    }, []);
+
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover') => {
         const file = event.target.files?.[0];
         if (!file) return;
 
@@ -38,15 +65,33 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
         // For now, we'll use a local object URL to simulate the update
         const imageUrl = URL.createObjectURL(file);
         
+        // Optimistic update
         setProfile(prev => prev ? {
             ...prev,
             [type === 'avatar' ? 'avatarUrl' : 'coverUrl']: imageUrl
         } : null);
 
-        // TODO: Implement actual API call to update profile image
+        // Here you would typically upload the file to your backend
         // const formData = new FormData();
         // formData.append('file', file);
         // await updateProfileImage(formData);
+
+        // Since we don't have a real backend for file upload yet, we'll just simulate it
+        // and maybe save the URL to the profile if the backend supported it
+        try {
+            setUploading(true);
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // If backend supported image URLs in updateProfile:
+            // await updateProfile({ [type === 'avatar' ? 'avatarUrl' : 'coverUrl']: imageUrl });
+
+        } catch (error) {
+            console.error("Failed to upload image", error);
+            // Revert optimistic update on error
+        } finally {
+            setUploading(false);
+        }
     };
 
     if (loading) {
@@ -203,7 +248,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                             <div className="space-y-1">
                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Member Since</label>
                                 <p className="text-slate-900 dark:text-white font-medium text-lg">
-                                    {profile.joinDate ? new Date(profile.joinDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}
+                                    {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}
                                 </p>
                             </div>
                         </div>
