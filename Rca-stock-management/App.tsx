@@ -72,8 +72,14 @@ const App = () => {
   const [resetToken, setResetToken] = useState<string | null>(null);
 
   useEffect(() => {
+      // Check if we are on the reset-password path
+      // Since we are using HashRouter or simple state-based routing in a SPA served under a base path,
+      // we need to check window.location carefully.
+      // If served under /rca_ims/, the path might be /rca_ims/reset-password
+      
       const path = window.location.pathname;
-      if (path === '/reset-password') {
+      // Check if path ends with /reset-password
+      if (path.endsWith('/reset-password')) {
           const params = new URLSearchParams(window.location.search);
           const token = params.get('token');
           if (token) {
@@ -141,6 +147,13 @@ const App = () => {
       setIsLoggedIn(false);
       setView('DASHBOARD');
       addToast('Logged out successfully.', 'info');
+      
+      // Redirect to base path if we were on a special route like reset-password
+      if (window.location.pathname.endsWith('/reset-password')) {
+          // Navigate to base URL (e.g., /rca_ims/)
+          const basePath = import.meta.env.BASE_URL;
+          window.history.pushState({}, '', basePath);
+      }
   };
 
   // Check if user is already logged in on mount
