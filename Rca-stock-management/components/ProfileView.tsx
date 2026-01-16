@@ -229,32 +229,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
 
                 {/* Right Column - Stats & Settings */}
                 <div className="space-y-8">
-                    {/* Account Status */}
-                    <div className="bg-gradient-to-br from-[#28375B] to-[#1e2a45] dark:from-blue-600 dark:to-indigo-700 rounded-[2rem] p-8 text-white shadow-lg shadow-slate-900/20 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-10 -mb-10 blur-xl"></div>
-                        
-                        <div className="relative z-10">
-                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm">
-                                <Shield className="w-6 h-6 text-white" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-2">Account Status</h3>
-                            <p className="text-blue-100 text-sm mb-6 leading-relaxed">
-                                Your account is fully active with {profile.role === 'ADMIN' ? 'administrative' : 'standard'} privileges.
-                            </p>
-                            
-                            <div className="space-y-3">
-                                <div className="flex justify-between text-sm font-medium">
-                                    <span className="text-blue-100">Security Score</span>
-                                    <span>98%</span>
-                                </div>
-                                <div className="w-full bg-black/20 h-2 rounded-full overflow-hidden">
-                                    <div className="bg-white h-full w-[98%] rounded-full"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     {/* Quick Settings */}
                     <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
                         <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">Preferences</h3>

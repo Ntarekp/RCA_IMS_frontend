@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Bell, Settings, Menu, Command, User, LayoutDashboard, Package, ArrowRightLeft, BarChart3, FileText, Truck, Users } from 'lucide-react';
 import { ViewState } from '../types';
 import { getProfile } from '../api/services/userService';
+import { getNotifications } from '../api/services/dashboardService';
 
 interface HeaderProps {
     onChangeView?: (view: ViewState) => void;
@@ -72,11 +73,23 @@ export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => 
         return () => window.removeEventListener('profile-updated', handleProfileUpdate);
     }, []);
 
-    // Check for notifications (mock logic for now, would be real API call)
+    // Check for notifications
     useEffect(() => {
-        // In a real app, you'd check the notifications count from API
-        // For now, we assume no notifications if the list is empty (which it is by default now)
-        setHasNotifications(false);
+        const checkNotifications = async () => {
+            try {
+                const notifications = await getNotifications();
+                // Only show indicator if there are unread notifications
+                const hasUnread = notifications.some(n => !n.read);
+                setHasNotifications(hasUnread);
+            } catch (error) {
+                console.error("Failed to check notifications", error);
+            }
+        };
+        
+        checkNotifications();
+        // Poll every minute
+        const interval = setInterval(checkNotifications, 60000);
+        return () => clearInterval(interval);
     }, []);
 
     const handleSearchSelect = (view: ViewState) => {
