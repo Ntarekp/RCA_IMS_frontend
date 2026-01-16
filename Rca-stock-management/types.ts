@@ -1,7 +1,7 @@
 
 export type ViewState = 'DASHBOARD' | 'STOCK' | 'TRANSACTIONS' | 'ANALYTICS' | 'REPORT' | 'SUPPLIERS' | 'SETTINGS' | 'NOTIFICATIONS' | 'PROFILE' | 'USERS';
 
-export type DrawerType = 'NONE' | 'STOCK_DETAIL' | 'SUPPLIER_DETAIL' | 'ORDER_FORM' | 'ADD_STOCK' | 'ADD_SUPPLIER' | 'EDIT_PROFILE' | 'CHANGE_PASSWORD' | 'STOCK_IN' | 'STOCK_OUT' | 'DELETE_ITEM' | 'ADD_USER';
+export type DrawerType = 'NONE' | 'STOCK_DETAIL' | 'SUPPLIER_DETAIL' | 'ORDER_FORM' | 'ADD_STOCK' | 'ADD_SUPPLIER' | 'EDIT_PROFILE' | 'CHANGE_PASSWORD' | 'STOCK_IN' | 'STOCK_OUT' | 'DELETE_ITEM' | 'ADD_USER' | 'EDIT_TRANSACTION' | 'REVERSE_TRANSACTION';
 
 export interface StockItem {
   id: string;
@@ -15,6 +15,8 @@ export interface StockItem {
   description?: string; // Added for detail view
   location?: string; // Added for detail view
   supplierId?: string; // Linked supplier
+  totalIn?: number; // Added for stats
+  totalOut?: number; // Added for stats
 }
 
 export interface DashboardItem {

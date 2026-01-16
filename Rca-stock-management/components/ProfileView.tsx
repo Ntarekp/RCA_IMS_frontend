@@ -41,10 +41,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
         }
     };
 
-    // Expose refresh function to parent via custom event or context if needed
-    // For now, we'll rely on the fact that onEditProfile triggers a drawer that updates the profile on success
-    // But we can also listen for profile updates if we implement a global state or event bus
-
     // Listen for profile updates from other components
     useEffect(() => {
         const handleProfileUpdate = () => {
@@ -71,24 +67,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
             [type === 'avatar' ? 'avatarUrl' : 'coverUrl']: imageUrl
         } : null);
 
-        // Here you would typically upload the file to your backend
-        // const formData = new FormData();
-        // formData.append('file', file);
-        // await updateProfileImage(formData);
-
-        // Since we don't have a real backend for file upload yet, we'll just simulate it
-        // and maybe save the URL to the profile if the backend supported it
         try {
             setUploading(true);
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // If backend supported image URLs in updateProfile:
-            // await updateProfile({ [type === 'avatar' ? 'avatarUrl' : 'coverUrl']: imageUrl });
-
         } catch (error) {
             console.error("Failed to upload image", error);
-            // Revert optimistic update on error
         } finally {
             setUploading(false);
         }
@@ -127,7 +111,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
             {/* Profile Header Card */}
             <div className="bg-white dark:bg-slate-800 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group/cover">
                 {/* Cover Image */}
-                <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-r from-slate-800 to-slate-900 dark:from-blue-900 dark:to-slate-900">
+                <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-r from-[#28375B] to-slate-900 dark:from-[#28375B] dark:to-slate-900">
                     {profile.coverUrl && (
                         <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover opacity-80" />
                     )}
@@ -193,7 +177,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                     <div className="flex gap-3 w-full md:w-auto mt-4 md:mt-0">
                         <button 
                             onClick={onEditProfile}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-all shadow-lg shadow-slate-900/20 active:scale-95"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#28375B] dark:bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-[#1e2a45] dark:hover:bg-blue-700 transition-all shadow-lg shadow-slate-900/20 active:scale-95"
                         >
                             <Edit className="w-4 h-4" />
                             <span>Edit Profile</span>
@@ -215,10 +199,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                     <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <User className="w-5 h-5 text-blue-500" />
+                                <User className="w-5 h-5 text-[#28375B] dark:text-blue-400" />
                                 Personal Information
                             </h3>
-                            <button onClick={onChangePassword} className="text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline flex items-center gap-1">
+                            <button onClick={onChangePassword} className="text-sm text-[#28375B] dark:text-blue-400 font-medium hover:underline flex items-center gap-1">
                                 <Lock className="w-3 h-3" />
                                 Change Password
                             </button>
@@ -248,7 +232,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                             <div className="space-y-1">
                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Member Since</label>
                                 <p className="text-slate-900 dark:text-white font-medium text-lg">
-                                    {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}
+                                    {profile.joinDate ? new Date(profile.joinDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}
                                 </p>
                             </div>
                         </div>
@@ -258,7 +242,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                 {/* Right Column - Stats & Settings */}
                 <div className="space-y-8">
                     {/* Account Status */}
-                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2rem] p-8 text-white shadow-lg shadow-blue-500/20 relative overflow-hidden">
+                    <div className="bg-gradient-to-br from-[#28375B] to-[#1e2a45] dark:from-blue-600 dark:to-indigo-700 rounded-[2rem] p-8 text-white shadow-lg shadow-slate-900/20 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
                         <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-10 -mb-10 blur-xl"></div>
                         
@@ -294,7 +278,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                                     </div>
                                     <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Email Notifications</span>
                                 </div>
-                                <div className={`w-10 h-6 rounded-full p-1 transition-colors ${profile.emailNotifications ? 'bg-blue-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                                <div className={`w-10 h-6 rounded-full p-1 transition-colors ${profile.emailNotifications ? 'bg-[#28375B] dark:bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'}`}>
                                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${profile.emailNotifications ? 'translate-x-4' : ''}`}></div>
                                 </div>
                             </div>
@@ -305,7 +289,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                                     </div>
                                     <span className="text-sm font-medium text-slate-700 dark:text-slate-200">SMS Alerts</span>
                                 </div>
-                                <div className={`w-10 h-6 rounded-full p-1 transition-colors ${profile.smsNotifications ? 'bg-blue-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                                <div className={`w-10 h-6 rounded-full p-1 transition-colors ${profile.smsNotifications ? 'bg-[#28375B] dark:bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'}`}>
                                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${profile.smsNotifications ? 'translate-x-4' : ''}`}></div>
                                 </div>
                             </div>

@@ -14,7 +14,8 @@ import {
     CalendarDays,
     BarChart,
     ArrowUpRight,
-    ArrowDownRight
+    ArrowDownRight,
+    AlertCircle
 } from 'lucide-react';
 import { generateCsvReport, generatePdfReport, ReportType } from '../api/services/reportService';
 import { useItems } from '../hooks/useItems';
@@ -29,6 +30,7 @@ interface RecentReport {
     date: string;
     type: string;
     format: 'PDF' | 'CSV';
+    status: 'READY' | 'PENDING' | 'FAILED';
 }
 
 export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) => {
@@ -49,6 +51,18 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
     const typeToUse = overrideType || reportType;
     const rangeToUse = overrideRange || dateRange;
     
+    // Create a pending report entry
+    const reportId = Math.random().toString(36).substr(2, 9);
+    const newReport: RecentReport = {
+        id: reportId,
+        title: `${typeToUse.charAt(0).toUpperCase() + typeToUse.slice(1).replace('-', ' ')} Report`,
+        date: new Date().toLocaleDateString(),
+        type: typeToUse,
+        format: format,
+        status: 'PENDING'
+    };
+    setRecentReports(prev => [newReport, ...prev]);
+
     try {
       const itemId = selectedItemId ? parseInt(selectedItemId) : undefined;
       const range = (typeToUse === 'stock-in' || typeToUse === 'stock-out' || typeToUse === 'transactions') 
@@ -61,18 +75,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
         await generatePdfReport(typeToUse, itemId, range);
       }
 
-      // Add to recent reports
-      const newReport: RecentReport = {
-          id: Math.random().toString(36).substr(2, 9),
-          title: `${typeToUse.charAt(0).toUpperCase() + typeToUse.slice(1).replace('-', ' ')} Report`,
-          date: new Date().toLocaleDateString(),
-          type: typeToUse,
-          format: format
-      };
-      setRecentReports(prev => [newReport, ...prev]);
+      // Update report status to READY
+      setRecentReports(prev => prev.map(r => r.id === reportId ? { ...r, status: 'READY' } : r));
 
     } catch (error) {
       console.error('Failed to generate report:', error);
+      // Update report status to FAILED
+      setRecentReports(prev => prev.map(r => r.id === reportId ? { ...r, status: 'FAILED' } : r));
     } finally {
       setIsGenerating(false);
     }
@@ -319,6 +328,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                             <th className="px-6 py-4">Generated Date</th>
                             <th className="px-6 py-4">Type</th>
                             <th className="px-6 py-4">Format</th>
+                            <th className="px-6 py-4">Status</th>
                             <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -337,13 +347,37 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                                         {report.format}
                                     </span>
                                 </td>
+                                <td className="px-6 py-4">
+                                    {report.status === 'PENDING' && (
+                                        <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 text-xs font-medium">
+                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                            Processing
+                                        </span>
+                                    )}
+                                    {report.status === 'READY' && (
+                                        <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
+                                            <Check className="w-3 h-3" />
+                                            Ready
+                                        </span>
+                                    )}
+                                    {report.status === 'FAILED' && (
+                                        <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400 text-xs font-medium">
+                                            <AlertCircle className="w-3 h-3" />
+                                            Failed
+                                        </span>
+                                    )}
+                                </td>
                                 <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
-                                    <button className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
-                                        <Eye className="w-4 h-4" />
-                                    </button>
-                                    <button className="p-2 text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
-                                        <Download className="w-4 h-4" />
-                                    </button>
+                                    {report.status === 'READY' && (
+                                        <>
+                                            <button className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
+                                                <Eye className="w-4 h-4" />
+                                            </button>
+                                            <button className="p-2 text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                                                <Download className="w-4 h-4" />
+                                            </button>
+                                        </>
+                                    )}
                                 </td>
                             </tr>
                         ))}

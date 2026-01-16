@@ -3,7 +3,7 @@
  * API service for stock transaction operations
  */
 
-import { get, post } from '../client';
+import { get, post, put, del } from '../client';
 import { API_CONFIG } from '../config';
 import {
   StockTransactionDTO,
@@ -43,3 +43,23 @@ export const recordTransaction = async (
   return post<StockTransactionDTO>(ENDPOINT, transaction);
 };
 
+/**
+ * Update transaction metadata
+ */
+export const updateTransaction = async (
+  id: number,
+  transaction: StockTransactionDTO
+): Promise<StockTransactionDTO> => {
+  return put<StockTransactionDTO>(`${ENDPOINT}/${id}`, transaction);
+};
+
+/**
+ * Reverse a transaction
+ */
+export const reverseTransaction = async (
+  id: number,
+  reason: string
+): Promise<StockTransactionDTO> => {
+  const url = `${ENDPOINT}/${id}?reason=${encodeURIComponent(reason)}`;
+  return del<StockTransactionDTO>(url);
+};

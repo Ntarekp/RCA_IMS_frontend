@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { getAllTransactions, recordTransaction } from '../api/services/transactionService';
+import { getAllTransactions, recordTransaction, updateTransaction, reverseTransaction } from '../api/services/transactionService';
 import { getBalanceReport } from '../api/services/reportService';
 import { StockTransactionDTO, CreateTransactionRequest, StockBalanceDTO } from '../api/types';
 import { DashboardItem } from '../types';
@@ -45,6 +45,26 @@ export const useTransactions = (itemId?: number) => {
     }
   };
 
+  const updateTransactionData = async (id: number, transactionData: StockTransactionDTO) => {
+    try {
+      const updatedTransaction = await updateTransaction(id, transactionData);
+      await fetchTransactions(); // Refresh list
+      return updatedTransaction;
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to update transaction');
+    }
+  };
+
+  const reverseTransactionData = async (id: number, reason: string) => {
+    try {
+      const reversedTransaction = await reverseTransaction(id, reason);
+      await fetchTransactions(); // Refresh list
+      return reversedTransaction;
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to reverse transaction');
+    }
+  };
+
   useEffect(() => {
     fetchTransactions();
   }, [itemId]);
@@ -56,6 +76,7 @@ export const useTransactions = (itemId?: number) => {
     error,
     refetch: fetchTransactions,
     addTransaction,
+    updateTransaction: updateTransactionData,
+    reverseTransaction: reverseTransactionData,
   };
 };
-

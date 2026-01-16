@@ -1,25 +1,31 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Bell, Check, Info, AlertTriangle, AlertCircle, CheckCircle2 } from 'lucide-react';
-
-// Real notification data structure
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'INFO' | 'WARNING' | 'ALERT' | 'SUCCESS';
-  timestamp: string;
-  read: boolean;
-}
-
-// Mock real data for now, but structured for easy API replacement
-const REAL_NOTIFICATIONS: Notification[] = [
-  { id: '1', title: 'Low Stock Alert: Rice', message: 'Rice inventory has dropped below the minimum threshold of 250kg. Current stock: 200kg.', type: 'ALERT', timestamp: '10 mins ago', read: false },
-  { id: '2', title: 'Stock In Successful', message: 'Successfully recorded 500kg of Beans from Kigali Grains Ltd.', type: 'SUCCESS', timestamp: '2 hours ago', read: false },
-  { id: '3', title: 'System Maintenance', message: 'Scheduled maintenance will occur on Saturday at 2:00 AM. Expected downtime: 30 mins.', type: 'INFO', timestamp: '1 day ago', read: true },
-  { id: '4', title: 'Pending Supplier Approval', message: 'New supplier "Rwanda Foods" is awaiting your approval.', type: 'WARNING', timestamp: '2 days ago', read: true },
-];
+import { getNotifications } from '../api/services/dashboardService';
+import { NotificationDTO } from '../api/types';
 
 export const NotificationsView: React.FC = () => {
+  const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const data = await getNotifications();
+        setNotifications(data);
+      } catch (error) {
+        console.error("Failed to fetch notifications", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
+  if (loading) {
+      return <div className="p-10 text-center">Loading notifications...</div>;
+  }
+
   return (
     <div className="max-w-3xl mx-auto animate-in fade-in duration-500 pb-10">
        <div className="flex justify-between items-center mb-6">
@@ -34,7 +40,7 @@ export const NotificationsView: React.FC = () => {
        </div>
 
        <div className="space-y-4">
-          {REAL_NOTIFICATIONS.map((notif) => {
+          {notifications.map((notif) => {
             let Icon = Info;
             let iconColor = 'text-blue-500 dark:text-blue-400';
             let bgColor = 'bg-blue-50 dark:bg-blue-900/20';

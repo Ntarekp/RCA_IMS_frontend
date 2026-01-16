@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Loader2, CheckCircle2, AlertCircle, Lock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Eye, EyeOff, Loader2, CheckCircle2, AlertCircle, Lock, ArrowLeft } from 'lucide-react';
 import { resetPassword } from '../api/services/authService';
 import { ApiError } from '../api/client';
 
@@ -15,6 +15,13 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ token, onS
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Ensure token is valid
+  useEffect(() => {
+    if (!token) {
+      setError("Invalid or missing reset token.");
+    }
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +73,7 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ token, onS
                 <p className="text-slate-500 mb-6">Your password has been updated. You will be redirected to the login page shortly.</p>
                 <button 
                     onClick={onSuccess}
-                    className="w-full bg-[#1e293b] text-white py-3 rounded-xl font-medium hover:bg-slate-800 transition-colors"
+                    className="w-full bg-[#28375B] text-white py-3 rounded-xl font-medium hover:bg-[#1e2a45] transition-colors"
                 >
                     Go to Login
                 </button>
@@ -79,7 +86,7 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ token, onS
     <div className="min-h-screen bg-[#F7F8FD] flex items-center justify-center p-4">
       <div className="bg-[#F7F8FD] p-8 rounded-2xl border border-[#E5E7EB] max-w-md w-full">
         <div className="text-center mb-8">
-            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-4 text-blue-600">
+            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-4 text-[#28375B]">
                 <Lock className="w-6 h-6" />
             </div>
             <h1 className="text-xl font-bold text-slate-800">Set New Password</h1>
@@ -94,7 +101,7 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ token, onS
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="••••••••" 
-                    className="w-full px-4 py-3 bg-[#EDEEF3] border border-[#D1D5DB] rounded-xl text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-700"
+                    className="w-full px-4 py-3 bg-[#EDEEF3] border border-[#D1D5DB] rounded-xl text-sm outline-none focus:border-[#28375B] focus:ring-2 focus:ring-[#28375B]/20 transition-all text-slate-700"
                     required 
                 />
                 <button 
@@ -113,7 +120,7 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ token, onS
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••" 
-                    className="w-full px-4 py-3 bg-[#EDEEF3] border border-[#D1D5DB] rounded-xl text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-700"
+                    className="w-full px-4 py-3 bg-[#EDEEF3] border border-[#D1D5DB] rounded-xl text-sm outline-none focus:border-[#28375B] focus:ring-2 focus:ring-[#28375B]/20 transition-all text-slate-700"
                     required 
                 />
             </div>
@@ -127,11 +134,22 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ token, onS
 
             <button 
                 type="submit" 
-                disabled={loading}
-                className="w-full bg-[#1e293b] text-white py-3 rounded-xl font-medium text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+                disabled={loading || !token}
+                className="w-full bg-[#28375B] text-white py-3 rounded-xl font-medium text-sm hover:bg-[#1e2a45] transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
             >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Reset Password'}
             </button>
+
+            <div className="text-center pt-2">
+                <button 
+                    type="button"
+                    onClick={onSuccess}
+                    className="text-sm text-slate-500 hover:text-[#28375B] font-medium flex items-center justify-center gap-1 mx-auto transition-colors"
+                >
+                    <ArrowLeft className="w-3 h-3" />
+                    Back to Login
+                </button>
+            </div>
         </form>
       </div>
     </div>

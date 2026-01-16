@@ -22,6 +22,8 @@ export interface ItemDTO {
   currentBalance?: number;
   isLowStock?: boolean;
   damagedQuantity?: number;
+  totalIn?: number;
+  totalOut?: number;
 }
 
 /**
@@ -39,6 +41,10 @@ export interface StockTransactionDTO {
   recordedBy?: string;
   createdAt?: string;
   balanceAfter?: number; // New field for running balance
+  reversed?: boolean;
+  originalTransactionId?: number;
+  supplierId?: number;
+  supplierName?: string;
 }
 
 /**
@@ -107,4 +113,17 @@ export interface CreateTransactionRequest {
   referenceNumber?: string;
   notes?: string;
   recordedBy?: string;
+  supplierId?: number;
+}
+
+/**
+ * Notification DTO
+ */
+export interface NotificationDTO {
+  id: string;
+  title: string;
+  message: string;
+  type: 'INFO' | 'WARNING' | 'ALERT' | 'SUCCESS';
+  timestamp: string;
+  read: boolean;
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowUpRight, ArrowDownRight, ChevronRight, Package, AlertTriangle, XCircle, Calendar, Loader2 } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, ChevronRight, Package, AlertTriangle, XCircle, Calendar, Loader2, Minus } from 'lucide-react';
 import { ViewState } from '../types';
 import { getDashboardMetrics } from '../api/services/dashboardService';
 import { StockMetricsDTO } from '../api/types';
@@ -32,7 +32,32 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
     return () => clearInterval(interval);
   }, []);
 
-  const StatCard = ({ title, value, trend, trendUp, icon: Icon, dark = false, colorClass = "text-[#1E293B]", targetView }: any) => (
+  const StatCard = ({ title, value, trend, trendUp, icon: Icon, dark = false, colorClass = "text-[#1E293B]", targetView }: any) => {
+      // Determine trend display
+      let TrendIcon = Minus;
+      let trendColor = dark ? 'text-slate-400' : 'text-slate-500';
+      
+      if (trend > 0) {
+          TrendIcon = ArrowUpRight;
+          // For "bad" metrics like damaged/low stock, increase is bad (red)
+          // For "good" metrics like total stock/inflow, increase is good (green)
+          if (title.includes('Damaged') || title.includes('Low Stock')) {
+              trendColor = dark ? 'text-rose-400' : 'text-rose-500';
+          } else {
+              trendColor = 'text-emerald-500';
+          }
+      } else if (trend < 0) {
+          TrendIcon = ArrowDownRight;
+           // For "bad" metrics, decrease is good (green)
+           // For "good" metrics, decrease is bad (red)
+           if (title.includes('Damaged') || title.includes('Low Stock')) {
+              trendColor = 'text-emerald-500';
+          } else {
+              trendColor = dark ? 'text-rose-400' : 'text-rose-500';
+          }
+      }
+
+      return (
       <div 
         className={`p-6 rounded-2xl flex flex-col justify-between h-44 relative group transition-all duration-300 hover:-translate-y-1 cursor-pointer ${
           dark 
@@ -59,18 +84,14 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
             <div className="flex items-baseline gap-2">
                 <h3 className={`text-3xl font-bold tracking-tight ${dark ? 'text-white' : 'text-[#1E293B] dark:text-white'}`}>{value}</h3>
             </div>
-            <div className={`flex items-center text-xs font-medium ${
-                trendUp 
-                    ? 'text-emerald-500' 
-                    : (dark ? 'text-rose-400' : 'text-rose-500')
-            }`}>
-                {trendUp ? <ArrowUpRight className="w-3.5 h-3.5 mr-1" /> : <ArrowDownRight className="w-3.5 h-3.5 mr-1" />}
-                <span>{trend}%</span>
+            <div className={`flex items-center text-xs font-medium ${trendColor}`}>
+                <TrendIcon className="w-3.5 h-3.5 mr-1" />
+                <span>{Math.abs(trend)}%</span>
                 <span className={`ml-1.5 ${dark ? 'text-slate-400' : 'text-[#9CA3AF] dark:text-slate-500'}`}>vs last month</span>
             </div>
         </div>
       </div>
-  );
+  )};
 
   if (loading) {
     return (
@@ -104,7 +125,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
         title="Total Stock Items" 
         value={formatNumber(metrics.total)} 
         trend={metrics.totalChange || 0} 
-        trendUp={(metrics.totalChange || 0) >= 0} 
         icon={Package} 
         dark={true}
         targetView="STOCK"
@@ -113,7 +133,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
         title="Low Stock Items" 
         value={formatNumber(metrics.lowStock)} 
         trend={metrics.lowStockChange || 0} 
-        trendUp={(metrics.lowStockChange || 0) < 0} // Less low stock is good (green)
         icon={AlertTriangle} 
         colorClass="text-amber-500"
         targetView="STOCK"
@@ -122,7 +141,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
         title="Damaged Items" 
         value={formatNumber(metrics.damaged)} 
         trend={metrics.damagedChange || 0} 
-        trendUp={(metrics.damagedChange || 0) < 0} // Less damaged is good (green)
         icon={XCircle} 
         colorClass="text-rose-500"
         targetView="ANALYTICS"
@@ -131,7 +149,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({ onNavigate }) =>
         title="Monthly Inflow" 
         value={formatNumber(metrics.thisMonth)} 
         trend={metrics.thisMonthChange || 0} 
-        trendUp={(metrics.thisMonthChange || 0) >= 0} 
         icon={Calendar} 
         colorClass="text-[#1E293B]"
         targetView="ANALYTICS"

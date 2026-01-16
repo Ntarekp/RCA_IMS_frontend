@@ -25,7 +25,7 @@ import { useItems } from './hooks/useItems';
 import { useReports } from './hooks/useReports';
 import { useTransactions } from './hooks/useTransactions';
 import { useSuppliers } from './hooks/useSuppliers';
-import { CreateItemRequest, CreateTransactionRequest, UpdateItemRequest } from './api/types';
+import { CreateItemRequest, CreateTransactionRequest, UpdateItemRequest, StockTransactionDTO } from './api/types';
 import { ApiError } from './api/client';
 import { updateProfile, changePassword, UpdateProfileRequest, ChangePasswordRequest, createUser, CreateUserRequest } from './api/services/userService';
 import { getAnalyticsSummary } from './api/services/analyticsService';
@@ -91,13 +91,13 @@ const App = () => {
   // API Hooks
   const { items: stockItems, loading: itemsLoading, error: itemsError, addItem, updateItem, deleteItem, refetch: refetchItems } = useItems();
   const { dashboardItems, loading: reportsLoading, error: reportsError, balanceReport, refetch: refetchReports } = useReports();
-  const { transactions, loading: transactionsLoading, error: transactionsError, addTransaction, refetch: refetchTransactions } = useTransactions();
+  const { transactions, loading: transactionsLoading, error: transactionsError, addTransaction, updateTransaction, reverseTransaction, refetch: refetchTransactions } = useTransactions();
   const { suppliers, loading: suppliersLoading, error: suppliersError, addSupplier, updateSupplier, deactivateSupplier, refetch: refetchSuppliers } = useSuppliers();
 
   // Drawer State
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerType, setDrawerType] = useState<DrawerType>('NONE');
-  const [selectedItem, setSelectedItem] = useState<StockItem | Supplier | UserProfile | null>(null);
+  const [selectedItem, setSelectedItem] = useState<StockItem | Supplier | UserProfile | StockTransactionDTO | null>(null);
   const [activeTab, setActiveTab] = useState('details');
 
   // Stock management form state
@@ -108,6 +108,7 @@ const App = () => {
   const [transactionDate, setTransactionDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
   const [selectedSupplierId, setSelectedSupplierId] = useState('');
+  const [referenceNumber, setReferenceNumber] = useState('');
 
   // Delete confirmation state
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
@@ -365,6 +366,21 @@ const App = () => {
     setSelectedSupplierId('');
   };
 
+  const openEditTransaction = (transaction: StockTransactionDTO) => {
+    setSelectedItem(transaction);
+    setDrawerType('EDIT_TRANSACTION');
+    setDrawerOpen(true);
+    setNotes(transaction.notes || '');
+    setReferenceNumber(transaction.referenceNumber || '');
+  };
+
+  const openReverseTransaction = (transaction: StockTransactionDTO) => {
+    setSelectedItem(transaction);
+    setDrawerType('REVERSE_TRANSACTION');
+    setDrawerOpen(true);
+    setNotes('');
+  };
+
   const openSupplierDetail = (supplier: Supplier) => {
     setSelectedItem(supplier);
     setDrawerType('SUPPLIER_DETAIL');
@@ -504,6 +520,137 @@ const App = () => {
         );
     }
 
+    if (drawerType === 'EDIT_TRANSACTION' && selectedItem) {
+        const transaction = selectedItem as StockTransactionDTO;
+        return (
+            <form id="edit-transaction-form" className="space-y-5" onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                    const toastId = addToast("Updating transaction...", 'loading');
+                    await updateTransaction(Number(transaction.id), {
+                        ...transaction,
+                        notes,
+                        referenceNumber
+                    });
+                    removeToast(toastId);
+                    addToast("Transaction updated successfully.", 'success');
+                    closeDrawer();
+                    refetchTransactions();
+                } catch (error) {
+                    const errorMessage = error instanceof ApiError ? error.message : 'Failed to update transaction.';
+                    addToast(errorMessage, 'error');
+                }
+            }}>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                    <p className="text-sm text-blue-800 dark:text-blue-300">
+                        You are editing transaction <strong>#{transaction.id}</strong>. 
+                        Only metadata fields (Notes, Reference) can be modified to preserve audit integrity.
+                    </p>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Item</label>
+                    <input type="text" value={transaction.itemName} disabled className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Type</label>
+                        <input type="text" value={transaction.transactionType} disabled className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed" />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Quantity</label>
+                        <input type="text" value={transaction.quantity} disabled className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed" />
+                    </div>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Reference Number</label>
+                    <input 
+                        type="text" 
+                        value={referenceNumber} 
+                        onChange={(e) => setReferenceNumber(e.target.value)}
+                        placeholder="e.g. PO-12345" 
+                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" 
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Notes</label>
+                    <textarea 
+                        value={notes} 
+                        onChange={(e) => setNotes(e.target.value)} 
+                        placeholder="Add any relevant details" 
+                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 h-24"
+                    ></textarea>
+                </div>
+            </form>
+        );
+    }
+
+    if (drawerType === 'REVERSE_TRANSACTION' && selectedItem) {
+        const transaction = selectedItem as StockTransactionDTO;
+        return (
+            <form id="reverse-transaction-form" className="space-y-5" onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                    const toastId = addToast("Reversing transaction...", 'loading');
+                    await reverseTransaction(Number(transaction.id), notes);
+                    removeToast(toastId);
+                    addToast("Transaction reversed successfully.", 'success');
+                    closeDrawer();
+                    await Promise.all([refetchTransactions(), refetchItems(), refetchReports()]);
+                } catch (error) {
+                    const errorMessage = error instanceof ApiError ? error.message : 'Failed to reverse transaction.';
+                    addToast(errorMessage, 'error');
+                }
+            }}>
+                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-100 dark:border-amber-800 flex gap-3">
+                    <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                    <div>
+                        <h3 className="text-sm font-bold text-amber-800 dark:text-amber-400">Confirm Reversal</h3>
+                        <p className="text-xs text-amber-600 dark:text-amber-300 mt-1">
+                            This action will create a counter-transaction to reverse the original entry. 
+                            The original transaction will remain unchanged for audit purposes.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 space-y-2">
+                    <div className="flex justify-between text-sm">
+                        <span className="text-slate-500 dark:text-slate-400">Transaction ID:</span>
+                        <span className="font-mono font-medium text-slate-700 dark:text-slate-300">#{transaction.id}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                        <span className="text-slate-500 dark:text-slate-400">Item:</span>
+                        <span className="font-medium text-slate-700 dark:text-slate-300">{transaction.itemName}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                        <span className="text-slate-500 dark:text-slate-400">Type:</span>
+                        <span className={`font-bold ${transaction.transactionType === 'IN' ? 'text-blue-600' : 'text-slate-600'}`}>
+                            {transaction.transactionType}
+                        </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                        <span className="text-slate-500 dark:text-slate-400">Quantity:</span>
+                        <span className="font-bold text-slate-700 dark:text-slate-300">{transaction.quantity}</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Reason for Reversal</label>
+                    <textarea 
+                        value={notes} 
+                        onChange={(e) => setNotes(e.target.value)} 
+                        placeholder="Why is this transaction being reversed? (Required)" 
+                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 h-24"
+                        required
+                    ></textarea>
+                </div>
+            </form>
+        );
+    }
+
     if (drawerType === 'STOCK_DETAIL' && selectedItem) {
         const item = selectedItem as StockItem;
         const TabButton = ({ tabName, label }: { tabName: string; label: string }) => (
@@ -542,6 +689,18 @@ const App = () => {
                             </div>
                         </div>
 
+                        {/* New Stats Section */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
+                                <div className="text-xs text-emerald-600 dark:text-emerald-400 mb-1 font-medium">Total Stocked In</div>
+                                <div className="text-lg font-bold text-emerald-700 dark:text-emerald-300">{item.totalIn || 0} <span className="text-xs font-normal opacity-70">{item.unit}</span></div>
+                            </div>
+                            <div className="p-3 rounded-lg bg-rose-50/50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800">
+                                <div className="text-xs text-rose-600 dark:text-rose-400 mb-1 font-medium">Total Stocked Out</div>
+                                <div className="text-lg font-bold text-rose-700 dark:text-rose-300">{item.totalOut || 0} <span className="text-xs font-normal opacity-70">{item.unit}</span></div>
+                            </div>
+                        </div>
+
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Category</label>
@@ -562,6 +721,20 @@ const App = () => {
                                     <Clock className="w-4 h-4" />
                                     {item.lastUpdated}
                                 </div>
+                            </div>
+                            
+                            <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
+                                <button 
+                                    onClick={() => {
+                                        closeDrawer();
+                                        setView('TRANSACTIONS');
+                                        setSelectedTransactionItem(item.id);
+                                    }}
+                                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                                >
+                                    <History className="w-4 h-4" />
+                                    View Transaction History
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -923,10 +1096,10 @@ const App = () => {
 
     if (drawerType === 'ORDER_FORM' && selectedItem) {
         return (
-             <form id="order-form" className="space-y-5" onSubmit={(e) => { e.preventDefault(); closeDrawer(); addToast(`Order request sent to ${selectedItem.name}`); }}>
+             <form id="order-form" className="space-y-5" onSubmit={(e) => { e.preventDefault(); closeDrawer(); addToast(`Order request sent to ${(selectedItem as Supplier).name}`); }}>
                  <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg text-blue-800 dark:text-blue-300 text-sm flex gap-3">
                     <div className="bg-white dark:bg-slate-800 p-1 rounded-full h-fit"><CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
-                    You are placing an order request to <strong>{selectedItem.name}</strong>.
+                    You are placing an order request to <strong>{(selectedItem as Supplier).name}</strong>.
                  </div>
                  
                  <div>
@@ -1171,12 +1344,14 @@ const App = () => {
         case 'EDIT_PROFILE': return 'Edit Profile';
         case 'CHANGE_PASSWORD': return 'Change Password';
         case 'ADD_USER': return 'Create New User';
+        case 'EDIT_TRANSACTION': return 'Edit Transaction';
+        case 'REVERSE_TRANSACTION': return 'Reverse Transaction';
         default: return 'Details';
     }
   };
 
   const getDrawerSubtitle = () => {
-     if (selectedItem && selectedItem.name) return selectedItem.name;
+     if (selectedItem && 'name' in selectedItem && selectedItem.name) return selectedItem.name;
      if (drawerType === 'ADD_STOCK') return 'Add a new product to inventory';
      if (drawerType === 'ADD_SUPPLIER') return 'Create a new partnership';
      if (drawerType === 'EDIT_PROFILE') return 'Update your personal information';
@@ -1185,6 +1360,8 @@ const App = () => {
      if (drawerType === 'STOCK_OUT') return 'Remove inventory from the stock';
      if (drawerType === 'DELETE_ITEM') return 'Permanently remove this item';
      if (drawerType === 'ADD_USER') return 'Add a new member to the system';
+     if (drawerType === 'EDIT_TRANSACTION') return 'Update transaction details';
+     if (drawerType === 'REVERSE_TRANSACTION') return 'Correct a mistake';
      return '';
   };
 
@@ -1267,12 +1444,34 @@ const App = () => {
             </button>
         );
     }
+    if (drawerType === 'EDIT_TRANSACTION') {
+        return (
+            <button 
+                type="submit"
+                form="edit-transaction-form"
+                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+            >
+                Save Changes
+            </button>
+        );
+    }
+    if (drawerType === 'REVERSE_TRANSACTION') {
+        return (
+            <button 
+                type="submit"
+                form="reverse-transaction-form"
+                className="bg-amber-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/10"
+            >
+                Confirm Reversal
+            </button>
+        );
+    }
     if (drawerType === 'SUPPLIER_DETAIL') {
          return (
              <button 
                 onClick={() => {
                     closeDrawer();
-                    setTimeout(() => openOrderForm(selectedItem), 300);
+                    setTimeout(() => openOrderForm(selectedItem as Supplier), 300);
                 }}
                 className="bg-[#1e293b] dark:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors"
              >
@@ -1635,6 +1834,12 @@ const App = () => {
                                     : transactions
                                 } 
                                 showBalance={!!selectedTransactionItem} // Only show balance when filtered by item
+                                onEdit={openEditTransaction}
+                                onReverse={openReverseTransaction}
+                                userPermissions={{
+                                    canEdit: userProfile?.role === 'ADMIN',
+                                    canReverse: userProfile?.role === 'ADMIN'
+                                }}
                             />
                         )}
                         

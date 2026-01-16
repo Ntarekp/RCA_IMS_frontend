@@ -58,7 +58,7 @@ export const mapStockBalanceToDashboardItem = (dto: StockBalanceDTO): DashboardI
     unit: dto.unit,
     quantityIn: dto.totalIn,
     quantityRemaining: dto.currentBalance,
-    quantityDamaged: 0, // Not available in StockBalanceDTO
+    quantityDamaged: 0, // This will be updated when we have damaged items API
     quantityThreshold: dto.minimumStock,
     status,
     date: 'Recent', // Could be enhanced with actual date
@@ -80,6 +80,11 @@ export const mapTransactionDTO = (dto: StockTransactionDTO) => {
     notes: dto.notes,
     recordedBy: dto.recordedBy,
     createdAt: dto.createdAt,
+    balanceAfter: dto.balanceAfter,
+    reversed: dto.reversed,
+    originalTransactionId: dto.originalTransactionId,
+    supplierId: dto.supplierId,
+    supplierName: dto.supplierName
   };
 };
 
@@ -105,4 +110,3 @@ function formatRelativeTime(isoString: string): string {
     return 'Unknown';
   }
 }
-

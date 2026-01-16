@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StockItem } from '../types';
-import { Package, MoreHorizontal, ArrowRight, MapPin, AlertCircle, Trash2, Edit } from 'lucide-react';
+import { Package, MoreHorizontal, ArrowRight, MapPin, AlertCircle, Trash2, Edit, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react';
 
 interface StockCardProps {
   item: StockItem;
@@ -105,6 +105,21 @@ export const StockCard: React.FC<StockCardProps> = ({ item, onManage, onDelete }
                 {item.currentQuantity <= item.minimumQuantity && (
                     <AlertCircle className="w-4 h-4 text-amber-500" />
                 )}
+            </div>
+        </div>
+        {/* New Total In/Out Stats */}
+        <div className="grid grid-cols-2 gap-2 pt-1">
+            <div className="bg-emerald-50/50 rounded-lg p-2 flex flex-col items-center justify-center border border-emerald-100/50">
+                <div className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium mb-0.5">
+                    <ArrowDownToLine className="w-3 h-3" /> Total In
+                </div>
+                <span className="text-xs font-bold text-emerald-700">{item.totalIn || 0}</span>
+            </div>
+            <div className="bg-rose-50/50 rounded-lg p-2 flex flex-col items-center justify-center border border-rose-100/50">
+                <div className="flex items-center gap-1 text-[10px] text-rose-600 font-medium mb-0.5">
+                    <ArrowUpFromLine className="w-3 h-3" /> Total Out
+                </div>
+                <span className="text-xs font-bold text-rose-700">{item.totalOut || 0}</span>
             </div>
         </div>
       </div>
