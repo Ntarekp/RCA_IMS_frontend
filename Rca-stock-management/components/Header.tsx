@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Bell, Settings, Menu, Command, User, LayoutDashboard, Package, ArrowRightLeft, BarChart3, FileText, Truck, Users } from 'lucide-react';
 import { ViewState } from '../types';
+import { getProfile } from '../api/services/userService';
 
 interface HeaderProps {
     onChangeView?: (view: ViewState) => void;
@@ -18,6 +19,8 @@ interface SearchResult {
 export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => {
     const [searchQuery, setSearchTerm] = useState('');
     const [showResults, setShowResults] = useState(false);
+    const [hasNotifications, setHasNotifications] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const searchRef = useRef<HTMLDivElement>(null);
 
     // Use import.meta.env.BASE_URL to correctly resolve the image path
@@ -49,6 +52,31 @@ export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => 
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Fetch profile for avatar
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const profile = await getProfile();
+                setAvatarUrl(profile.avatarUrl || null);
+            } catch (error) {
+                console.error("Failed to fetch profile for header", error);
+            }
+        };
+        fetchProfile();
+
+        // Listen for profile updates
+        const handleProfileUpdate = () => fetchProfile();
+        window.addEventListener('profile-updated', handleProfileUpdate);
+        return () => window.removeEventListener('profile-updated', handleProfileUpdate);
+    }, []);
+
+    // Check for notifications (mock logic for now, would be real API call)
+    useEffect(() => {
+        // In a real app, you'd check the notifications count from API
+        // For now, we assume no notifications if the list is empty (which it is by default now)
+        setHasNotifications(false);
     }, []);
 
     const handleSearchSelect = (view: ViewState) => {
@@ -137,7 +165,9 @@ export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => 
                     className="relative text-[#9CA3AF] dark:text-slate-400 hover:text-[#1E293B] dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 p-2 rounded-xl transition-all"
                 >
                     <Bell className="w-5 h-5" />
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#F1F2F7] dark:border-slate-800"></span>
+                    {hasNotifications && (
+                        <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#F1F2F7] dark:border-slate-800"></span>
+                    )}
                 </button>
                 <button 
                     onClick={() => onChangeView?.('SETTINGS')}
@@ -150,13 +180,14 @@ export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => 
             {/* Profile */}
             <button 
                 onClick={() => onChangeView?.('PROFILE')}
-                className="flex items-center gap-3 bg-white dark:bg-slate-700 p-1.5 pr-4 rounded-xl border border-[#E5E7EB] dark:border-slate-600 shadow-sm hover:shadow-md transition-all group ml-2 flex-shrink-0"
+                className="flex items-center gap-3 bg-white dark:bg-slate-700 p-1.5 pr-1.5 rounded-xl border border-[#E5E7EB] dark:border-slate-600 shadow-sm hover:shadow-md transition-all group ml-2 flex-shrink-0"
             >
                 <div className="w-8 h-8 rounded-lg bg-[#1E293B] dark:bg-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-slate-900/10 group-hover:scale-105 transition-transform overflow-hidden">
-                    <User className="w-5 h-5" />
-                </div>
-                <div className="hidden md:block text-left">
-                    <p className="text-xs font-semibold text-[#1E293B] dark:text-white">Profile</p>
+                    {avatarUrl ? (
+                        <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                        <User className="w-5 h-5" />
+                    )}
                 </div>
             </button>
         </div>

@@ -546,6 +546,9 @@ const App = () => {
                         You are editing transaction <strong>#{transaction.id}</strong>. 
                         Only metadata fields (Notes, Reference) can be modified to preserve audit integrity.
                     </p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                        <strong>Tip:</strong> To correct the Item or Quantity, please <span className="underline cursor-pointer font-medium hover:text-blue-800 dark:hover:text-blue-200" onClick={() => { closeDrawer(); setTimeout(() => openReverseTransaction(transaction), 300); }}>Reverse this transaction</span> and create a new one.
+                    </p>
                 </div>
 
                 <div>

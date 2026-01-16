@@ -71,6 +71,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
             setUploading(true);
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000));
+            // Dispatch event to update header
+            window.dispatchEvent(new Event('profile-updated'));
         } catch (error) {
             console.error("Failed to upload image", error);
         } finally {
@@ -158,10 +160,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                                 <Briefcase className="w-3.5 h-3.5" />
                                 <span>{profile.department || 'No Department'}</span>
                             </div>
-                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 text-xs font-medium">
-                                <MapPin className="w-3.5 h-3.5" />
-                                <span>{profile.location || 'Kigali, Rwanda'}</span>
-                            </div>
                             <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${
                                 profile.role === 'ADMIN' 
                                     ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-800' 
@@ -225,16 +223,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Department</label>
                                 <p className="text-slate-900 dark:text-white font-medium text-lg">{profile.department || 'Not set'}</p>
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Location</label>
-                                <p className="text-slate-900 dark:text-white font-medium text-lg">{profile.location || 'Not set'}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Member Since</label>
-                                <p className="text-slate-900 dark:text-white font-medium text-lg">
-                                    {profile.joinDate ? new Date(profile.joinDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}
-                                </p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -280,17 +268,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                                 </div>
                                 <div className={`w-10 h-6 rounded-full p-1 transition-colors ${profile.emailNotifications ? 'bg-[#28375B] dark:bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'}`}>
                                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${profile.emailNotifications ? 'translate-x-4' : ''}`}></div>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-400 shadow-sm">
-                                        <Phone className="w-4 h-4" />
-                                    </div>
-                                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">SMS Alerts</span>
-                                </div>
-                                <div className={`w-10 h-6 rounded-full p-1 transition-colors ${profile.smsNotifications ? 'bg-[#28375B] dark:bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'}`}>
-                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${profile.smsNotifications ? 'translate-x-4' : ''}`}></div>
                                 </div>
                             </div>
                         </div>

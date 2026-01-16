@@ -44,8 +44,9 @@ const downloadFile = (blob: Blob, filename: string) => {
 export const generatePdfReport = async (
   reportType: ReportType,
   itemId?: number,
-  dateRange?: { startDate: string; endDate: string }
-): Promise<void> => {
+  dateRange?: { startDate: string; endDate: string },
+  autoDownload: boolean = true
+): Promise<Blob> => {
   try {
     // Use API_CONFIG.BASE_URL which now includes /api if configured
     // But we need to be careful not to double up /api if it's already in BASE_URL
@@ -88,7 +89,10 @@ export const generatePdfReport = async (
     if (!response.ok) throw new Error('Failed to generate PDF');
 
     const blob = await response.blob();
-    downloadFile(blob, `${reportType}_report_${new Date().toISOString().split('T')[0]}.pdf`);
+    if (autoDownload) {
+        downloadFile(blob, `${reportType}_report_${new Date().toISOString().split('T')[0]}.pdf`);
+    }
+    return blob;
   } catch (error) {
     console.error('Error downloading PDF report:', error);
     throw error;
@@ -101,8 +105,9 @@ export const generatePdfReport = async (
 export const generateCsvReport = async (
   reportType: ReportType,
   itemId?: number,
-  dateRange?: { startDate: string; endDate: string }
-): Promise<void> => {
+  dateRange?: { startDate: string; endDate: string },
+  autoDownload: boolean = true
+): Promise<Blob> => {
   try {
     const reportsBaseUrl = `${API_CONFIG.BASE_URL}/reports/export`;
     let url = `${reportsBaseUrl}/excel`;
@@ -136,7 +141,10 @@ export const generateCsvReport = async (
     if (!response.ok) throw new Error('Failed to generate Excel report');
 
     const blob = await response.blob();
-    downloadFile(blob, `${reportType}_report_${new Date().toISOString().split('T')[0]}.xlsx`);
+    if (autoDownload) {
+        downloadFile(blob, `${reportType}_report_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+    return blob;
   } catch (error) {
     console.error('Error downloading Excel report:', error);
     throw error;

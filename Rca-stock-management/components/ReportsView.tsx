@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     FileSpreadsheet, 
     FileText, 
@@ -30,7 +30,8 @@ interface RecentReport {
     date: string;
     type: string;
     format: 'PDF' | 'CSV';
-    status: 'READY' | 'PENDING' | 'FAILED';
+    status: 'READY' | 'PENDING' | 'FAILED' | 'EXPIRED';
+    blob?: Blob;
 }
 
 export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) => {
@@ -45,6 +46,27 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
   const [recentReports, setRecentReports] = useState<RecentReport[]>([]);
 
   const { items } = useItems();
+
+  // Load reports from session storage on mount
+  useEffect(() => {
+      const savedReports = sessionStorage.getItem('recentReports');
+      if (savedReports) {
+          try {
+              const parsed = JSON.parse(savedReports);
+              // Mark restored reports as EXPIRED since we lost the Blob
+              setRecentReports(parsed.map((r: any) => ({...r, status: 'EXPIRED'})));
+          } catch (e) {
+              console.error("Failed to load reports", e);
+          }
+      }
+  }, []);
+
+  // Save reports to session storage whenever they change
+  useEffect(() => {
+      // We can't save the blob, so we strip it out
+      const reportsToSave = recentReports.map(({ blob, ...rest }) => rest);
+      sessionStorage.setItem('recentReports', JSON.stringify(reportsToSave));
+  }, [recentReports]);
 
   const handleGenerate = async (overrideType?: ReportType, overrideRange?: {startDate: string, endDate: string}) => {
     setIsGenerating(true);
@@ -69,14 +91,15 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
         ? rangeToUse 
         : undefined;
 
+      let blob: Blob;
       if (format === 'CSV') {
-        await generateCsvReport(typeToUse, itemId, range);
+        blob = await generateCsvReport(typeToUse, itemId, range, false); // Pass false to prevent auto-download
       } else {
-        await generatePdfReport(typeToUse, itemId, range);
+        blob = await generatePdfReport(typeToUse, itemId, range, false); // Pass false to prevent auto-download
       }
 
-      // Update report status to READY
-      setRecentReports(prev => prev.map(r => r.id === reportId ? { ...r, status: 'READY' } : r));
+      // Update report status to READY and store blob
+      setRecentReports(prev => prev.map(r => r.id === reportId ? { ...r, status: 'READY', blob } : r));
 
     } catch (error) {
       console.error('Failed to generate report:', error);
@@ -85,6 +108,27 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const downloadReport = (report: RecentReport) => {
+      if (report.blob) {
+          const url = window.URL.createObjectURL(report.blob);
+          const link = document.createElement('a');
+          link.href = url;
+          const extension = report.format === 'CSV' ? 'xlsx' : 'pdf';
+          link.setAttribute('download', `${report.type}_report_${new Date().toISOString().split('T')[0]}.${extension}`);
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode?.removeChild(link);
+          window.URL.revokeObjectURL(url);
+      }
+  };
+
+  const viewReport = (report: RecentReport) => {
+      if (report.blob) {
+          const url = window.URL.createObjectURL(report.blob);
+          window.open(url, '_blank');
+      }
   };
 
   const generateQuickReport = (type: 'monthly' | 'weekly' | 'stock-in' | 'stock-out') => {
@@ -360,6 +404,12 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                                             Ready
                                         </span>
                                     )}
+                                    {report.status === 'EXPIRED' && (
+                                        <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs font-medium">
+                                            <Clock className="w-3 h-3" />
+                                            Expired
+                                        </span>
+                                    )}
                                     {report.status === 'FAILED' && (
                                         <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400 text-xs font-medium">
                                             <AlertCircle className="w-3 h-3" />
@@ -368,16 +418,26 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                                     )}
                                 </td>
                                 <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
-                                    {report.status === 'READY' && (
+                                    {report.status === 'READY' ? (
                                         <>
-                                            <button className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
+                                            <button 
+                                                onClick={() => viewReport(report)}
+                                                className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                                                title="View Report"
+                                            >
                                                 <Eye className="w-4 h-4" />
                                             </button>
-                                            <button className="p-2 text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                                            <button 
+                                                onClick={() => downloadReport(report)}
+                                                className="p-2 text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                                title="Download Report"
+                                            >
                                                 <Download className="w-4 h-4" />
                                             </button>
                                         </>
-                                    )}
+                                    ) : report.status === 'EXPIRED' ? (
+                                        <span className="text-xs text-slate-400 italic">Session Expired</span>
+                                    ) : null}
                                 </td>
                             </tr>
                         ))}
