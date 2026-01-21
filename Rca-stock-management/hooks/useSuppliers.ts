@@ -57,9 +57,9 @@ export const useSuppliers = () => {
     }
   };
 
-  const deactivateSupplier = async (id: string) => {
+  const deactivateSupplier = async (id: string, password: string) => {
     try {
-      await apiDeactivateSupplier(id);
+      await apiDeactivateSupplier(id, password);
       await fetchSuppliers(); // Refresh list
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to deactivate supplier');
@@ -75,9 +75,9 @@ export const useSuppliers = () => {
     }
   };
 
-  const hardDeleteSupplier = async (id: string) => {
+  const hardDeleteSupplier = async (id: string, password: string) => {
     try {
-      await deleteSupplier(id);
+      await deleteSupplier(id, password);
       await fetchSuppliers(); // Refresh list
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to delete supplier');

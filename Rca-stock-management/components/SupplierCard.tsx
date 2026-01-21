@@ -81,7 +81,7 @@ export const SupplierCard: React.FC<SupplierCardProps> = ({
         {isActive && onOrder ? (
             <button 
               onClick={() => onOrder(supplier)}
-              className="flex items-center justify-center py-2.5 rounded-xl bg-slate-900 dark:bg-blue-600 text-white text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10 active:scale-95"
+              className="flex items-center justify-center py-2.5 rounded-xl bg-[#1e293b] dark:bg-blue-600 text-white text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10 active:scale-95"
             >
               Order Now
             </button>

@@ -401,6 +401,22 @@ const App = () => {
       setDrawerOpen(true);
   };
 
+  const openDeactivateSupplier = (supplier: Supplier) => {
+    setSelectedItem(supplier);
+    setDrawerType('DEACTIVATE_SUPPLIER');
+    setDrawerOpen(true);
+    setDeleteConfirmation('');
+    setDeletePassword('');
+  };
+
+  const openDeleteSupplier = (supplier: Supplier) => {
+    setSelectedItem(supplier);
+    setDrawerType('DELETE_SUPPLIER');
+    setDrawerOpen(true);
+    setDeleteConfirmation('');
+    setDeletePassword('');
+  };
+
   // Close Drawer
   const closeDrawer = () => {
     setDrawerOpen(false);
@@ -865,6 +881,176 @@ const App = () => {
         );
     }
 
+    if (drawerType === 'DEACTIVATE_SUPPLIER' && selectedItem) {
+        const supplier = selectedItem as Supplier;
+        return (
+            <div className="space-y-6">
+                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-100 dark:border-amber-800 flex gap-3">
+                    <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                    <div>
+                        <h3 className="text-sm font-bold text-amber-800 dark:text-amber-400">Confirm Deactivation</h3>
+                        <p className="text-xs text-amber-600 dark:text-amber-300 mt-1">
+                            Deactivating <strong>{supplier.name}</strong> will hide them from active lists. You can reactivate them later.
+                        </p>
+                    </div>
+                </div>
+
+                <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (deleteConfirmation !== 'i confirm deactivate') {
+                        addToast('Please type the confirmation phrase exactly.', 'error');
+                        return;
+                    }
+                    
+                    if (!deletePassword) {
+                        addToast('Please enter your password.', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        const toastId = addToast("Deactivating supplier...", 'loading');
+                        await deactivateSupplier(supplier.id, deletePassword);
+                        removeToast(toastId);
+                        addToast("Supplier deactivated successfully.", 'success');
+                        closeDrawer();
+                        refetchSuppliers();
+                    } catch (error) {
+                        const errorMessage = error instanceof ApiError ? error.message : 'Failed to deactivate supplier. Incorrect password?';
+                        addToast(errorMessage, 'error');
+                    }
+                }} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Type <span className="font-mono font-bold text-amber-600 dark:text-amber-400">i confirm deactivate</span> to confirm
+                        </label>
+                        <input 
+                            type="text" 
+                            value={deleteConfirmation}
+                            onChange={(e) => setDeleteConfirmation(e.target.value)}
+                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
+                            placeholder="i confirm deactivate"
+                            required 
+                        />
+                    </div>
+                    
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Admin Password</label>
+                        <input 
+                            type="password" 
+                            value={deletePassword}
+                            onChange={(e) => setDeletePassword(e.target.value)}
+                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
+                            placeholder="Enter your password"
+                            required 
+                        />
+                    </div>
+
+                    <div className="pt-2 flex gap-3">
+                        <button 
+                            type="button" 
+                            onClick={closeDrawer}
+                            className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            type="submit"
+                            disabled={deleteConfirmation !== 'i confirm deactivate' || !deletePassword}
+                            className="flex-1 px-4 py-2.5 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            Deactivate Supplier
+                        </button>
+                    </div>
+                </form>
+            </div>
+        );
+    }
+
+    if (drawerType === 'DELETE_SUPPLIER' && selectedItem) {
+        const supplier = selectedItem as Supplier;
+        return (
+            <div className="space-y-6">
+                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-800 flex gap-3">
+                    <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0" />
+                    <div>
+                        <h3 className="text-sm font-bold text-red-800 dark:text-red-400">Warning: Irreversible Action</h3>
+                        <p className="text-xs text-red-600 dark:text-red-300 mt-1">
+                            Deleting <strong>{supplier.name}</strong> will permanently remove them from the system. This cannot be undone.
+                        </p>
+                    </div>
+                </div>
+
+                <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (deleteConfirmation !== 'i confirm delete') {
+                        addToast('Please type the confirmation phrase exactly.', 'error');
+                        return;
+                    }
+                    
+                    if (!deletePassword) {
+                        addToast('Please enter your password.', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        const toastId = addToast("Deleting supplier...", 'loading');
+                        await hardDeleteSupplier(supplier.id, deletePassword);
+                        removeToast(toastId);
+                        addToast("Supplier deleted permanently.", 'success');
+                        closeDrawer();
+                        refetchSuppliers();
+                    } catch (error) {
+                        const errorMessage = error instanceof ApiError ? error.message : 'Failed to delete supplier. Incorrect password?';
+                        addToast(errorMessage, 'error');
+                    }
+                }} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Type <span className="font-mono font-bold text-red-600 dark:text-red-400">i confirm delete</span> to confirm
+                        </label>
+                        <input 
+                            type="text" 
+                            value={deleteConfirmation}
+                            onChange={(e) => setDeleteConfirmation(e.target.value)}
+                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
+                            placeholder="i confirm delete"
+                            required 
+                        />
+                    </div>
+                    
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Admin Password</label>
+                        <input 
+                            type="password" 
+                            value={deletePassword}
+                            onChange={(e) => setDeletePassword(e.target.value)}
+                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
+                            placeholder="Enter your password"
+                            required 
+                        />
+                    </div>
+
+                    <div className="pt-2 flex gap-3">
+                        <button 
+                            type="button" 
+                            onClick={closeDrawer}
+                            className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            type="submit"
+                            disabled={deleteConfirmation !== 'i confirm delete' || !deletePassword}
+                            className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            Delete Permanently
+                        </button>
+                    </div>
+                </form>
+            </div>
+        );
+    }
+
     if (drawerType === 'ADD_STOCK') {
         return (
             <form id="add-stock-form" className="space-y-5" onSubmit={async (e) => { 
@@ -1051,19 +1237,9 @@ const App = () => {
                     <div className="pt-4 border-t border-slate-100 dark:border-slate-700 space-y-3">
                         {!isInactive ? (
                             <button 
-                                onClick={async () => {
-                                    if (confirm('Are you sure you want to deactivate this supplier?')) {
-                                        try {
-                                            const toastId = addToast("Deactivating supplier...", 'loading');
-                                            await deactivateSupplier(supplier.id);
-                                            removeToast(toastId);
-                                            addToast("Supplier deactivated.", 'success');
-                                            closeDrawer();
-                                            refetchSuppliers();
-                                        } catch (e) {
-                                            addToast("Failed to deactivate supplier.", 'error');
-                                        }
-                                    }
+                                onClick={() => {
+                                    closeDrawer();
+                                    setTimeout(() => openDeactivateSupplier(supplier), 300);
                                 }}
                                 className="w-full text-center text-amber-600 dark:text-amber-400 text-sm font-medium hover:text-amber-700 dark:hover:text-amber-300 flex items-center justify-center gap-2"
                             >
@@ -1085,25 +1261,15 @@ const App = () => {
                                             addToast("Failed to reactivate supplier.", 'error');
                                         }
                                     }}
-                                    className="w-full text-center text-emerald-600 dark:text-emerald-400 text-sm font-medium hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center justify-center gap-2"
+                                    className="w-full text-center text-slate-700 dark:text-slate-300 text-sm font-medium hover:text-slate-900 dark:hover:text-white flex items-center justify-center gap-2"
                                 >
                                     <RefreshCw className="w-4 h-4" />
                                     Reactivate Supplier
                                 </button>
                                 <button 
-                                    onClick={async () => {
-                                        if (confirm('Are you sure you want to PERMANENTLY delete this supplier? This cannot be undone.')) {
-                                            try {
-                                                const toastId = addToast("Deleting supplier...", 'loading');
-                                                await hardDeleteSupplier(supplier.id);
-                                                removeToast(toastId);
-                                                addToast("Supplier deleted permanently.", 'success');
-                                                closeDrawer();
-                                                refetchSuppliers();
-                                            } catch (e) {
-                                                addToast("Failed to delete supplier.", 'error');
-                                            }
-                                        }
+                                    onClick={() => {
+                                        closeDrawer();
+                                        setTimeout(() => openDeleteSupplier(supplier), 300);
                                     }}
                                     className="w-full text-center text-rose-600 dark:text-rose-400 text-sm font-medium hover:text-rose-700 dark:hover:text-rose-300 flex items-center justify-center gap-2"
                                 >
@@ -1370,6 +1536,8 @@ const App = () => {
         case 'ADD_USER': return 'Create New User';
         case 'EDIT_TRANSACTION': return 'Edit Transaction';
         case 'REVERSE_TRANSACTION': return 'Reverse Transaction';
+        case 'DEACTIVATE_SUPPLIER': return 'Deactivate Supplier';
+        case 'DELETE_SUPPLIER': return 'Delete Supplier';
         default: return 'Details';
     }
   };
@@ -1386,6 +1554,8 @@ const App = () => {
      if (drawerType === 'ADD_USER') return 'Add a new member to the system';
      if (drawerType === 'EDIT_TRANSACTION') return 'Update transaction details';
      if (drawerType === 'REVERSE_TRANSACTION') return 'Correct a mistake';
+     if (drawerType === 'DEACTIVATE_SUPPLIER') return 'Temporarily disable access';
+     if (drawerType === 'DELETE_SUPPLIER') return 'Permanently remove supplier';
      return '';
   };
 
@@ -2027,18 +2197,7 @@ const App = () => {
                                                 addToast("Failed to reactivate supplier.", 'error');
                                             }
                                         }}
-                                        onDelete={async (s) => {
-                                            if (confirm('Are you sure you want to PERMANENTLY delete this supplier? This cannot be undone.')) {
-                                                try {
-                                                    const toastId = addToast("Deleting supplier...", 'loading');
-                                                    await hardDeleteSupplier(s.id);
-                                                    removeToast(toastId);
-                                                    addToast("Supplier deleted permanently.", 'success');
-                                                } catch (e) {
-                                                    addToast("Failed to delete supplier.", 'error');
-                                                }
-                                            }
-                                        }}
+                                        onDelete={() => openDeleteSupplier(supplier)}
                                     />
                                 ))
                             ) : (

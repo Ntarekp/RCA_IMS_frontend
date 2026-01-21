@@ -70,8 +70,8 @@ export const updateSupplier = async (id: string, supplier: Partial<Supplier>): P
 /**
  * Deactivate (soft delete) supplier
  */
-export const deactivateSupplier = async (id: string): Promise<void> => {
-  return patch<void>(`${ENDPOINT}/${id}/deactivate`, {});
+export const deactivateSupplier = async (id: string, password: string): Promise<void> => {
+  return patch<void>(`${ENDPOINT}/${id}/deactivate`, { password });
 };
 
 /**
@@ -84,8 +84,14 @@ export const reactivateSupplier = async (id: string): Promise<void> => {
 /**
  * Hard delete supplier
  */
-export const deleteSupplier = async (id: string): Promise<void> => {
-  return del<void>(`${ENDPOINT}/${id}`);
+export const deleteSupplier = async (id: string, password: string): Promise<void> => {
+  // DELETE with body is not standard in some clients, but axios supports it via config.data
+  // Our client wrapper 'del' might need adjustment if it doesn't support body.
+  // Let's check client.ts.
+  // Assuming del(url, body) works or we use a custom request.
+  // If del doesn't support body, we might need to use post or put, but backend expects DELETE.
+  // Standard fetch API supports body in DELETE.
+  return del<void>(`${ENDPOINT}/${id}`, { password });
 };
 
 // Mapper
