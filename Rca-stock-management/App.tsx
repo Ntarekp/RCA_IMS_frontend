@@ -178,9 +178,14 @@ const App = () => {
                         document.documentElement.classList.remove('dark');
                     }
                 }).catch(error => {
-                    // If profile fetch fails (e.g. 401 Unauthorized), logout the user
                     console.error("Failed to fetch profile:", error);
-                    handleLogout();
+                    // Only logout on authentication errors (401/403)
+                    if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+                        handleLogout();
+                    } else {
+                        // For other errors (network, server), just show a toast
+                        addToast("Connection issue: Failed to load profile. Some features may be limited.", 'warning');
+                    }
                 });
             });
             refetchSuppliers();
@@ -1261,7 +1266,7 @@ const App = () => {
                                             addToast("Failed to reactivate supplier.", 'error');
                                         }
                                     }}
-                                    className="w-full text-center text-slate-700 dark:text-slate-300 text-sm font-medium hover:text-slate-900 dark:hover:text-white flex items-center justify-center gap-2"
+                                    className="w-full text-center text-emerald-600 dark:text-emerald-400 text-sm font-medium hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center justify-center gap-2"
                                 >
                                     <RefreshCw className="w-4 h-4" />
                                     Reactivate Supplier
@@ -1660,6 +1665,28 @@ const App = () => {
             </button>
         );
     }
+    if (drawerType === 'DEACTIVATE_SUPPLIER') {
+        return (
+            <button 
+                type="submit"
+                form="deactivate-supplier-form"
+                className="bg-amber-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/10"
+            >
+                Deactivate Supplier
+            </button>
+        );
+    }
+    if (drawerType === 'DELETE_SUPPLIER') {
+        return (
+            <button 
+                type="submit"
+                form="delete-supplier-form"
+                className="bg-red-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors shadow-lg shadow-red-900/10"
+            >
+                Delete Permanently
+            </button>
+        );
+    }
     if (drawerType === 'SUPPLIER_DETAIL') {
         const supplier = selectedItem as Supplier;
         const isInactive = inactiveSuppliers.some(s => s.id === supplier.id);
@@ -1774,8 +1801,14 @@ const App = () => {
                                         <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
                                     </div>
                                 ) : reportsError ? (
-                                    <div className="p-4 text-center text-red-600 text-sm">
-                                        Error loading dashboard data
+                                    <div className="p-4 text-center text-red-600 text-sm flex flex-col items-center justify-center gap-2">
+                                        <p>Error loading data</p>
+                                        <button 
+                                            onClick={() => refetchReports()}
+                                            className="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors"
+                                        >
+                                            Retry
+                                        </button>
                                     </div>
                                 ) : (
                                     <DashboardTable items={dashboardItems.slice(0, 6)} />

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { UserProfile } from '../types';
 import { User, Mail, Phone, MapPin, Shield, Calendar, Edit, Lock, LogOut, Briefcase, Camera, Loader2, Upload } from 'lucide-react';
 import { getProfile, updateProfile } from '../api/services/userService';
+import { uploadFile } from '../api/services/fileService';
 import { ApiError } from '../api/client';
 
 interface ProfileViewProps {
@@ -57,24 +58,29 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
         const file = event.target.files?.[0];
         if (!file) return;
 
-        // In a real app, you would upload this file to a server/S3
-        // For now, we'll use a local object URL to simulate the update
-        const imageUrl = URL.createObjectURL(file);
-        
-        // Optimistic update
-        setProfile(prev => prev ? {
-            ...prev,
-            [type === 'avatar' ? 'avatarUrl' : 'coverUrl']: imageUrl
-        } : null);
-
         try {
             setUploading(true);
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            // Dispatch event to update header
+            
+            // 1. Upload file to server
+            const fileUrl = await uploadFile(file);
+            
+            // 2. Update profile with new URL
+            await updateProfile({
+                [type === 'avatar' ? 'avatarUrl' : 'coverUrl']: fileUrl
+            });
+            
+            // 3. Update local state
+            setProfile(prev => prev ? {
+                ...prev,
+                [type === 'avatar' ? 'avatarUrl' : 'coverUrl']: fileUrl
+            } : null);
+            
+            // 4. Notify other components
             window.dispatchEvent(new Event('profile-updated'));
+            
         } catch (error) {
             console.error("Failed to upload image", error);
+            alert("Failed to upload image. Please try again.");
         } finally {
             setUploading(false);
         }
@@ -120,9 +126,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                     <div className="absolute inset-0 bg-black/10 group-hover/cover:bg-black/30 transition-colors"></div>
                     <button 
                         onClick={() => coverInputRef.current?.click()}
-                        className="absolute top-4 right-4 p-2 bg-black/30 hover:bg-black/50 text-white rounded-xl backdrop-blur-sm transition-all opacity-0 group-hover/cover:opacity-100 flex items-center gap-2 text-xs font-medium"
+                        disabled={uploading}
+                        className="absolute top-4 right-4 p-2 bg-black/30 hover:bg-black/50 text-white rounded-xl backdrop-blur-sm transition-all opacity-0 group-hover/cover:opacity-100 flex items-center gap-2 text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <Camera className="w-4 h-4" />
+                        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
                         <span>Change Cover</span>
                     </button>
                 </div>
@@ -140,10 +147,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                                 
                                 {/* Avatar Overlay */}
                                 <div 
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer"
+                                    onClick={() => !uploading && fileInputRef.current?.click()}
+                                    className={`absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer ${uploading ? 'cursor-not-allowed' : ''}`}
                                 >
-                                    <Camera className="w-8 h-8 text-white" />
+                                    {uploading ? <Loader2 className="w-8 h-8 text-white animate-spin" /> : <Camera className="w-8 h-8 text-white" />}
                                 </div>
                             </div>
                         </div>

@@ -99,12 +99,16 @@ export const UsersView: React.FC<UsersViewProps> = ({ onAddUser }) => {
 
                         <div className="relative flex justify-between items-start mb-6">
                             <div className="flex items-center gap-4">
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm ${
+                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm overflow-hidden ${
                                     user.role === 'ADMIN' 
                                         ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
                                         : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                                 }`}>
-                                    {user.name ? user.name.charAt(0).toUpperCase() : <User className="w-6 h-6" />}
+                                    {user.avatarUrl ? (
+                                        <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        user.name ? user.name.charAt(0).toUpperCase() : <User className="w-6 h-6" />
+                                    )}
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-lg text-slate-900 dark:text-white leading-tight">{user.name || 'Unknown User'}</h3>
