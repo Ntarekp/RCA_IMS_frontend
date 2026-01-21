@@ -3,11 +3,20 @@
  */
 
 import { useEffect, useState } from 'react';
-import { getAllSuppliers, createSupplier, updateSupplier, deleteSupplier, SupplierDTO } from '../api/services/supplierService';
+import { 
+  getAllSuppliers, 
+  getInactiveSuppliers,
+  createSupplier, 
+  updateSupplier, 
+  deleteSupplier, 
+  deactivateSupplier as apiDeactivateSupplier,
+  reactivateSupplier as apiReactivateSupplier
+} from '../api/services/supplierService';
 import { Supplier } from '../types';
 
 export const useSuppliers = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [inactiveSuppliers, setInactiveSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -15,8 +24,12 @@ export const useSuppliers = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getAllSuppliers();
-      setSuppliers(data);
+      const [active, inactive] = await Promise.all([
+        getAllSuppliers(),
+        getInactiveSuppliers()
+      ]);
+      setSuppliers(active);
+      setInactiveSuppliers(inactive);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch suppliers'));
     } finally {
@@ -46,10 +59,28 @@ export const useSuppliers = () => {
 
   const deactivateSupplier = async (id: string) => {
     try {
-      await deleteSupplier(id);
+      await apiDeactivateSupplier(id);
       await fetchSuppliers(); // Refresh list
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to deactivate supplier');
+    }
+  };
+
+  const reactivateSupplier = async (id: string) => {
+    try {
+      await apiReactivateSupplier(id);
+      await fetchSuppliers(); // Refresh list
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to reactivate supplier');
+    }
+  };
+
+  const hardDeleteSupplier = async (id: string) => {
+    try {
+      await deleteSupplier(id);
+      await fetchSuppliers(); // Refresh list
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to delete supplier');
     }
   };
 
@@ -59,11 +90,14 @@ export const useSuppliers = () => {
 
   return {
     suppliers,
+    inactiveSuppliers,
     loading,
     error,
     refetch: fetchSuppliers,
     addSupplier,
     updateSupplier: updateSupplierById,
     deactivateSupplier,
+    reactivateSupplier,
+    hardDeleteSupplier
   };
 };

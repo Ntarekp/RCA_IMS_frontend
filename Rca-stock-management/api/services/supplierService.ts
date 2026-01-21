@@ -3,7 +3,7 @@
  * API service for supplier management operations
  */
 
-import { get, post, put, del } from '../client';
+import { get, post, put, del, patch } from '../client';
 import { API_CONFIG } from '../config';
 import { Supplier } from '../../types';
 
@@ -24,6 +24,14 @@ export interface SupplierDTO {
  */
 export const getAllSuppliers = async (): Promise<Supplier[]> => {
   const dtos = await get<SupplierDTO[]>(ENDPOINT);
+  return dtos.map(mapDTOToSupplier);
+};
+
+/**
+ * Get all inactive suppliers
+ */
+export const getInactiveSuppliers = async (): Promise<Supplier[]> => {
+  const dtos = await get<SupplierDTO[]>(`${ENDPOINT}/inactive`);
   return dtos.map(mapDTOToSupplier);
 };
 
@@ -61,6 +69,20 @@ export const updateSupplier = async (id: string, supplier: Partial<Supplier>): P
 
 /**
  * Deactivate (soft delete) supplier
+ */
+export const deactivateSupplier = async (id: string): Promise<void> => {
+  return patch<void>(`${ENDPOINT}/${id}/deactivate`, {});
+};
+
+/**
+ * Reactivate supplier
+ */
+export const reactivateSupplier = async (id: string): Promise<void> => {
+  return patch<void>(`${ENDPOINT}/${id}/reactivate`, {});
+};
+
+/**
+ * Hard delete supplier
  */
 export const deleteSupplier = async (id: string): Promise<void> => {
   return del<void>(`${ENDPOINT}/${id}`);

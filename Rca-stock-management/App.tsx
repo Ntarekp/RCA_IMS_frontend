@@ -55,7 +55,9 @@ import {
   ArrowDown,
   ArrowUp,
   AlertTriangle,
-  LayoutGrid
+  LayoutGrid,
+  Trash2,
+  RefreshCw
 } from 'lucide-react';
 
 const App = () => {
@@ -73,12 +75,7 @@ const App = () => {
 
   useEffect(() => {
       // Check if we are on the reset-password path
-      // Since we are using HashRouter or simple state-based routing in a SPA served under a base path,
-      // we need to check window.location carefully.
-      // If served under /rca_ims/, the path might be /rca_ims/reset-password
-      
       const path = window.location.pathname;
-      // Check if path ends with /reset-password
       if (path.endsWith('/reset-password')) {
           const params = new URLSearchParams(window.location.search);
           const token = params.get('token');
@@ -92,7 +89,7 @@ const App = () => {
   const { items: stockItems, loading: itemsLoading, error: itemsError, addItem, updateItem, deleteItem, refetch: refetchItems } = useItems();
   const { dashboardItems, loading: reportsLoading, error: reportsError, balanceReport, refetch: refetchReports } = useReports();
   const { transactions, loading: transactionsLoading, error: transactionsError, addTransaction, updateTransaction, reverseTransaction, refetch: refetchTransactions } = useTransactions();
-  const { suppliers, loading: suppliersLoading, error: suppliersError, addSupplier, updateSupplier, deactivateSupplier, refetch: refetchSuppliers } = useSuppliers();
+  const { suppliers, inactiveSuppliers, loading: suppliersLoading, error: suppliersError, addSupplier, updateSupplier, deactivateSupplier, reactivateSupplier, hardDeleteSupplier, refetch: refetchSuppliers } = useSuppliers();
 
   // Drawer State
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -121,6 +118,9 @@ const App = () => {
   const [stockViewMode, setStockViewMode] = useState<'grid' | 'list'>('list');
   const [stockCategoryFilter, setStockCategoryFilter] = useState('');
   const [stockStatusFilter, setStockStatusFilter] = useState('');
+
+  // Supplier View State
+  const [showInactiveSuppliers, setShowInactiveSuppliers] = useState(false);
 
   // Toast Helpers
   const addToast = (message: string, type: ToastMessage['type'] = 'success') => {
@@ -309,30 +309,6 @@ const App = () => {
     }
   };
 
-  const handleReportDamaged = async () => {
-    if (!selectedItem || !damagedQuantity || !('currentQuantity' in selectedItem)) return;
-    const quantity = parseInt(damagedQuantity);
-    if (quantity <= 0) {
-      addToast('Please enter a valid quantity.', 'error');
-      return;
-    }
-
-    try {
-      const toastId = addToast('Reporting damaged stock...', 'loading');
-      // This function needs to be created in itemService.ts
-      await import('./api/services/itemService').then(({ recordDamagedQuantity }) => 
-        recordDamagedQuantity(Number(selectedItem.id), quantity)
-      );
-      removeToast(toastId);
-      addToast('Damaged stock reported successfully.', 'success');
-      closeDrawer();
-      await Promise.all([refetchItems(), refetchReports()]);
-    } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Failed to report damaged stock.';
-      addToast(errorMessage, 'error');
-    }
-  };
-
   // Drawer Openers
   const openStockDetail = (item: StockItem) => {
     setSelectedItem(item);
@@ -447,13 +423,13 @@ const App = () => {
 
   // Drawer Content Renders
   const renderDrawerContent = () => {
+    // ... (existing drawer content)
     if (drawerType === 'STOCK_IN' || drawerType === 'STOCK_OUT') {
         const isStockIn = drawerType === 'STOCK_IN';
         return (
             <form id="transaction-form" className="space-y-5" onSubmit={(e) => {
                 e.preventDefault();
                 if (isStockIn) {
-                    // Simplified handleStockIn logic
                     const selectedItemId = (document.getElementById('item-select') as HTMLSelectElement).value;
                     const item = stockItems.find(i => i.id === selectedItemId);
                     if (!item) {
@@ -461,9 +437,8 @@ const App = () => {
                         return;
                     }
                     setSelectedItem(item); 
-                    handleStockIn(item); // Pass item directly
+                    handleStockIn(item); 
                 } else {
-                    // Simplified handleStockOut logic
                     const selectedItemId = (document.getElementById('item-select') as HTMLSelectElement).value;
                     const item = stockItems.find(i => i.id === selectedItemId);
                     if (!item) {
@@ -471,7 +446,7 @@ const App = () => {
                         return;
                     }
                     setSelectedItem(item);
-                    handleStockOut(item); // Pass item directly
+                    handleStockOut(item); 
                 }
             }}>
                 <div>
@@ -1038,6 +1013,8 @@ const App = () => {
     
     if (drawerType === 'SUPPLIER_DETAIL' && selectedItem) {
         const supplier = selectedItem as Supplier;
+        const isInactive = inactiveSuppliers.some(s => s.id === supplier.id);
+
         return (
             <div className="space-y-6">
                 <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-5 border border-slate-100 dark:border-slate-600 space-y-3">
@@ -1071,26 +1048,70 @@ const App = () => {
                 </div>
                 
                 {userProfile?.role === 'ADMIN' && (
-                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-                        <button 
-                            onClick={async () => {
-                                if (confirm('Are you sure you want to deactivate this supplier?')) {
-                                    try {
-                                        const toastId = addToast("Deactivating supplier...", 'loading');
-                                        await deactivateSupplier(supplier.id);
-                                        removeToast(toastId);
-                                        addToast("Supplier deactivated.", 'success');
-                                        closeDrawer();
-                                        refetchSuppliers();
-                                    } catch (e) {
-                                        addToast("Failed to deactivate supplier.", 'error');
+                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700 space-y-3">
+                        {!isInactive ? (
+                            <button 
+                                onClick={async () => {
+                                    if (confirm('Are you sure you want to deactivate this supplier?')) {
+                                        try {
+                                            const toastId = addToast("Deactivating supplier...", 'loading');
+                                            await deactivateSupplier(supplier.id);
+                                            removeToast(toastId);
+                                            addToast("Supplier deactivated.", 'success');
+                                            closeDrawer();
+                                            refetchSuppliers();
+                                        } catch (e) {
+                                            addToast("Failed to deactivate supplier.", 'error');
+                                        }
                                     }
-                                }
-                            }}
-                            className="w-full text-center text-rose-600 dark:text-rose-400 text-sm font-medium hover:text-rose-700 dark:hover:text-rose-300"
-                        >
-                            Deactivate Supplier
-                        </button>
+                                }}
+                                className="w-full text-center text-amber-600 dark:text-amber-400 text-sm font-medium hover:text-amber-700 dark:hover:text-amber-300 flex items-center justify-center gap-2"
+                            >
+                                <AlertTriangle className="w-4 h-4" />
+                                Deactivate Supplier
+                            </button>
+                        ) : (
+                            <>
+                                <button 
+                                    onClick={async () => {
+                                        try {
+                                            const toastId = addToast("Reactivating supplier...", 'loading');
+                                            await reactivateSupplier(supplier.id);
+                                            removeToast(toastId);
+                                            addToast("Supplier reactivated.", 'success');
+                                            closeDrawer();
+                                            refetchSuppliers();
+                                        } catch (e) {
+                                            addToast("Failed to reactivate supplier.", 'error');
+                                        }
+                                    }}
+                                    className="w-full text-center text-emerald-600 dark:text-emerald-400 text-sm font-medium hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center justify-center gap-2"
+                                >
+                                    <RefreshCw className="w-4 h-4" />
+                                    Reactivate Supplier
+                                </button>
+                                <button 
+                                    onClick={async () => {
+                                        if (confirm('Are you sure you want to PERMANENTLY delete this supplier? This cannot be undone.')) {
+                                            try {
+                                                const toastId = addToast("Deleting supplier...", 'loading');
+                                                await hardDeleteSupplier(supplier.id);
+                                                removeToast(toastId);
+                                                addToast("Supplier deleted permanently.", 'success');
+                                                closeDrawer();
+                                                refetchSuppliers();
+                                            } catch (e) {
+                                                addToast("Failed to delete supplier.", 'error');
+                                            }
+                                        }
+                                    }}
+                                    className="w-full text-center text-rose-600 dark:text-rose-400 text-sm font-medium hover:text-rose-700 dark:hover:text-rose-300 flex items-center justify-center gap-2"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    Delete Permanently
+                                </button>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
@@ -1470,6 +1491,11 @@ const App = () => {
         );
     }
     if (drawerType === 'SUPPLIER_DETAIL') {
+        const supplier = selectedItem as Supplier;
+        const isInactive = inactiveSuppliers.some(s => s.id === supplier.id);
+        
+        if (isInactive) return null; // No "Create Order" for inactive suppliers
+
          return (
              <button 
                 onClick={() => {
@@ -1950,15 +1976,77 @@ const App = () => {
                         )}
                     </div>
 
+                    {/* Tabs for Active/Inactive */}
+                    <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-700">
+                        <button
+                            onClick={() => setShowInactiveSuppliers(false)}
+                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${!showInactiveSuppliers ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
+                        >
+                            Active Suppliers
+                        </button>
+                        <button
+                            onClick={() => setShowInactiveSuppliers(true)}
+                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${showInactiveSuppliers ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
+                        >
+                            Inactive ({inactiveSuppliers.length})
+                        </button>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {suppliers.map((supplier) => (
-                            <SupplierCard 
-                                key={supplier.id} 
-                                supplier={supplier} 
-                                onViewDetails={openSupplierDetail}
-                                onOrder={openOrderForm}
-                            />
-                        ))}
+                        {!showInactiveSuppliers ? (
+                            suppliers.length > 0 ? (
+                                suppliers.map((supplier) => (
+                                    <SupplierCard 
+                                        key={supplier.id} 
+                                        supplier={supplier} 
+                                        isActive={true}
+                                        onViewDetails={openSupplierDetail}
+                                        onOrder={openOrderForm}
+                                    />
+                                ))
+                            ) : (
+                                <div className="col-span-full text-center py-12 text-slate-500">
+                                    No active suppliers found.
+                                </div>
+                            )
+                        ) : (
+                            inactiveSuppliers.length > 0 ? (
+                                inactiveSuppliers.map((supplier) => (
+                                    <SupplierCard 
+                                        key={supplier.id} 
+                                        supplier={supplier} 
+                                        isActive={false}
+                                        onViewDetails={openSupplierDetail}
+                                        onReactivate={async (s) => {
+                                            try {
+                                                const toastId = addToast("Reactivating supplier...", 'loading');
+                                                await reactivateSupplier(s.id);
+                                                removeToast(toastId);
+                                                addToast("Supplier reactivated.", 'success');
+                                            } catch (e) {
+                                                addToast("Failed to reactivate supplier.", 'error');
+                                            }
+                                        }}
+                                        onDelete={async (s) => {
+                                            if (confirm('Are you sure you want to PERMANENTLY delete this supplier? This cannot be undone.')) {
+                                                try {
+                                                    const toastId = addToast("Deleting supplier...", 'loading');
+                                                    await hardDeleteSupplier(s.id);
+                                                    removeToast(toastId);
+                                                    addToast("Supplier deleted permanently.", 'success');
+                                                } catch (e) {
+                                                    addToast("Failed to delete supplier.", 'error');
+                                                }
+                                            }
+                                        }}
+                                    />
+                                ))
+                            ) : (
+                                <div className="col-span-full text-center py-12 text-slate-500">
+                                    No inactive suppliers found.
+                                </div>
+                            )
+                        )}
                     </div>
                 </div>
             )}
