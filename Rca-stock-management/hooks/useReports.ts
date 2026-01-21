@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import { getBalanceReport, getLowStockReport } from '../api/services/reportService';
 import { StockBalanceDTO } from '../api/types';
-import { DashboardItem } from '../types';
+import { DashboardItem, SystemReport } from '../types';
 import { mapStockBalanceToDashboardItem } from '../utils/mappers';
 
 export const useReports = () => {
@@ -14,6 +14,26 @@ export const useReports = () => {
   const [dashboardItems, setDashboardItems] = useState<DashboardItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  // Initialize report history from localStorage
+  const [reportHistory, setReportHistory] = useState<SystemReport[]>(() => {
+    const saved = localStorage.getItem('reportHistory');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Save report history to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('reportHistory', JSON.stringify(reportHistory));
+  }, [reportHistory]);
+
+  const addReportToHistory = (report: SystemReport) => {
+    setReportHistory(prev => [report, ...prev]);
+  };
+
+  const clearReportHistory = () => {
+    setReportHistory([]);
+    localStorage.removeItem('reportHistory');
+  };
 
   const fetchReports = async () => {
     try {
@@ -45,9 +65,11 @@ export const useReports = () => {
     balanceReport,
     lowStockItems,
     dashboardItems,
+    reportHistory,
+    addReportToHistory,
+    clearReportHistory,
     loading,
     error,
     refetch: fetchReports,
   };
 };
-

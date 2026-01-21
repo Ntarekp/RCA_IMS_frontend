@@ -64,8 +64,17 @@ async function apiRequest<T>(
       return null as T;
     }
 
-    // Parse JSON response
-    const data = await response.json().catch(() => null);
+    // Check content type to determine how to parse response
+    const contentType = response.headers.get('content-type');
+    let data;
+
+    if (contentType && (contentType.includes('application/pdf') || contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))) {
+        // If it's a file (PDF or Excel), return the Blob directly
+        data = await response.blob();
+    } else {
+        // Otherwise, try to parse as JSON
+        data = await response.json().catch(() => null);
+    }
 
     // Check if response is successful
     if (!response.ok) {

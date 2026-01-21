@@ -2247,7 +2247,7 @@ const App = () => {
             {view === 'REPORT' && <ReportsView onGenerateReport={() => addToast('Generate Report feature is coming soon!', 'info')} />}
             {view === 'SETTINGS' && <SettingsView onChangePassword={openChangePassword} />}
             {view === 'NOTIFICATIONS' && <NotificationsView />}
-            {view === 'PROFILE' && <ProfileView onEditProfile={openEditProfile} onChangePassword={openChangePassword} onLogout={handleLogout} />}
+            {view === 'PROFILE' && <ProfileView onEditProfile={openEditProfile} onChangePassword={openChangePassword} onLogout={handleLogout} addToast={addToast} />}
 
             {view !== 'DASHBOARD' && view !== 'STOCK' && view !== 'TRANSACTIONS' && view !== 'ANALYTICS' && view !== 'SUPPLIERS' && view !== 'REPORT' && view !== 'SETTINGS' && view !== 'NOTIFICATIONS' && view !== 'PROFILE' && view !== 'USERS' && (
                 <div className="flex flex-col items-center justify-center h-full text-slate-400">

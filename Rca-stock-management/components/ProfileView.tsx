@@ -9,9 +9,10 @@ interface ProfileViewProps {
     onEditProfile: () => void;
     onChangePassword: () => void;
     onLogout: () => void;
+    addToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning' | 'loading') => void;
 }
 
-export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChangePassword, onLogout }) => {
+export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChangePassword, onLogout, addToast }) => {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
@@ -58,6 +59,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
         const file = event.target.files?.[0];
         if (!file) return;
 
+        const toastId = addToast('Uploading image...', 'loading');
         try {
             setUploading(true);
             
@@ -77,12 +79,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
             
             // 4. Notify other components
             window.dispatchEvent(new Event('profile-updated'));
-            
+            addToast('Image updated successfully!', 'success');
+
         } catch (error) {
             console.error("Failed to upload image", error);
-            alert("Failed to upload image. Please try again.");
+            const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+            addToast(`Upload failed: ${errorMessage}`, 'error');
         } finally {
             setUploading(false);
+            // This assumes addToast returns an ID that can be used to remove it.
+            // If not, we might need a different way to handle loading state.
+            // For now, we'll just let the success/error toast replace the loading one.
         }
     };
 
