@@ -191,125 +191,71 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                             <Edit className="w-4 h-4" />
                             <span>Edit Profile</span>
                         </button>
-                        <button 
-                            onClick={onLogout}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 text-red-600 dark:text-red-400 px-6 py-3 rounded-xl text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-all shadow-sm active:scale-95"
-                        >
-                            <LogOut className="w-4 h-4" />
-                            <span>Logout</span>
-                        </button>
                     </div>
                 </div>
             </div>
 
             {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column - Personal Info */}
-                <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <div className="flex items-center justify-between mb-6">
-                            <div>
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    <User className="w-5 h-5 text-[#28375B] dark:text-blue-400" />
-                                    Personal Information
-                                </h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your personal details and contact info</p>
-                            </div>
-                            <button onClick={onChangePassword} className="text-sm text-[#28375B] dark:text-blue-400 font-medium hover:underline flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg transition-colors">
-                                <Lock className="w-3 h-3" />
-                                Change Password
-                            </button>
-                        </div>
-                        
-                        <div className="flex flex-col space-y-4">
-                            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-white dark:bg-slate-600 rounded-lg shadow-sm text-slate-400">
-                                        <User className="w-4 h-4" />
-                                    </div>
-                                    <label className="text-sm font-medium text-slate-500">Full Name</label>
-                                </div>
-                                <p className="text-slate-900 dark:text-white font-semibold text-lg pl-1">{profile.name || 'Not set'}</p>
-                            </div>
+            <div className="max-w-5xl mx-auto pb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Full Name */}
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+                        <label className="text-sm font-medium text-slate-500 block mb-1">Full Name:</label>
+                        <p className="text-lg font-semibold text-slate-900 dark:text-white">{profile.name || 'Not set'}</p>
+                    </div>
 
-                            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-white dark:bg-slate-600 rounded-lg shadow-sm text-slate-400">
-                                        <Mail className="w-4 h-4" />
-                                    </div>
-                                    <label className="text-sm font-medium text-slate-500">Email Address</label>
-                                </div>
-                                <p className="text-slate-900 dark:text-white font-semibold text-lg pl-1 truncate" title={profile.email}>{profile.email}</p>
-                            </div>
+                    {/* Email */}
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+                        <label className="text-sm font-medium text-slate-500 block mb-1">Email Address:</label>
+                        <p className="text-lg font-semibold text-slate-900 dark:text-white truncate" title={profile.email}>{profile.email}</p>
+                    </div>
 
-                            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-white dark:bg-slate-600 rounded-lg shadow-sm text-slate-400">
-                                        <Phone className="w-4 h-4" />
-                                    </div>
-                                    <label className="text-sm font-medium text-slate-500">Phone Number</label>
-                                </div>
-                                <p className="text-slate-900 dark:text-white font-semibold text-lg pl-1">{profile.phone || 'Not set'}</p>
-                            </div>
+                    {/* Phone */}
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+                        <label className="text-sm font-medium text-slate-500 block mb-1">Phone Number:</label>
+                        <p className="text-lg font-semibold text-slate-900 dark:text-white">{profile.phone || 'Not set'}</p>
+                    </div>
 
-                            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-white dark:bg-slate-600 rounded-lg shadow-sm text-slate-400">
-                                        <Building2 className="w-4 h-4" />
-                                    </div>
-                                    <label className="text-sm font-medium text-slate-500">Department</label>
-                                </div>
-                                <p className="text-slate-900 dark:text-white font-semibold text-lg pl-1">{profile.department || 'Not set'}</p>
-                            </div>
-                        </div>
+                    {/* Department */}
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+                        <label className="text-sm font-medium text-slate-500 block mb-1">Department:</label>
+                        <p className="text-lg font-semibold text-slate-900 dark:text-white">{profile.department || 'Not set'}</p>
+                    </div>
+
+                    {/* Role */}
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+                        <label className="text-sm font-medium text-slate-500 block mb-1">Role:</label>
+                        <p className="text-lg font-semibold text-slate-900 dark:text-white uppercase">{profile.role}</p>
+                    </div>
+
+                    {/* Joined Date */}
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+                        <label className="text-sm font-medium text-slate-500 block mb-1">Joined Date:</label>
+                        <p className="text-lg font-semibold text-slate-900 dark:text-white">{new Date(profile.joinDate).toLocaleDateString()}</p>
+                    </div>
+
+                    {/* Language */}
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+                        <label className="text-sm font-medium text-slate-500 block mb-1">Language:</label>
+                        <p className="text-lg font-semibold text-slate-900 dark:text-white uppercase">{profile.language || 'EN'}</p>
+                    </div>
+
+                    {/* Location */}
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+                        <label className="text-sm font-medium text-slate-500 block mb-1">District of Residence:</label>
+                        <p className="text-lg font-semibold text-slate-900 dark:text-white">{profile.location || 'Kigali, Rwanda'}</p>
                     </div>
                 </div>
 
-                {/* Right Column - Account Details */}
-                <div className="space-y-8">
-                    <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 uppercase tracking-wider flex items-center gap-2">
-                            <Shield className="w-4 h-4" />
-                            Account Details
-                        </h3>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-400 shadow-sm">
-                                        <Calendar className="w-4 h-4" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Joined Date</p>
-                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{new Date(profile.joinDate).toLocaleDateString()}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-400 shadow-sm">
-                                        <Globe className="w-4 h-4" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Language</p>
-                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase">{profile.language || 'EN'}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-400 shadow-sm">
-                                        <MapPin className="w-4 h-4" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Location</p>
-                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{profile.location || 'Kigali, Rwanda'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                {/* Logout Button */}
+                <div className="flex justify-end mt-8">
+                    <button 
+                        onClick={onLogout}
+                        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl text-sm font-bold transition-all shadow-md shadow-red-600/20 active:scale-95"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                    </button>
                 </div>
             </div>
         </div>
