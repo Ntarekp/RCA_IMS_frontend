@@ -121,13 +121,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
             />
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-10">
                 {/* Left Column: Profile Card */}
                 <div className="lg:col-span-1">
                     <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-6 shadow-sm border border-slate-200 dark:border-slate-700 h-full flex flex-col">
                         {/* Avatar Section */}
-                        <div className="flex flex-col items-center mb-8 relative group/avatar">
-                            <div className="w-48 h-48 rounded-3xl bg-slate-100 dark:bg-slate-700 p-2 shadow-inner overflow-hidden relative">
+                        <div className="flex flex-col items-center mb-6 relative group/avatar">
+                            <div className="w-40 h-40 rounded-3xl bg-slate-100 dark:bg-slate-700 p-1 shadow-inner overflow-hidden relative">
                                 {profile.avatarUrl ? (
                                     <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover rounded-2xl" />
                                 ) : (
@@ -235,22 +235,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                     </div>
 
                     {/* Bottom Card: System Details */}
-                    <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-8 shadow-sm border border-slate-200 dark:border-slate-700 flex-1">
-                        <div className="flex items-center justify-between mb-8">
+                    <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex-1">
+                        <div className="flex items-center justify-between mb-6">
                             <h3 className="text-xl font-bold text-slate-900 dark:text-white">System Information</h3>
-                            <button className="px-4 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-lg">
-                                Filter by
-                            </button>
                         </div>
 
                         <div className="space-y-4">
                             {/* Joined Date */}
                             <div className="flex items-center justify-between p-2">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                    <div className="w-2 h-2 rounded-full bg-slate-500"></div>
                                     <span className="font-medium text-slate-700 dark:text-slate-300">Joined Date</span>
                                 </div>
-                                <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-bold rounded-full">
+                                <span className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-full">
                                     {new Date(profile.joinDate).toLocaleDateString()}
                                 </span>
                             </div>
@@ -258,10 +255,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                             {/* Language */}
                             <div className="flex items-center justify-between p-2">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                                    <div className="w-2 h-2 rounded-full bg-slate-500"></div>
                                     <span className="font-medium text-slate-700 dark:text-slate-300">Language Preferences</span>
                                 </div>
-                                <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full uppercase">
+                                <span className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-full uppercase">
                                     {profile.language || 'English'}
                                 </span>
                             </div>
@@ -269,10 +266,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                             {/* Location */}
                             <div className="flex items-center justify-between p-2">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                    <div className="w-2 h-2 rounded-full bg-slate-500"></div>
                                     <span className="font-medium text-slate-700 dark:text-slate-300">District of Residence</span>
                                 </div>
-                                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full">
+                                <span className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-full">
                                     {profile.location || 'Kigali'}
                                 </span>
                             </div>
