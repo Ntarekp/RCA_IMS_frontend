@@ -34,6 +34,9 @@ export const mapItemDTOToStockItem = (dto: ItemDTO): StockItem => {
       : 'Unknown',
     description: dto.description,
     supplierId: undefined, // Not available in backend yet
+    totalIn: dto.totalIn || 0,
+    totalOut: dto.totalOut || 0,
+    quantityDamaged: dto.damagedQuantity || 0,
   };
 };
 

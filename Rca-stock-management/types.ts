@@ -17,6 +17,7 @@ export interface StockItem {
   supplierId?: string; // Linked supplier
   totalIn?: number; // Added for stats
   totalOut?: number; // Added for stats
+  quantityDamaged?: number; // Added for stats
 }
 
 export interface DashboardItem {
