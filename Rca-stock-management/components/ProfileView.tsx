@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UserProfile } from '../types';
-import { User, Mail, Phone, MapPin, Shield, Calendar, Edit, Lock, LogOut, Briefcase, Camera, Loader2, Upload } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Shield, Calendar, Edit, Lock, LogOut, Briefcase, Camera, Loader2, Upload, Building2, Globe } from 'lucide-react';
 import { getProfile, updateProfile } from '../api/services/userService';
 import { uploadFile } from '../api/services/fileService';
 import { ApiError } from '../api/client';
@@ -87,9 +87,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
             addToast(`Upload failed: ${errorMessage}`, 'error');
         } finally {
             setUploading(false);
-            // This assumes addToast returns an ID that can be used to remove it.
-            // If not, we might need a different way to handle loading state.
-            // For now, we'll just let the success/error toast replace the loading one.
         }
     };
 
@@ -126,7 +123,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
             {/* Profile Header Card */}
             <div className="bg-white dark:bg-slate-800 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group/cover">
                 {/* Cover Image */}
-                <div className="absolute top-0 left-0 w-full h-48 bg-gradient-to-r from-[#28375B] to-slate-900 dark:from-[#28375B] dark:to-slate-900">
+                <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-r from-[#28375B] to-slate-900 dark:from-[#28375B] dark:to-slate-900">
                     {profile.coverUrl && (
                         <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover opacity-80" />
                     )}
@@ -141,10 +138,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                     </button>
                 </div>
                 
-                <div className="relative px-8 pb-8 pt-32 flex flex-col md:flex-row items-end gap-6">
+                <div className="relative px-8 pb-8 pt-48 flex flex-col md:flex-row items-end gap-6">
                     {/* Avatar */}
-                    <div className="relative group/avatar">
-                        <div className="w-36 h-36 rounded-[2rem] bg-white dark:bg-slate-800 p-1.5 shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-300">
+                    <div className="relative group/avatar -mb-4">
+                        <div className="w-40 h-40 rounded-[2rem] bg-white dark:bg-slate-800 p-1.5 shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-300">
                             <div className="w-full h-full rounded-[1.6rem] bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-5xl font-bold text-slate-400 dark:text-slate-500 overflow-hidden relative">
                                 {profile.avatarUrl ? (
                                     <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
@@ -165,7 +162,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                     </div>
                     
                     {/* User Info */}
-                    <div className="flex-1 mb-2 text-center md:text-left">
+                    <div className="flex-1 mb-2 text-center md:text-left pt-4 md:pt-0">
                         <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{profile.name || 'User'}</h2>
                         <p className="text-slate-500 dark:text-slate-400 font-medium">{profile.email}</p>
                         
@@ -196,9 +193,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                         </button>
                         <button 
                             onClick={onLogout}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-white px-4 py-3 rounded-xl text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-600 transition-all shadow-sm active:scale-95 hover:text-red-600 dark:hover:text-red-400"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 text-red-600 dark:text-red-400 px-6 py-3 rounded-xl text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-all shadow-sm active:scale-95"
                         >
                             <LogOut className="w-4 h-4" />
+                            <span>Logout</span>
                         </button>
                     </div>
                 </div>
@@ -210,52 +208,104 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                 <div className="lg:col-span-2 space-y-8">
                     <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <User className="w-5 h-5 text-[#28375B] dark:text-blue-400" />
-                                Personal Information
-                            </h3>
-                            <button onClick={onChangePassword} className="text-sm text-[#28375B] dark:text-blue-400 font-medium hover:underline flex items-center gap-1">
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <User className="w-5 h-5 text-[#28375B] dark:text-blue-400" />
+                                    Personal Information
+                                </h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your personal details and contact info</p>
+                            </div>
+                            <button onClick={onChangePassword} className="text-sm text-[#28375B] dark:text-blue-400 font-medium hover:underline flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg transition-colors">
                                 <Lock className="w-3 h-3" />
                                 Change Password
                             </button>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
-                            <div className="space-y-1">
-                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Full Name</label>
-                                <p className="text-slate-900 dark:text-white font-medium text-lg">{profile.name || 'Not set'}</p>
+                        <div className="flex flex-col space-y-4">
+                            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 bg-white dark:bg-slate-600 rounded-lg shadow-sm text-slate-400">
+                                        <User className="w-4 h-4" />
+                                    </div>
+                                    <label className="text-sm font-medium text-slate-500">Full Name</label>
+                                </div>
+                                <p className="text-slate-900 dark:text-white font-semibold text-lg pl-1">{profile.name || 'Not set'}</p>
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Email Address</label>
-                                <p className="text-slate-900 dark:text-white font-medium text-lg">{profile.email}</p>
+
+                            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 bg-white dark:bg-slate-600 rounded-lg shadow-sm text-slate-400">
+                                        <Mail className="w-4 h-4" />
+                                    </div>
+                                    <label className="text-sm font-medium text-slate-500">Email Address</label>
+                                </div>
+                                <p className="text-slate-900 dark:text-white font-semibold text-lg pl-1 truncate" title={profile.email}>{profile.email}</p>
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Phone Number</label>
-                                <p className="text-slate-900 dark:text-white font-medium text-lg">{profile.phone || 'Not set'}</p>
+
+                            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 bg-white dark:bg-slate-600 rounded-lg shadow-sm text-slate-400">
+                                        <Phone className="w-4 h-4" />
+                                    </div>
+                                    <label className="text-sm font-medium text-slate-500">Phone Number</label>
+                                </div>
+                                <p className="text-slate-900 dark:text-white font-semibold text-lg pl-1">{profile.phone || 'Not set'}</p>
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Department</label>
-                                <p className="text-slate-900 dark:text-white font-medium text-lg">{profile.department || 'Not set'}</p>
+
+                            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 bg-white dark:bg-slate-600 rounded-lg shadow-sm text-slate-400">
+                                        <Building2 className="w-4 h-4" />
+                                    </div>
+                                    <label className="text-sm font-medium text-slate-500">Department</label>
+                                </div>
+                                <p className="text-slate-900 dark:text-white font-semibold text-lg pl-1">{profile.department || 'Not set'}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Right Column - Stats & Settings */}
+                {/* Right Column - Account Details */}
                 <div className="space-y-8">
-                    {/* Quick Settings */}
                     <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">Preferences</h3>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 uppercase tracking-wider flex items-center gap-2">
+                            <Shield className="w-4 h-4" />
+                            Account Details
+                        </h3>
                         <div className="space-y-4">
                             <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-400 shadow-sm">
-                                        <Mail className="w-4 h-4" />
+                                        <Calendar className="w-4 h-4" />
                                     </div>
-                                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Email Notifications</span>
+                                    <div>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Joined Date</p>
+                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{new Date(profile.joinDate).toLocaleDateString()}</span>
+                                    </div>
                                 </div>
-                                <div className={`w-10 h-6 rounded-full p-1 transition-colors ${profile.emailNotifications ? 'bg-[#28375B] dark:bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'}`}>
-                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${profile.emailNotifications ? 'translate-x-4' : ''}`}></div>
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-400 shadow-sm">
+                                        <Globe className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Language</p>
+                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase">{profile.language || 'EN'}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-400 shadow-sm">
+                                        <MapPin className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Location</p>
+                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{profile.location || 'Kigali, Rwanda'}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
