@@ -120,145 +120,178 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                 onChange={(e) => handleImageUpload(e, 'cover')}
             />
 
-            {/* Profile Header Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden group/cover">
-                {/* Cover Image Section */}
-                <div className="relative h-64 bg-gradient-to-r from-[#28375B] to-slate-900 dark:from-[#28375B] dark:to-slate-900">
-                    {profile.coverUrl && (
-                        <img src={profile.coverUrl} alt="Cover" className="w-full h-full object-cover opacity-80" />
-                    )}
-                    <div className="absolute inset-0 bg-black/10 group-hover/cover:bg-black/30 transition-colors"></div>
-                    <button 
-                        onClick={() => coverInputRef.current?.click()}
-                        disabled={uploading}
-                        className="absolute top-4 right-4 p-2 bg-black/30 hover:bg-black/50 text-white rounded-xl backdrop-blur-sm transition-all opacity-0 group-hover/cover:opacity-100 flex items-center gap-2 text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-                        <span>Change Cover</span>
-                    </button>
-                </div>
-                
-                {/* Profile Content Section */}
-                <div className="px-8 pb-8">
-                    <div className="flex flex-col md:flex-row items-start gap-6">
-                        {/* Avatar - Pulled up to overlap */}
-                        <div className="relative -mt-20 group/avatar">
-                            <div className="w-40 h-40 rounded-[2rem] bg-white dark:bg-slate-800 p-1.5 shadow-2xl">
-                                <div className="w-full h-full rounded-[1.6rem] bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-5xl font-bold text-slate-400 dark:text-slate-500 overflow-hidden relative">
-                                    {profile.avatarUrl ? (
-                                        <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-slate-300 dark:text-slate-600">{profile.name ? profile.name.charAt(0).toUpperCase() : <User className="w-16 h-16" />}</span>
-                                    )}
-                                    
-                                    {/* Avatar Overlay */}
-                                    <div 
-                                        onClick={() => !uploading && fileInputRef.current?.click()}
-                                        className={`absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer ${uploading ? 'cursor-not-allowed' : ''}`}
-                                    >
-                                        {uploading ? <Loader2 className="w-8 h-8 text-white animate-spin" /> : <Camera className="w-8 h-8 text-white" />}
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10">
+                {/* Left Column: Profile Card */}
+                <div className="lg:col-span-1">
+                    <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-6 shadow-sm border border-slate-200 dark:border-slate-700 h-full flex flex-col">
+                        {/* Avatar Section */}
+                        <div className="flex flex-col items-center mb-8 relative group/avatar">
+                            <div className="w-48 h-48 rounded-3xl bg-slate-100 dark:bg-slate-700 p-2 shadow-inner overflow-hidden relative">
+                                {profile.avatarUrl ? (
+                                    <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover rounded-2xl" />
+                                ) : (
+                                    <div className="w-full h-full rounded-2xl flex items-center justify-center bg-slate-200 dark:bg-slate-600">
+                                        <span className="text-4xl font-bold text-slate-400">{profile.name ? profile.name.charAt(0).toUpperCase() : <User className="w-20 h-20" />}</span>
                                     </div>
+                                )}
+                                
+                                {/* Upload Overlay */}
+                                <div 
+                                    onClick={() => !uploading && fileInputRef.current?.click()}
+                                    className={`absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer rounded-2xl ${uploading ? 'cursor-not-allowed' : ''}`}
+                                >
+                                    {uploading ? <Loader2 className="w-10 h-10 text-white animate-spin" /> : <Camera className="w-10 h-10 text-white" />}
                                 </div>
                             </div>
                         </div>
-                        
-                        {/* User Info - Starts below cover */}
-                        <div className="flex-1 pt-4 md:pt-6">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div>
-                                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{profile.name || 'User'}</h2>
-                                    <p className="text-slate-500 dark:text-slate-400 font-medium">{profile.email}</p>
-                                    
-                                    <div className="flex flex-wrap items-center gap-3 mt-4">
-                                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 text-xs font-medium">
-                                            <Briefcase className="w-3.5 h-3.5" />
-                                            <span>{profile.department || 'No Department'}</span>
-                                        </div>
-                                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${
-                                            profile.role === 'ADMIN' 
-                                                ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-800' 
-                                                : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-800'
-                                        }`}>
-                                            <Shield className="w-3 h-3" />
-                                            <span>{profile.role}</span>
-                                        </div>
-                                    </div>
+
+                        {/* Title & Info */}
+                        <div className="flex-1 space-y-6">
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">My profile</h2>
+                                <p className="text-xs text-slate-400">Manage your personal information</p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Full Name</label>
+                                    <p className="text-slate-900 dark:text-white font-medium border-b border-slate-100 dark:border-slate-700 pb-2">{profile.name}</p>
+                                </div>
+                                
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Phone Number</label>
+                                    <p className="text-slate-900 dark:text-white font-medium border-b border-slate-100 dark:border-slate-700 pb-2">{profile.phone || 'Not set'}</p>
                                 </div>
 
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Email Address</label>
+                                    <p className="text-slate-900 dark:text-white font-medium border-b border-slate-100 dark:border-slate-700 pb-2 truncate" title={profile.email}>{profile.email}</p>
+                                </div>
+                            </div>
+
+                            {/* Notifications Toggle (Visual Only) */}
+                            <div className="flex items-center justify-between py-2">
+                                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Email Notifications</span>
+                                <div className="w-10 h-5 bg-[#1e293b] dark:bg-blue-600 rounded-full relative cursor-pointer">
+                                    <div className="absolute right-1 top-1 w-3 h-3 bg-white rounded-full shadow-sm"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Save/Edit Button */}
+                        <div className="mt-8">
+                            <button 
+                                onClick={onEditProfile}
+                                className="w-full py-3 rounded-xl bg-[#1e293b] hover:bg-[#334155] text-white font-bold text-sm shadow-lg shadow-slate-900/20 active:scale-95 transition-all"
+                            >
+                                Edit Profile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Column: Details Stack */}
+                <div className="lg:col-span-2 flex flex-col gap-8">
+                    
+                    {/* Top Card: Account Info */}
+                    <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-8 shadow-sm border border-slate-200 dark:border-slate-700 flex-1">
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">My Account Details</h3>
+                            <div className="flex gap-2">
+                                <button className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                                    <span className="sr-only">Search</span>
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                </button>
+                                <button onClick={onChangePassword} className="px-4 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                                    Change Password
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            {/* Role Item */}
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">User Role</p>
+                                    <p className="text-lg font-bold text-slate-900 dark:text-white uppercase">{profile.role}</p>
+                                </div>
+                                <div className="px-4 py-2 rounded-lg bg-[#1e293b] text-white text-xs font-bold shadow-md shadow-slate-900/20">
+                                    Active Role
+                                </div>
+                            </div>
+
+                            {/* Department Item */}
+                            <div className="flex items-center justify-between border-t border-slate-50 dark:border-slate-700/50 pt-6">
+                                <div>
+                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Department</p>
+                                    <p className="text-lg font-bold text-slate-900 dark:text-white">{profile.department || 'Not Assigned'}</p>
+                                </div>
+                                <div className="px-4 py-2 rounded-lg bg-green-500 text-white text-xs font-bold shadow-md shadow-green-500/20">
+                                    Verified
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bottom Card: System Details */}
+                    <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-8 shadow-sm border border-slate-200 dark:border-slate-700 flex-1">
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">System Information</h3>
+                            <button className="px-4 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-lg">
+                                Filter by
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {/* Joined Date */}
+                            <div className="flex items-center justify-between p-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                    <span className="font-medium text-slate-700 dark:text-slate-300">Joined Date</span>
+                                </div>
+                                <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-bold rounded-full">
+                                    {new Date(profile.joinDate).toLocaleDateString()}
+                                </span>
+                            </div>
+
+                            {/* Language */}
+                            <div className="flex items-center justify-between p-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                                    <span className="font-medium text-slate-700 dark:text-slate-300">Language Preferences</span>
+                                </div>
+                                <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full uppercase">
+                                    {profile.language || 'English'}
+                                </span>
+                            </div>
+
+                            {/* Location */}
+                            <div className="flex items-center justify-between p-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                    <span className="font-medium text-slate-700 dark:text-slate-300">District of Residence</span>
+                                </div>
+                                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full">
+                                    {profile.location || 'Kigali'}
+                                </span>
+                            </div>
+
+                            {/* Logout Action Item */}
+                            <div className="flex items-center justify-between p-2 mt-4 border-t border-slate-50 dark:border-slate-700/50 pt-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                    <span className="font-medium text-slate-700 dark:text-slate-300">Session</span>
+                                </div>
                                 <button 
-                                    onClick={onEditProfile}
-                                    className="flex items-center gap-2 bg-[#28375B] dark:bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-[#1e2a45] dark:hover:bg-blue-700 transition-all shadow-lg shadow-slate-900/20 active:scale-95"
+                                    onClick={onLogout}
+                                    className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-full shadow-md shadow-red-600/20 transition-all active:scale-95"
                                 >
-                                    <Edit className="w-4 h-4" />
-                                    <span>Edit Profile</span>
+                                    Logout
                                 </button>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            {/* Content Grid */}
-            <div className="max-w-5xl mx-auto pb-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Full Name */}
-                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
-                        <label className="text-sm font-medium text-slate-500 block mb-1">Full Name:</label>
-                        <p className="text-lg font-semibold text-slate-900 dark:text-white">{profile.name || 'Not set'}</p>
-                    </div>
-
-                    {/* Email */}
-                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
-                        <label className="text-sm font-medium text-slate-500 block mb-1">Email Address:</label>
-                        <p className="text-lg font-semibold text-slate-900 dark:text-white truncate" title={profile.email}>{profile.email}</p>
-                    </div>
-
-                    {/* Phone */}
-                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
-                        <label className="text-sm font-medium text-slate-500 block mb-1">Phone Number:</label>
-                        <p className="text-lg font-semibold text-slate-900 dark:text-white">{profile.phone || 'Not set'}</p>
-                    </div>
-
-                    {/* Department */}
-                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
-                        <label className="text-sm font-medium text-slate-500 block mb-1">Department:</label>
-                        <p className="text-lg font-semibold text-slate-900 dark:text-white">{profile.department || 'Not set'}</p>
-                    </div>
-
-                    {/* Role */}
-                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
-                        <label className="text-sm font-medium text-slate-500 block mb-1">Role:</label>
-                        <p className="text-lg font-semibold text-slate-900 dark:text-white uppercase">{profile.role}</p>
-                    </div>
-
-                    {/* Joined Date */}
-                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
-                        <label className="text-sm font-medium text-slate-500 block mb-1">Joined Date:</label>
-                        <p className="text-lg font-semibold text-slate-900 dark:text-white">{new Date(profile.joinDate).toLocaleDateString()}</p>
-                    </div>
-
-                    {/* Language */}
-                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
-                        <label className="text-sm font-medium text-slate-500 block mb-1">Language:</label>
-                        <p className="text-lg font-semibold text-slate-900 dark:text-white uppercase">{profile.language || 'EN'}</p>
-                    </div>
-
-                    {/* Location */}
-                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
-                        <label className="text-sm font-medium text-slate-500 block mb-1">District of Residence:</label>
-                        <p className="text-lg font-semibold text-slate-900 dark:text-white">{profile.location || 'Kigali, Rwanda'}</p>
-                    </div>
-                </div>
-
-                {/* Logout Button */}
-                <div className="flex justify-end mt-8">
-                    <button 
-                        onClick={onLogout}
-                        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-xl text-sm font-bold transition-all shadow-md shadow-red-600/20 active:scale-95"
-                    >
-                        <LogOut className="w-4 h-4" />
-                        <span>Logout</span>
-                    </button>
                 </div>
             </div>
         </div>
