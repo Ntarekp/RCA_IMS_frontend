@@ -18,6 +18,7 @@ import {
     AlertCircle
 } from 'lucide-react';
 import { generateCsvReport, generatePdfReport, ReportType } from '../api/services/reportService';
+import { DateRangePicker } from './DateRangePicker';
 import { useItems } from '../hooks/useItems';
 import { useReports } from '../hooks/useReports';
 import { SystemReport } from '../types';
@@ -216,12 +217,15 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                   <div className="space-y-4">
                       <div className="space-y-2">
                           <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">Report Type</label>
-                          <div className="relative">
-                              <select 
-                                  value={reportType}
-                                  onChange={(e) => setReportType(e.target.value as ReportType)}
-                                  className="w-full appearance-none pl-4 pr-10 py-3 bg-white dark:bg-slate-700 border border-[#E5E7EB] dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-700 dark:text-slate-200"
-                              >
+                          <div className="relative group">
+                            <div className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 pointer-events-none">
+                                <FileText className="w-4 h-4" />
+                            </div>
+                            <select 
+                                value={reportType}
+                                onChange={(e) => setReportType(e.target.value as ReportType)}
+                                className="w-full appearance-none pl-12 pr-10 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-700 dark:text-slate-200 transition-all shadow-sm hover:border-blue-300 dark:hover:border-blue-500 cursor-pointer"
+                            >
                                   <option value="transactions">Detailed Transactions</option>
                                   <option value="balance">Current Stock Balance</option>
                                   <option value="low-stock">Low Stock Alert</option>
@@ -233,13 +237,16 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
 
                       <div className="space-y-2">
                           <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">Filter Items</label>
-                          <div className="relative">
-                              <select 
-                                  value={selectedItemId}
-                                  onChange={(e) => setSelectedItemId(e.target.value)}
-                                  className="w-full appearance-none pl-4 pr-10 py-3 bg-white dark:bg-slate-700 border border-[#E5E7EB] dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-700 dark:text-slate-200 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-400"
-                                  disabled={reportType !== 'transactions'}
-                              >
+                          <div className="relative group">
+                            <div className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 pointer-events-none">
+                                <Filter className="w-4 h-4" />
+                            </div>
+                            <select 
+                                value={selectedItemId}
+                                onChange={(e) => setSelectedItemId(e.target.value)}
+                                className="w-full appearance-none pl-12 pr-10 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-700 dark:text-slate-200 disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:text-slate-400 transition-all shadow-sm hover:border-blue-300 dark:hover:border-blue-500 cursor-pointer"
+                                disabled={reportType !== 'transactions'}
+                            >
                                   <option value="">All Items</option>
                                   {items.map((item) => (
                                       <option key={item.id} value={item.id}>{item.name}</option>
@@ -250,69 +257,44 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                       </div>
                   </div>
 
-                  {/* Report Format */}
-                  <div className="space-y-2">
-                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">Report Format</label>
-                      <div className="grid grid-cols-2 gap-3">
-                          <button 
-                              onClick={() => setFormat('CSV')}
-                              className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl text-sm font-medium transition-all border h-full ${
-                              format === 'CSV' 
-                                  ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 ring-2 ring-emerald-500/20' 
-                                  : 'bg-white dark:bg-slate-700 border-[#E5E7EB] dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600'
-                              }`}
-                          >
-                              <FileSpreadsheet className="w-6 h-6" />
-                              <span className="font-bold">Excel</span>
-                          </button>
-                          <button 
-                              onClick={() => setFormat('PDF')}
-                              className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl text-sm font-medium transition-all border h-full ${
-                              format === 'PDF' 
-                                  ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800 ring-2 ring-red-500/20' 
-                                  : 'bg-white dark:bg-slate-700 border-[#E5E7EB] dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600'
-                              }`}
-                          >
-                              <FileText className="w-6 h-6" />
-                              <span className="font-bold">PDF</span>
-                          </button>
+                  {/* Right Column: Date & Format */}
+                  <div className="space-y-4">
+                      {/* Date Range */}
+                      <div className="space-y-2">
+                          <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">Select Date</label>
+                          <DateRangePicker 
+                              startDate={dateRange.startDate}
+                              endDate={dateRange.endDate}
+                              onChange={(start, end) => setDateRange({ startDate: start, endDate: end })}
+                          />
                       </div>
-                  </div>
-              </div>
 
-              {/* Date Range - Horizontal Layout */}
-              <div className="space-y-2">
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">Select Date Range</label>
-                  <div className="flex flex-col sm:flex-row gap-4 items-end">
-                      <div className="space-y-1 flex-1 sm:flex-initial">
-                          <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">From</label>
-                          <div className="relative group">
-                              <div className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 pointer-events-none">
-                                  <CalendarIcon className="w-4 h-4" />
-                              </div>
-                              <input 
-                                  type="date" 
-                                  value={dateRange.startDate}
-                                  onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
-                                  className="w-full sm:w-auto pl-12 pr-4 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-700 dark:text-slate-200 transition-all shadow-sm hover:border-blue-300 dark:hover:border-blue-500 cursor-pointer"
-                              />
-                          </div>
-                      </div>
-                      <div className="hidden sm:flex pb-3 text-slate-300 items-center justify-center px-2">
-                          <ArrowRight className="w-5 h-5" />
-                      </div>
-                      <div className="space-y-1 flex-1 sm:flex-initial">
-                          <label className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">To</label>
-                          <div className="relative group">
-                              <div className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 pointer-events-none">
-                                  <CalendarIcon className="w-4 h-4" />
-                              </div>
-                              <input 
-                                  type="date" 
-                                  value={dateRange.endDate}
-                                  onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
-                                  className="w-full sm:w-auto pl-12 pr-4 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-700 dark:text-slate-200 transition-all shadow-sm hover:border-blue-300 dark:hover:border-blue-500 cursor-pointer"
-                              />
+                      {/* Report Format */}
+                      <div className="space-y-2">
+                          <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">Report Format</label>
+                          <div className="grid grid-cols-2 gap-3">
+                              <button 
+                                  onClick={() => setFormat('CSV')}
+                                  className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl text-sm font-medium transition-all border h-full ${
+                                  format === 'CSV' 
+                                      ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 ring-2 ring-emerald-500/20' 
+                                      : 'bg-white dark:bg-slate-700 border-[#E5E7EB] dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600'
+                                  }`}
+                              >
+                                  <FileSpreadsheet className="w-6 h-6" />
+                                  <span className="font-bold">Excel</span>
+                              </button>
+                              <button 
+                                  onClick={() => setFormat('PDF')}
+                                  className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl text-sm font-medium transition-all border h-full ${
+                                  format === 'PDF' 
+                                      ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800 ring-2 ring-red-500/20' 
+                                      : 'bg-white dark:bg-slate-700 border-[#E5E7EB] dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-600'
+                                  }`}
+                              >
+                                  <FileText className="w-6 h-6" />
+                                  <span className="font-bold">PDF</span>
+                              </button>
                           </div>
                       </div>
                   </div>
