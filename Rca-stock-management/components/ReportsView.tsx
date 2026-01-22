@@ -204,11 +204,18 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
 
       {/* Generate Report Section */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-8 flex flex-col">
-          <div className="mb-8">
-              <h2 className="font-bold text-slate-800 dark:text-white text-xl">
-                  Generate Report
-              </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Create custom report based on your needs</p>
+          <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                  <h2 className="font-bold text-slate-800 dark:text-white text-xl">
+                      Generate Report
+                  </h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Create custom report based on your needs</p>
+              </div>
+              <DateRangePicker 
+                  startDate={dateRange.startDate}
+                  endDate={dateRange.endDate}
+                  onChange={(start, end) => setDateRange({ startDate: start, endDate: end })}
+              />
           </div>
 
           <div className="flex-1 flex flex-col gap-6">
@@ -259,16 +266,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
 
                   {/* Right Column: Date & Format */}
                   <div className="space-y-4">
-                      {/* Date Range */}
-                      <div className="space-y-2">
-                          <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">Select Date</label>
-                          <DateRangePicker 
-                              startDate={dateRange.startDate}
-                              endDate={dateRange.endDate}
-                              onChange={(start, end) => setDateRange({ startDate: start, endDate: end })}
-                          />
-                      </div>
-
                       {/* Report Format */}
                       <div className="space-y-2">
                           <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">Report Format</label>
