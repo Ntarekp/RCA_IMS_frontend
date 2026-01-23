@@ -3,12 +3,56 @@
  * API service for generating inventory reports
  */
 
-import { get } from '../client';
+import { get, post, del } from '../client';
 import { API_CONFIG } from '../config';
-import { StockBalanceDTO } from '../types';
+import { StockBalanceDTO, SystemReport, ScheduledReportConfig } from '../types';
 
 // Report types
 export type ReportType = 'balance' | 'low-stock' | 'stock-in' | 'stock-out' | 'damaged' | 'transactions' | 'suppliers';
+
+/**
+ * Schedule a report
+ */
+export const scheduleReport = async (config: ScheduledReportConfig): Promise<ScheduledReportConfig> => {
+    return post<ScheduledReportConfig>(`${API_CONFIG.BASE_URL}/reports/schedule`, config);
+};
+
+/**
+ * Get all scheduled reports
+ */
+export const getScheduledReports = async (): Promise<ScheduledReportConfig[]> => {
+    return get<ScheduledReportConfig[]>(`${API_CONFIG.BASE_URL}/reports/schedule`);
+};
+
+/**
+ * Delete a scheduled report
+ */
+export const deleteScheduledReport = async (id: number): Promise<void> => {
+    return del(`${API_CONFIG.BASE_URL}/reports/schedule/${id}`);
+};
+
+/**
+ * Get report history
+ */
+export const getReportHistory = async (): Promise<SystemReport[]> => {
+  try {
+    const history = await get<any[]>(`${API_CONFIG.BASE_URL}/reports/history`);
+    // Map backend history to frontend SystemReport
+    return history.map(h => ({
+      id: h.id?.toString() || Math.random().toString(),
+      title: h.title || 'Untitled Report',
+      type: (h.type || 'STOCK') as any,
+      generatedDate: new Date(h.generatedDate).toLocaleDateString() + ' ' + new Date(h.generatedDate).toLocaleTimeString(),
+      size: h.size || 'Unknown',
+      status: (h.status || 'READY') as any,
+      format: (h.format === 'EXCEL' || h.format === 'CSV') ? 'CSV' : 'PDF', // Frontend uses 'CSV' for Excel icon usually, but let's check types
+      params: {} 
+    }));
+  } catch (error) {
+    console.error('Failed to fetch report history', error);
+    return [];
+  }
+};
 
 /**
  * Get complete stock balance report

@@ -96,6 +96,15 @@ export interface NotificationItem {
   read: boolean;
 }
 
+export interface ScheduledReportConfig {
+  id?: number;
+  email: string;
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  reportType: 'ALL_REPORTS_ZIP' | 'TRANSACTION_HISTORY' | 'STOCK_BALANCE' | 'LOW_STOCK';
+  active: boolean;
+  lastSent?: string;
+}
+
 export interface UserSettings {
   emailNotifications: boolean;
   smsNotifications: boolean;
