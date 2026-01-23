@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { StockTransactionDTO } from '../api/types';
-import { Edit, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Edit, RotateCcw, AlertTriangle, Undo2 } from 'lucide-react';
 
 interface TransactionsTableProps {
   items: StockTransactionDTO[];
   showBalance?: boolean; // Kept for compatibility but ignored in this view
   onEdit?: (transaction: StockTransactionDTO) => void;
   onReverse?: (transaction: StockTransactionDTO) => void;
+  onUndoReverse?: (transaction: StockTransactionDTO) => void;
   userPermissions?: {
     canEdit: boolean;
     canReverse: boolean;
@@ -17,6 +18,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
   items, 
   onEdit, 
   onReverse,
+  onUndoReverse,
   userPermissions = { canEdit: true, canReverse: true } 
 }) => {
   return (
@@ -93,7 +95,18 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                                     </>
                                 )}
                                 {isReversed && (
-                                    <span className="text-xs text-gray-400 italic" title="This transaction has been reversed">Reversed</span>
+                                    <div className="flex items-center justify-center gap-2">
+                                        <span className="text-xs text-gray-400 italic" title="This transaction has been reversed">Reversed</span>
+                                        {userPermissions.canReverse && onUndoReverse && (
+                                            <button 
+                                                onClick={() => onUndoReverse(item)}
+                                                className="p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
+                                                title="Undo Reversal (Restore)"
+                                            >
+                                                <Undo2 className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         </div>

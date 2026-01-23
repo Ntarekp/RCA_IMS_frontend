@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ChevronDown } from 'lucide-react';
 
 // --- Date Helpers ---
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -47,7 +47,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ startDate, end
     const [viewDate, setViewDate] = useState(new Date()); // The date that determines the first month shown
     const [tempStart, setTempStart] = useState<Date | null>(null);
     const [tempEnd, setTempEnd] = useState<Date | null>(null);
+    const [position, setPosition] = useState<'bottom' | 'top'>('bottom');
     const containerRef = useRef<HTMLDivElement>(null);
+    const popoverRef = useRef<HTMLDivElement>(null);
 
     // Initialize state from props
     useEffect(() => {
@@ -71,6 +73,22 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ startDate, end
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    // Auto-positioning logic
+    useEffect(() => {
+        if (isOpen && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            const requiredHeight = 400; // Approx height of the picker
+
+            if (spaceBelow < requiredHeight && spaceAbove > requiredHeight) {
+                setPosition('top');
+            } else {
+                setPosition('bottom');
+            }
+        }
+    }, [isOpen]);
 
     const handleDayClick = (date: Date) => {
         if (!tempStart || (tempStart && tempEnd)) {
@@ -124,7 +142,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ startDate, end
         const days = [];
         // Empty slots for previous month
         for (let i = 0; i < firstDay; i++) {
-            days.push(<div key={`empty-${i}`} className="h-10 w-10" />);
+            days.push(<div key={`empty-${i}`} className="h-8 w-8" />);
         }
 
         // Days
@@ -134,7 +152,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ startDate, end
             const isEnd = isSameDay(date, tempEnd);
             const isInRange = isBetween(date, tempStart, tempEnd);
             
-            let className = "h-10 w-10 flex items-center justify-center text-sm rounded-full cursor-pointer transition-all relative z-10 ";
+            let className = "h-8 w-8 flex items-center justify-center text-xs rounded-full cursor-pointer transition-all relative z-10 ";
             
             if (isStart) className += "bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-md shadow-blue-500/30 ";
             else if (isEnd) className += "bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-md shadow-blue-500/30 ";
@@ -167,15 +185,15 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ startDate, end
         }
         
         return (
-            <div className="p-4 w-full sm:w-[320px]">
-                <div className="flex items-center justify-center mb-6">
-                    <span className="font-bold text-slate-800 dark:text-white text-base">
+            <div className="p-3 w-full sm:w-[280px]">
+                <div className="flex items-center justify-center mb-4">
+                    <span className="font-bold text-slate-800 dark:text-white text-sm">
                         {MONTH_NAMES[displayMonth]} {displayYear}
                     </span>
                 </div>
                 <div className="grid grid-cols-7 gap-y-2 mb-2">
                     {WEEK_DAYS.map(day => (
-                        <div key={day} className="h-8 flex items-center justify-center text-xs font-bold text-slate-400">
+                        <div key={day} className="h-6 flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase tracking-wide">
                             {day}
                         </div>
                     ))}
@@ -192,36 +210,42 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ startDate, end
         : 0;
 
     return (
-        <div className="relative w-full" ref={containerRef}>
+        <div className="relative w-full md:w-auto" ref={containerRef}>
             <div 
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full flex items-center justify-between bg-white dark:bg-slate-700 border-2 rounded-xl px-4 py-3 cursor-pointer shadow-sm hover:shadow-md transition-all group ${
+                className={`w-full md:w-[260px] flex items-center justify-between bg-white dark:bg-slate-700 border rounded-xl px-4 py-2.5 cursor-pointer shadow-sm hover:shadow-md transition-all group ${
                     isOpen ? 'border-blue-600 dark:border-blue-500 ring-2 ring-blue-100 dark:ring-blue-900/20' : 'border-slate-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-500'
                 }`}
             >
                 <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
-                     {tempStart ? formatDate(tempStart) : 'Select Date'} 
-                     <span className="text-slate-400 mx-2">—</span> 
-                     {tempEnd ? formatDate(tempEnd) : 'Select Date'}
+                     <CalendarIcon className={`w-4 h-4 transition-colors ${isOpen ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                     <span className="truncate">
+                        {tempStart ? formatDate(tempStart) : 'Select Date'} 
+                        <span className="text-slate-400 mx-2">—</span> 
+                        {tempEnd ? formatDate(tempEnd) : 'Select Date'}
+                     </span>
                 </div>
-                <CalendarIcon className={`w-5 h-5 transition-colors ${isOpen ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 text-slate-400 ${isOpen ? 'rotate-180 text-blue-600 dark:text-blue-400' : ''}`} />
             </div>
 
             {isOpen && (
-                <div className="absolute top-full left-0 mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200 max-w-[90vw] sm:max-w-none">
+                <div 
+                    ref={popoverRef}
+                    className={`absolute ${position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'} right-0 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200 max-w-[90vw] sm:max-w-none`}
+                >
                     <div className="flex flex-col md:flex-row relative">
                          {/* Navigation Arrows */}
                         <button 
                             onClick={() => changeMonth(-1)}
-                            className="absolute left-2 top-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full z-20 text-slate-600 dark:text-slate-300"
+                            className="absolute left-2 top-3 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full z-20 text-slate-600 dark:text-slate-300"
                         >
-                            <ChevronLeft className="w-5 h-5" />
+                            <ChevronLeft className="w-4 h-4" />
                         </button>
                          <button 
                             onClick={() => changeMonth(1)}
-                            className="absolute right-2 top-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full z-20 text-slate-600 dark:text-slate-300"
+                            className="absolute right-2 top-3 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full z-20 text-slate-600 dark:text-slate-300"
                         >
-                            <ChevronRight className="w-5 h-5" />
+                            <ChevronRight className="w-4 h-4" />
                         </button>
 
                         <div className="border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700">
@@ -233,23 +257,23 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ startDate, end
                     </div>
                     
                     {/* Footer */}
-                    <div className="p-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
-                        <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                            {daysDuration > 0 ? `${daysDuration} days` : 'Select range'}
+                    <div className="p-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
+                        <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                            {daysDuration > 0 ? `${daysDuration} days selected` : 'Select date range'}
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                             <button 
                                 onClick={handleCancel}
-                                className="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                className="px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
                             >
                                 Cancel
                             </button>
                             <button 
                                 onClick={handleApply}
                                 disabled={!tempStart || !tempEnd}
-                                className="px-6 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-lg shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                className="px-4 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-lg shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                             >
-                                Done
+                                Apply Range
                             </button>
                         </div>
                     </div>

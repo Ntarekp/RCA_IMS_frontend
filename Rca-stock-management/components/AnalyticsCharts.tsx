@@ -9,6 +9,7 @@ import { Loader2, ChevronDown, MoreHorizontal } from 'lucide-react';
 export const AnalyticsCharts: React.FC = () => {
     const [data, setData] = useState<AnalyticsSummary | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
 
     useEffect(() => {
@@ -29,10 +30,12 @@ export const AnalyticsCharts: React.FC = () => {
         const fetchData = async () => {
             try {
                 setLoading(true);
+                setError(null);
                 const result = await getAnalyticsSummary();
                 setData(result);
             } catch (err) {
                 console.error('Failed to load analytics charts', err);
+                setError('Failed to load analytics data');
             } finally {
                 setLoading(false);
             }
@@ -44,6 +47,15 @@ export const AnalyticsCharts: React.FC = () => {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="w-8 h-8 animate-spin text-[#9CA3AF] dark:text-slate-500" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
+                <p className="text-red-800 dark:text-red-400 font-medium">{error}</p>
+                <button onClick={() => window.location.reload()} className="mt-2 text-sm text-red-600 dark:text-red-300 underline">Refresh Page</button>
             </div>
         );
     }
@@ -146,7 +158,7 @@ export const AnalyticsCharts: React.FC = () => {
                         </button>
                      </div>
              
-                     <div className="flex-1 min-h-[250px] w-full flex items-center justify-center relative">
+                     <div className="h-[250px] w-full flex items-center justify-center relative">
                             <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie

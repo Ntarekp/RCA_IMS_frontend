@@ -73,7 +73,16 @@ async function apiRequest<T>(
         data = await response.blob();
     } else {
         // Otherwise, try to parse as JSON
-        data = await response.json().catch(() => null);
+        const text = await response.text();
+        try {
+            data = text ? JSON.parse(text) : null;
+        } catch {
+             // If parsing fails, use the raw text if it's an error to aid debugging
+             if (!response.ok) {
+                 console.warn('Non-JSON error response:', text.substring(0, 500));
+             }
+             data = null;
+        }
     }
 
     // Check if response is successful

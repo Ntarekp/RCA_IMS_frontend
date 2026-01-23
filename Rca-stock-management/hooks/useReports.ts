@@ -18,7 +18,15 @@ export const useReports = () => {
   // Initialize report history from localStorage
   const [reportHistory, setReportHistory] = useState<SystemReport[]>(() => {
     const saved = localStorage.getItem('reportHistory');
-    return saved ? JSON.parse(saved) : [];
+    const parsed: SystemReport[] = saved ? JSON.parse(saved) : [];
+    
+    // Clean up stuck reports on load
+    return parsed.map(report => {
+        if (report.status === 'PROCESSING') {
+            return { ...report, status: 'FAILED' };
+        }
+        return report;
+    });
   });
 
   // Save report history to localStorage whenever it changes

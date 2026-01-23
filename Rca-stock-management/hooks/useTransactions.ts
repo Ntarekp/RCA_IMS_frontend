@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { getAllTransactions, recordTransaction, updateTransaction, reverseTransaction } from '../api/services/transactionService';
+import { getAllTransactions, recordTransaction, updateTransaction, reverseTransaction, undoReverseTransaction } from '../api/services/transactionService';
 import { getBalanceReport } from '../api/services/reportService';
 import { StockTransactionDTO, CreateTransactionRequest, StockBalanceDTO } from '../api/types';
 import { DashboardItem } from '../types';
@@ -65,6 +65,16 @@ export const useTransactions = (itemId?: number) => {
     }
   };
 
+  const undoReverseTransactionData = async (id: number) => {
+    try {
+      const restoredTransaction = await undoReverseTransaction(id);
+      await fetchTransactions(); // Refresh list
+      return restoredTransaction;
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to undo reversal');
+    }
+  };
+
   useEffect(() => {
     fetchTransactions();
   }, [itemId]);
@@ -78,5 +88,6 @@ export const useTransactions = (itemId?: number) => {
     addTransaction,
     updateTransaction: updateTransactionData,
     reverseTransaction: reverseTransactionData,
+    undoReverseTransaction: undoReverseTransactionData,
   };
 };

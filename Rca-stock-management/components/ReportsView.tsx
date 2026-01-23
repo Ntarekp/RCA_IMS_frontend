@@ -15,7 +15,8 @@ import {
     BarChart,
     ArrowUpRight,
     ArrowDownRight,
-    AlertCircle
+    AlertCircle,
+    History,
 } from 'lucide-react';
 import { generateCsvReport, generatePdfReport, ReportType } from '../api/services/reportService';
 import { DateRangePicker } from './DateRangePicker';
@@ -40,35 +41,60 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
   const { items } = useItems();
   const { reportHistory, addReportToHistory } = useReports();
 
-  const handleGenerate = async (overrideType?: ReportType, overrideRange?: {startDate: string, endDate: string}) => {
+  // Reset to first page when a new report is added
+  useEffect(() => {
+      setCurrentPage(1);
+  }, [reportHistory.length]);
+
+  const handleGenerate = async (
+    overrideType?: ReportType, 
+    overrideRange?: {startDate: string, endDate: string},
+    overrideFormat?: 'PDF' | 'CSV',
+    overrideItemId?: string,
+    action: 'download' | 'view' = 'download',
+    overrideTitle?: string
+  ) => {
     setIsGenerating(true);
     const typeToUse = overrideType || reportType;
     const rangeToUse = overrideRange || dateRange;
+    const formatToUse = overrideFormat || format;
+    const itemIdToUse = overrideItemId !== undefined ? overrideItemId : selectedItemId;
+    
+    let defaultTitle = `${typeToUse.charAt(0).toUpperCase() + typeToUse.slice(1).replace('-', ' ')} Report`;
+    if (typeToUse === 'transactions' && !overrideRange) {
+        defaultTitle = "Complete Transaction History";
+    } else if (typeToUse === 'transactions' && overrideRange) {
+         // If it's a custom range but not quick report (which has overrideTitle), maybe "Transaction History"?
+         // Actually, let's just stick to "Complete Transaction History" for generic transactions
+         defaultTitle = "Complete Transaction History";
+    }
+
+    const titleToUse = overrideTitle || defaultTitle;
     
     // Create a pending report entry
     const reportId = Math.random().toString(36).substr(2, 9);
     const newReport: SystemReport = {
         id: reportId,
-        title: `${typeToUse.charAt(0).toUpperCase() + typeToUse.slice(1).replace('-', ' ')} Report`,
+        title: titleToUse,
         generatedDate: new Date().toLocaleDateString(),
         type: typeToUse.toUpperCase() as any,
-        format: format,
+        format: formatToUse,
         status: 'PROCESSING',
         size: '0 KB'
     };
     addReportToHistory(newReport);
 
     try {
-      const itemId = selectedItemId ? parseInt(selectedItemId) : undefined;
+      const itemId = itemIdToUse ? parseInt(itemIdToUse) : undefined;
       const range = (typeToUse === 'stock-in' || typeToUse === 'stock-out' || typeToUse === 'transactions') 
         ? rangeToUse 
         : undefined;
 
       let blob: Blob;
-      if (format === 'CSV') {
-        blob = await generateCsvReport(typeToUse, itemId, range, false); // Pass false to prevent auto-download
+      if (formatToUse === 'CSV') {
+        blob = await generateCsvReport(typeToUse, itemId, range, false, titleToUse); // Pass false to prevent auto-download
       } else {
-        blob = await generatePdfReport(typeToUse, itemId, range, false); // Pass false to prevent auto-download
+        blob = await generatePdfReport(typeToUse, itemId, range, false, titleToUse); // Pass false to prevent auto-download
       }
 
       // Calculate size
@@ -87,8 +113,9 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
       
       addReportToHistory(updatedReport);
 
-      // Auto download
+      // Handle action
       const url = window.URL.createObjectURL(blob);
+<<<<<<< Updated upstream
       const link = document.createElement('a');
       link.href = url;
       const extension = format === 'CSV' ? 'xlsx' : 'pdf';
@@ -97,6 +124,36 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
       link.click();
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
+=======
+      
+      if (action === 'view') {
+          window.open(url, '_blank');
+      } else {
+          const link = document.createElement('a');
+          link.href = url;
+          const extension = formatToUse === 'CSV' ? 'xlsx' : 'pdf';
+          
+          const now = new Date();
+          const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
+          
+          let filename = `${typeToUse}_report_${timestamp}.${extension}`;
+          
+          if (itemId) {
+              const itemName = items.find(i => i.id === itemIdToUse)?.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+              if (itemName) {
+                  filename = `${typeToUse}_${itemName}_${timestamp}.${extension}`;
+              }
+          }
+          
+          link.setAttribute('download', filename);
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode?.removeChild(link);
+      }
+      
+      // Cleanup after a delay to ensure view/download works
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+>>>>>>> Stashed changes
 
     } catch (error) {
       console.error('Failed to generate report:', error);
@@ -107,20 +164,62 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
     }
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+
+  const handleViewReport = async (report: SystemReport) => {
+    if (!report.params) return;
+    
+    // For view, we open in new tab (browser handles PDF/CSV view/download)
+    await handleGenerate(
+        report.params.reportType as ReportType,
+        report.params.dateRange,
+        report.format,
+        report.params.itemId,
+        'view'
+    );
+  };
+
+  const handleDownloadReport = async (report: SystemReport) => {
+    if (!report.params) return;
+    
+    await handleGenerate(
+        report.params.reportType as ReportType,
+        report.params.dateRange,
+        report.format,
+        report.params.itemId,
+        'download'
+    );
+  };
+
   const generateQuickReport = (type: 'monthly' | 'weekly' | 'stock-in' | 'stock-out') => {
       const end = new Date();
       const start = new Date();
       
       if (type === 'monthly') {
           start.setMonth(start.getMonth() - 1);
-          handleGenerate('transactions', { startDate: start.toISOString().split('T')[0], endDate: end.toISOString().split('T')[0] });
+          handleGenerate(
+              'transactions', 
+              { startDate: start.toISOString().split('T')[0], endDate: end.toISOString().split('T')[0] }, 
+              undefined, 
+              undefined, 
+              'download', 
+              'Monthly Stock Report'
+          );
       } else if (type === 'weekly') {
           start.setDate(start.getDate() - 7);
-          handleGenerate('transactions', { startDate: start.toISOString().split('T')[0], endDate: end.toISOString().split('T')[0] });
+          handleGenerate(
+              'transactions', 
+              { startDate: start.toISOString().split('T')[0], endDate: end.toISOString().split('T')[0] }, 
+              undefined, 
+              undefined, 
+              'download', 
+              'Weekly Stock Report'
+          );
       } else if (type === 'stock-in') {
-          handleGenerate('stock-in');
+          handleGenerate('stock-in', undefined, undefined, undefined, 'download', 'Stock In Report');
       } else if (type === 'stock-out') {
-          handleGenerate('stock-out');
+          handleGenerate('stock-out', undefined, undefined, undefined, 'download', 'Stock Out Report');
       }
   };
 
@@ -202,13 +301,88 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
           </div>
       </div>
 
+<<<<<<< Updated upstream
       {/* Generate Report Section */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-8 flex flex-col">
+          <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                  <h2 className="font-bold text-slate-800 dark:text-white text-xl">
+                      Generate Report
+                  </h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Create custom report based on your needs</p>
+              </div>
+              <DateRangePicker 
+                  startDate={dateRange.startDate}
+                  endDate={dateRange.endDate}
+                  onChange={(start, end) => setDateRange({ startDate: start, endDate: end })}
+              />
+=======
+          {/* Professional Tools Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col shadow-sm">
+                <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-600 dark:text-emerald-400">
+                        <FileSpreadsheet className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-slate-800 dark:text-white">Master Inventory List</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Comprehensive real-time status of all items</p>
+                    </div>
+                </div>
+                <div className="mt-auto pt-4">
+                    <button 
+                        onClick={() => handleGenerate('balance', undefined, 'CSV')}
+                        className="w-full py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors shadow-sm"
+                    >
+                        Export to Excel
+                    </button>
+                </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col shadow-sm">
+                <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+                        <History className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-slate-800 dark:text-white">Stock Card (Bin Card)</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Detailed FIFO ledger for specific items</p>
+                    </div>
+                </div>
+                <div className="mt-auto pt-4 flex gap-2">
+                    <div className="relative flex-1 group">
+                        <select 
+                            id="stock-card-select"
+                            className="w-full appearance-none py-2 pl-3 pr-8 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-700 dark:text-slate-300 transition-all cursor-pointer hover:border-blue-400 dark:hover:border-blue-500"
+                            defaultValue=""
+                        >
+                            <option value="" disabled>Select Item...</option>
+                            {items.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
+                    </div>
+                    <button 
+                        onClick={() => {
+                            const select = document.getElementById('stock-card-select') as HTMLSelectElement;
+                            const itemId = select.value;
+                            if (!itemId) return alert('Please select an item');
+                            handleGenerate('transactions', undefined, 'CSV', itemId);
+                        }}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-900/10"
+                    >
+                        Export
+                    </button>
+                </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 lg:p-8">
           <div className="mb-8">
               <h2 className="font-bold text-slate-800 dark:text-white text-xl">
                   Generate Report
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Create custom report based on your needs</p>
+>>>>>>> Stashed changes
           </div>
 
           <div className="flex-1 flex flex-col gap-6">
@@ -259,16 +433,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
 
                   {/* Right Column: Date & Format */}
                   <div className="space-y-4">
-                      {/* Date Range */}
-                      <div className="space-y-2">
-                          <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">Select Date</label>
-                          <DateRangePicker 
-                              startDate={dateRange.startDate}
-                              endDate={dateRange.endDate}
-                              onChange={(start, end) => setDateRange({ startDate: start, endDate: end })}
-                          />
-                      </div>
-
                       {/* Report Format */}
                       <div className="space-y-2">
                           <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">Report Format</label>
@@ -351,7 +515,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                        {reportHistory.map((report) => (
+                        {[...reportHistory].reverse().slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((report) => (
                             <tr key={report.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
                                 <td className="px-6 py-4 font-medium text-slate-800 dark:text-slate-200">{report.title}</td>
                                 <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{report.generatedDate}</td>
@@ -386,16 +550,80 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                                     )}
                                 </td>
                                 <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
-                                    {/* Since we can't persist blobs, we can't easily view/download old reports without regenerating. 
-                                        For now, we'll just show the status. Ideally, we'd have a backend endpoint to fetch old reports by ID. */}
-                                    <span className="text-xs text-slate-400 italic">
-                                        {report.size}
-                                    </span>
+                                    {report.status === 'PROCESSING' ? (
+                                        <span className="text-xs text-slate-400 italic">
+                                            Generating...
+                                        </span>
+                                    ) : report.params ? (
+                                        <>
+                                            <button 
+                                                onClick={() => handleViewReport(report)}
+                                                className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                                                title="View Report"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDownloadReport(report)}
+                                                className="p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors"
+                                                title="Download Report"
+                                            >
+                                                <Download className="w-4 h-4" />
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <span className="text-xs text-slate-400 italic" title="Report expired and cannot be regenerated">
+                                            Expired
+                                        </span>
+                                    )}
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+                
+                {/* Pagination Controls */}
+                {Math.ceil(reportHistory.length / itemsPerPage) > 1 && (
+                    <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <span className="text-sm text-slate-500 dark:text-slate-400">
+                                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, reportHistory.length)} of {reportHistory.length} reports
+                            </span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-slate-500 dark:text-slate-400">Show:</span>
+                                <select
+                                    value={itemsPerPage}
+                                    onChange={(e) => {
+                                        setItemsPerPage(Number(e.target.value));
+                                        setCurrentPage(1);
+                                    }}
+                                    className="px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value={5}>5</option>
+                                    <option value={10}>10</option>
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="px-3 py-1.5 text-sm font-medium border border-slate-200 dark:border-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+                            >
+                                Previous
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(reportHistory.length / itemsPerPage)))}
+                                disabled={currentPage === Math.ceil(reportHistory.length / itemsPerPage)}
+                                className="px-3 py-1.5 text-sm font-medium border border-slate-200 dark:border-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
               </div>
           )}
       </div>
