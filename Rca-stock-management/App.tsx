@@ -17,6 +17,7 @@ import { ProfileView } from './components/ProfileView';
 import { ReportsView } from './components/ReportsView';
 import { UsersView } from './components/UsersView';
 import { DetailDrawer } from './components/DetailDrawer';
+import { ConfirmationModal } from './components/ConfirmationModal';
 import { ToastContainer, ToastMessage } from './components/Toast';
 import { LoginView } from './components/LoginView';
 import { ResetPasswordView } from './components/ResetPasswordView';
@@ -88,7 +89,7 @@ const App = () => {
   // API Hooks
   const { items: stockItems, loading: itemsLoading, error: itemsError, addItem, updateItem, deleteItem, refetch: refetchItems } = useItems();
   const { dashboardItems, loading: reportsLoading, error: reportsError, balanceReport, refetch: refetchReports } = useReports();
-  const { transactions, loading: transactionsLoading, error: transactionsError, addTransaction, updateTransaction, reverseTransaction, refetch: refetchTransactions } = useTransactions();
+  const { transactions, loading: transactionsLoading, error: transactionsError, addTransaction, updateTransaction, reverseTransaction, undoReverseTransaction, refetch: refetchTransactions } = useTransactions();
   const { suppliers, inactiveSuppliers, loading: suppliersLoading, error: suppliersError, addSupplier, updateSupplier, deactivateSupplier, reactivateSupplier, hardDeleteSupplier, refetch: refetchSuppliers } = useSuppliers();
 
   // Drawer State
@@ -113,6 +114,23 @@ const App = () => {
 
   // Filter state for transactions
   const [selectedTransactionItem, setSelectedTransactionItem] = useState<string>('');
+  const [currentTransactionPage, setCurrentTransactionPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Reset pagination when filter changes
+  useEffect(() => {
+    setCurrentTransactionPage(1);
+  }, [selectedTransactionItem]);
+
+  // Derived state for pagination
+  const filteredTransactions = selectedTransactionItem 
+      ? transactions.filter(t => t.itemId.toString() === selectedTransactionItem)
+      : transactions;
+  
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const startIndex = (currentTransactionPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, filteredTransactions.length);
+  const currentTransactions = filteredTransactions.slice(startIndex, endIndex);
 
   // Stock View State
   const [stockViewMode, setStockViewMode] = useState<'grid' | 'list'>('list');
@@ -121,6 +139,22 @@ const App = () => {
 
   // Supplier View State
   const [showInactiveSuppliers, setShowInactiveSuppliers] = useState(false);
+
+  // Confirmation Modal State
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    isDangerous?: boolean;
+    confirmText?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+  const [isConfirmLoading, setIsConfirmLoading] = useState(false);
 
   // Toast Helpers
   const addToast = (message: string, type: ToastMessage['type'] = 'success') => {
@@ -360,6 +394,28 @@ const App = () => {
     setDrawerType('REVERSE_TRANSACTION');
     setDrawerOpen(true);
     setNotes('');
+  };
+
+  const handleUndoReverseTransaction = async (transaction: StockTransactionDTO) => {
+    setConfirmationModal({
+        isOpen: true,
+        title: 'Restore Transaction',
+        message: 'Are you sure you want to undo this reversal? This will restore the original transaction to the active list.',
+        confirmText: 'Yes, Restore',
+        onConfirm: async () => {
+             setIsConfirmLoading(true);
+             try {
+                 await undoReverseTransaction(transaction.id);
+                 addToast('Transaction restored successfully', 'success');
+                 setConfirmationModal(prev => ({ ...prev, isOpen: false }));
+             } catch (e) {
+                 const errorMessage = e instanceof Error ? e.message : 'Failed to restore transaction';
+                 addToast(errorMessage, 'error');
+             } finally {
+                 setIsConfirmLoading(false);
+             }
+        }
+    });
   };
 
   const openSupplierDetail = (supplier: Supplier) => {
@@ -2061,13 +2117,11 @@ const App = () => {
                             </div>
                         ) : (
                             <TransactionsTable 
-                                items={selectedTransactionItem 
-                                    ? transactions.filter(t => t.itemId.toString() === selectedTransactionItem)
-                                    : transactions
-                                } 
+                                items={currentTransactions} 
                                 showBalance={!!selectedTransactionItem} // Only show balance when filtered by item
                                 onEdit={openEditTransaction}
                                 onReverse={openReverseTransaction}
+                                onUndoReverse={handleUndoReverseTransaction}
                                 userPermissions={{
                                     canEdit: userProfile?.role === 'ADMIN',
                                     canReverse: userProfile?.role === 'ADMIN'
@@ -2076,19 +2130,67 @@ const App = () => {
                         )}
                         
                          <div className="flex flex-col sm:flex-row justify-between items-center mt-6 text-sm text-slate-500 dark:text-slate-400 gap-4 pt-4 border-t border-slate-50 dark:border-slate-700">
-                                 <div>Displaying <span className="font-semibold text-slate-700 dark:text-slate-300">{Math.min(transactions.length, 14)}</span> of <span className="font-semibold text-slate-700 dark:text-slate-300">{transactions.length}</span> transactions</div>
+                                 <div>Displaying <span className="font-semibold text-slate-700 dark:text-slate-300">{filteredTransactions.length > 0 ? startIndex + 1 : 0}</span> to <span className="font-semibold text-slate-700 dark:text-slate-300">{endIndex}</span> of <span className="font-semibold text-slate-700 dark:text-slate-300">{filteredTransactions.length}</span> transactions</div>
                                  <div className="flex items-center gap-2">
-                                     <button className="flex items-center gap-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors">
+                                     <div className="flex items-center gap-2 mr-4">
+                                        <span className="text-xs hidden sm:inline">Per page:</span>
+                                        <select 
+                                            value={itemsPerPage}
+                                            onChange={(e) => {
+                                                setItemsPerPage(Number(e.target.value));
+                                                setCurrentTransactionPage(1);
+                                            }}
+                                            className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            <option value={10}>10</option>
+                                            <option value={20}>20</option>
+                                            <option value={50}>50</option>
+                                            <option value={100}>100</option>
+                                        </select>
+                                     </div>
+
+                                     <button 
+                                         onClick={() => setCurrentTransactionPage(p => Math.max(1, p - 1))}
+                                         disabled={currentTransactionPage === 1}
+                                         className="flex items-center gap-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                     >
                                          <ChevronLeft className="w-3 h-3" />
-                                         <span>Previous</span>
+                                         <span className="hidden sm:inline">Previous</span>
                                      </button>
                                      <div className="flex gap-1">
-                                         <button className="w-8 h-8 flex items-center justify-center bg-[#1e293b] dark:bg-blue-600 text-white rounded-lg text-xs font-medium">1</button>
-                                         <button className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400">2</button>
-                                         <button className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400">3</button>
+                                         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                             let pageNum;
+                                             if (totalPages <= 5) {
+                                                 pageNum = i + 1;
+                                             } else if (currentTransactionPage <= 3) {
+                                                 pageNum = i + 1;
+                                             } else if (currentTransactionPage >= totalPages - 2) {
+                                                 pageNum = totalPages - 4 + i;
+                                             } else {
+                                                 pageNum = currentTransactionPage - 2 + i;
+                                             }
+                                             
+                                             return (
+                                                 <button 
+                                                     key={pageNum}
+                                                     onClick={() => setCurrentTransactionPage(pageNum)}
+                                                     className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
+                                                         currentTransactionPage === pageNum
+                                                             ? 'bg-[#1e293b] dark:bg-blue-600 text-white'
+                                                             : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400'
+                                                     }`}
+                                                 >
+                                                     {pageNum}
+                                                 </button>
+                                             );
+                                         })}
                                      </div>
-                                      <button className="flex items-center gap-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors">
-                                         <span>Next</span>
+                                      <button 
+                                         onClick={() => setCurrentTransactionPage(p => Math.min(totalPages, p + 1))}
+                                         disabled={currentTransactionPage === totalPages || totalPages === 0}
+                                         className="flex items-center gap-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                     >
+                                         <span className="hidden sm:inline">Next</span>
                                          <ChevronRight className="w-3 h-3" />
                                      </button>
                                  </div>
@@ -2268,6 +2370,18 @@ const App = () => {
       >
         {renderDrawerContent()}
       </DetailDrawer>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        onClose={() => setConfirmationModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmationModal.onConfirm}
+        title={confirmationModal.title}
+        message={confirmationModal.message}
+        confirmText={confirmationModal.confirmText}
+        isDangerous={confirmationModal.isDangerous}
+        isLoading={isConfirmLoading}
+      />
 
     </div>
   );

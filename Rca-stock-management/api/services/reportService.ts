@@ -45,7 +45,8 @@ export const generatePdfReport = async (
   reportType: ReportType,
   itemId?: number,
   dateRange?: { startDate: string; endDate: string },
-  autoDownload: boolean = true
+  autoDownload: boolean = true,
+  title?: string
 ): Promise<Blob> => {
   try {
     // Use API_CONFIG.BASE_URL which now includes /api if configured
@@ -74,6 +75,7 @@ export const generatePdfReport = async (
             params.append('startDate', dateRange.startDate);
             params.append('endDate', dateRange.endDate);
         }
+        if (title) params.append('title', title);
         const queryString = params.toString();
         if (queryString) url += `?${queryString}`;
     }
@@ -106,7 +108,8 @@ export const generateCsvReport = async (
   reportType: ReportType,
   itemId?: number,
   dateRange?: { startDate: string; endDate: string },
-  autoDownload: boolean = true
+  autoDownload: boolean = true,
+  title?: string
 ): Promise<Blob> => {
   try {
     const reportsBaseUrl = `${API_CONFIG.BASE_URL}/reports/export`;
@@ -127,6 +130,7 @@ export const generateCsvReport = async (
             params.append('startDate', dateRange.startDate);
             params.append('endDate', dateRange.endDate);
         }
+        if (title) params.append('title', title);
         const queryString = params.toString();
         if (queryString) url += `?${queryString}`;
     }

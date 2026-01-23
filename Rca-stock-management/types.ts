@@ -74,11 +74,17 @@ export interface Supplier {
 export interface SystemReport {
   id: string;
   title: string;
-  type: 'STOCK' | 'FINANCIAL' | 'AUDIT';
+  type: 'STOCK' | 'FINANCIAL' | 'AUDIT' | 'TRANSACTIONS' | 'BALANCE' | 'LOW-STOCK' | 'SUPPLIERS' | 'STOCK-IN' | 'STOCK-OUT';
   generatedDate: string;
   size: string;
   status: 'READY' | 'PROCESSING';
   format: 'PDF' | 'CSV';
+  // Parameters used to generate the report (for re-generation)
+  params?: {
+      reportType: string;
+      dateRange?: { startDate: string, endDate: string };
+      itemId?: string;
+  };
 }
 
 export interface NotificationItem {
