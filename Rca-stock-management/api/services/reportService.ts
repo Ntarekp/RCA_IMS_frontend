@@ -102,6 +102,30 @@ export const generatePdfReport = async (
 };
 
 /**
+ * Download a stored report by ID
+ */
+export const downloadReportById = async (id: string, filename: string): Promise<void> => {
+  try {
+    const url = `${API_CONFIG.BASE_URL}/reports/download/${id}`;
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+
+    if (!response.ok) throw new Error('Failed to download report');
+
+    const blob = await response.blob();
+    downloadFile(blob, filename);
+  } catch (error) {
+    console.error('Error downloading report:', error);
+    throw error;
+  }
+};
+
+/**
  * Generate and download Excel report from backend
  */
 export const generateCsvReport = async (

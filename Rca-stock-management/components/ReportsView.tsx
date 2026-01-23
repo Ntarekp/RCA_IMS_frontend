@@ -18,7 +18,7 @@ import {
     AlertCircle,
     History,
 } from 'lucide-react';
-import { generateCsvReport, generatePdfReport, ReportType } from '../api/services/reportService';
+import { generateCsvReport, generatePdfReport, downloadReportById, ReportType } from '../api/services/reportService';
 import { DateRangePicker } from './DateRangePicker';
 import { useItems } from '../hooks/useItems';
 import { useReports } from '../hooks/useReports';
@@ -63,10 +63,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
     let defaultTitle = `${typeToUse.charAt(0).toUpperCase() + typeToUse.slice(1).replace('-', ' ')} Report`;
     if (typeToUse === 'transactions' && !overrideRange) {
         defaultTitle = "Complete Transaction History";
-    } else if (typeToUse === 'transactions' && overrideRange) {
-         // If it's a custom range but not quick report (which has overrideTitle), maybe "Transaction History"?
-         // Actually, let's just stick to "Complete Transaction History" for generic transactions
-         defaultTitle = "Complete Transaction History";
     }
 
     const titleToUse = overrideTitle || defaultTitle;
@@ -80,7 +76,12 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
         type: typeToUse.toUpperCase() as any,
         format: formatToUse,
         status: 'PROCESSING',
-        size: '0 KB'
+        size: '0 KB',
+        params: {
+            reportType: typeToUse,
+            dateRange: rangeToUse,
+            itemId: itemIdToUse
+        }
     };
     addReportToHistory(newReport);
 
@@ -115,17 +116,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
 
       // Handle action
       const url = window.URL.createObjectURL(blob);
-<<<<<<< Updated upstream
-      const link = document.createElement('a');
-      link.href = url;
-      const extension = format === 'CSV' ? 'xlsx' : 'pdf';
-      link.setAttribute('download', `${typeToUse}_report_${new Date().toISOString().split('T')[0]}.${extension}`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode?.removeChild(link);
-      window.URL.revokeObjectURL(url);
-=======
-      
       if (action === 'view') {
           window.open(url, '_blank');
       } else {
@@ -153,7 +143,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
       
       // Cleanup after a delay to ensure view/download works
       setTimeout(() => window.URL.revokeObjectURL(url), 1000);
->>>>>>> Stashed changes
 
     } catch (error) {
       console.error('Failed to generate report:', error);
@@ -181,15 +170,26 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
   };
 
   const handleDownloadReport = async (report: SystemReport) => {
-    if (!report.params) return;
-    
-    await handleGenerate(
-        report.params.reportType as ReportType,
-        report.params.dateRange,
-        report.format,
-        report.params.itemId,
-        'download'
-    );
+    try {
+        if (report.status === 'READY') {
+             if (report.params) {
+                 // Re-generate using stored params
+                 const { reportType, dateRange, itemId } = report.params;
+                 // We need to cast reportType string to ReportType
+                 const type = (reportType.toLowerCase()) as ReportType;
+                 
+                 if (report.format === 'PDF') {
+                     await generatePdfReport(type, itemId ? parseInt(itemId) : undefined, dateRange, true, report.title);
+                 } else {
+                     await generateCsvReport(type, itemId ? parseInt(itemId) : undefined, dateRange, true, report.title);
+                 }
+             } else {
+                 alert("Cannot re-download this report. Please generate a new one.");
+             }
+        }
+    } catch (error) {
+        console.error("Failed to download report", error);
+    }
   };
 
   const generateQuickReport = (type: 'monthly' | 'weekly' | 'stock-in' | 'stock-out') => {
@@ -301,22 +301,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
           </div>
       </div>
 
-<<<<<<< Updated upstream
-      {/* Generate Report Section */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-8 flex flex-col">
-          <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                  <h2 className="font-bold text-slate-800 dark:text-white text-xl">
-                      Generate Report
-                  </h2>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Create custom report based on your needs</p>
-              </div>
-              <DateRangePicker 
-                  startDate={dateRange.startDate}
-                  endDate={dateRange.endDate}
-                  onChange={(start, end) => setDateRange({ startDate: start, endDate: end })}
-              />
-=======
           {/* Professional Tools Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col shadow-sm">
@@ -376,13 +360,20 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 lg:p-8">
-          <div className="mb-8">
-              <h2 className="font-bold text-slate-800 dark:text-white text-xl">
-                  Generate Report
-              </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Create custom report based on your needs</p>
->>>>>>> Stashed changes
+      {/* Generate Report Section */}
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-8 flex flex-col">
+          <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                  <h2 className="font-bold text-slate-800 dark:text-white text-xl">
+                      Generate Report
+                  </h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Create custom report based on your needs</p>
+              </div>
+              <DateRangePicker 
+                  startDate={dateRange.startDate}
+                  endDate={dateRange.endDate}
+                  onChange={(start, end) => setDateRange({ startDate: start, endDate: end })}
+              />
           </div>
 
           <div className="flex-1 flex flex-col gap-6">
