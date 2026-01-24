@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Mail, Calendar, Clock, Loader2, Trash2, Plus, AlertCircle, Check } from 'lucide-react';
 import { ScheduledReportConfig } from '../types';
 import { scheduleReport, getScheduledReports, deleteScheduledReport } from '../api/services/reportService';
+import { ConfirmationModal } from './ConfirmationModal';
 
 interface ScheduledReportModalProps {
   isOpen: boolean;
@@ -14,9 +15,14 @@ export const ScheduledReportModal: React.FC<ScheduledReportModalProps> = ({ isOp
   const [configs, setConfigs] = useState<ScheduledReportConfig[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // Confirmation State
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+
   // Form State
   const [email, setEmail] = useState('');
   const [frequency, setFrequency] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('DAILY');
+  const [scheduledTime, setScheduledTime] = useState('08:00');
   const [reportType, setReportType] = useState<'ALL_REPORTS_ZIP' | 'TRANSACTION_HISTORY' | 'STOCK_BALANCE' | 'LOW_STOCK'>('ALL_REPORTS_ZIP');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -48,6 +54,7 @@ export const ScheduledReportModal: React.FC<ScheduledReportModalProps> = ({ isOp
         email,
         frequency,
         reportType,
+        scheduledTime,
         active: true
       });
       
@@ -64,14 +71,21 @@ export const ScheduledReportModal: React.FC<ScheduledReportModalProps> = ({ isOp
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this scheduled report?')) return;
+  const handleDeleteClick = (id: number) => {
+    setItemToDelete(id);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (itemToDelete === null) return;
     
     try {
-      await deleteScheduledReport(id);
-      setConfigs(configs.filter(c => c.id !== id));
+      await deleteScheduledReport(itemToDelete);
+      setConfigs(configs.filter(c => c.id !== itemToDelete));
     } catch (err) {
       setError('Failed to delete scheduled report');
+    } finally {
+      setItemToDelete(null);
     }
   };
 
@@ -175,7 +189,7 @@ export const ScheduledReportModal: React.FC<ScheduledReportModalProps> = ({ isOp
                         </div>
                       </div>
                       <button
-                        onClick={() => config.id && handleDelete(config.id)}
+                        onClick={() => config.id && handleDeleteClick(config.id)}
                         className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                         title="Delete Schedule"
                       >
@@ -212,13 +226,38 @@ export const ScheduledReportModal: React.FC<ScheduledReportModalProps> = ({ isOp
                       onChange={(e) => setFrequency(e.target.value as any)}
                       className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
                     >
-                      <option value="DAILY">Daily (8:00 AM)</option>
+                      <option value="DAILY">Daily</option>
                       <option value="WEEKLY">Weekly</option>
                       <option value="MONTHLY">Monthly</option>
+                      <option value="INTERVAL">Interval (Hours)</option>
                     </select>
                   </div>
 
-                  <div className="space-y-2">
+                  {frequency === 'INTERVAL' ? (
+                    <div className="space-y-2">
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">Interval (Hours)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={intervalHours}
+                        onChange={(e) => setIntervalHours(parseInt(e.target.value) || 24)}
+                        className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">Time</label>
+                      <input
+                        type="time"
+                        value={scheduledTime}
+                        onChange={(e) => setScheduledTime(e.target.value)}
+                        className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-200">Report Type</label>
                     <select
                       value={reportType}
@@ -232,7 +271,6 @@ export const ScheduledReportModal: React.FC<ScheduledReportModalProps> = ({ isOp
                     </select>
                   </div>
                 </div>
-              </div>
 
               <div className="pt-4 flex items-center justify-end gap-3">
                 <button
@@ -264,6 +302,16 @@ export const ScheduledReportModal: React.FC<ScheduledReportModalProps> = ({ isOp
           )}
         </div>
       </div>
+      
+      <ConfirmationModal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Scheduled Report"
+        message="Are you sure you want to stop receiving this report? This action cannot be undone."
+        confirmText="Delete Schedule"
+        type="danger"
+      />
     </div>
   );
 };

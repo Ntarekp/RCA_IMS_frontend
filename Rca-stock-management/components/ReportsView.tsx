@@ -7,6 +7,7 @@ import {
     Filter, 
     Loader2, 
     Clock, 
+    CalendarClock,
     ArrowRight, 
     Eye,
     ChevronDown,
@@ -250,10 +251,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
             </div>
             <button
                 onClick={() => setIsScheduleModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#1e293b] hover:bg-slate-800 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-900/20 transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border border-blue-700 rounded-lg shadow-sm shadow-blue-500/20 transition-all hover:shadow-md"
             >
-                <Clock className="w-4 h-4" />
-                Schedule Reports
+                <CalendarClock className="w-4 h-4" />
+                <span className="font-medium">Schedule Reports</span>
             </button>
         </div>
         

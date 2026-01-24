@@ -87,6 +87,33 @@ async function apiRequest<T>(
 
     // Check if response is successful
     if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('Unauthorized access.');
+        
+        // Prevent infinite loops:
+        // 1. If we didn't have a token to begin with, don't reload - we are already "logged out"
+        // 2. Check if we are already at the login page (or preventing loops via session storage)
+        
+        if (!token) {
+           console.warn('Received 401 but no token was present. Ignoring reload.');
+           throw new ApiError(401, 'Unauthorized', null, 'Unauthorized request (no token)');
+        }
+
+        // Clear session data
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('userRole');
+
+        // Dispatch auth-error event so App can handle it (e.g., show login screen)
+        // We do NOT reload the page to avoid infinite loops if the error persists
+        window.dispatchEvent(new Event('auth-error'));
+        
+        console.warn('Session expired. Redirecting to login...');
+        
+        throw new ApiError(401, 'Unauthorized', null, 'Session expired. Please login again.');
+      }
+
       throw new ApiError(
         response.status,
         response.statusText,

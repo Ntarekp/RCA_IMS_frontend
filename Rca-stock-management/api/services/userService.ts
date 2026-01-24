@@ -27,6 +27,8 @@ export interface UpdateProfileRequest {
   twoFactorAuth?: boolean;
   theme?: string;
   language?: string;
+  avatarUrl?: string | null;
+  coverUrl?: string | null;
 }
 
 export interface ChangePasswordRequest {

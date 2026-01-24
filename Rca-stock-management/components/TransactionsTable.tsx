@@ -21,6 +21,14 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
   onUndoReverse,
   userPermissions = { canEdit: true, canReverse: true } 
 }) => {
+  const isEditable = (dateStr: string) => {
+      const txnDate = new Date(dateStr);
+      const now = new Date();
+      const msPerDay = 1000 * 60 * 60 * 24;
+      const diffDays = (now.getTime() - txnDate.getTime()) / msPerDay;
+      return diffDays <= 5;
+  };
+
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">

@@ -4,9 +4,9 @@
  */
 
 export const API_CONFIG = {
-  // Backend base URL - uses environment variable or defaults to localhost
+  // Backend base URL - uses environment variable or defaults to the specific backend IP
   // Note: The base URL should include the /api prefix if the backend expects it
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8081/api',
+  BASE_URL: import.meta.env.VITE_API_URL || 'http://10.12.72.9:8080/ims/api',
   
   // API endpoints (relative to BASE_URL)
   ENDPOINTS: {

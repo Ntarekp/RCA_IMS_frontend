@@ -97,6 +97,7 @@ const App = () => {
   const [drawerType, setDrawerType] = useState<DrawerType>('NONE');
   const [selectedItem, setSelectedItem] = useState<StockItem | Supplier | UserProfile | StockTransactionDTO | null>(null);
   const [activeTab, setActiveTab] = useState('details');
+  const [usersRefreshTrigger, setUsersRefreshTrigger] = useState(0);
 
   // Stock management form state
   const [stockInQuantity, setStockInQuantity] = useState('');
@@ -107,6 +108,11 @@ const App = () => {
   const [notes, setNotes] = useState('');
   const [selectedSupplierId, setSelectedSupplierId] = useState('');
   const [referenceNumber, setReferenceNumber] = useState('');
+
+  // Edit Transaction State
+  const [editTransactionItemId, setEditTransactionItemId] = useState('');
+  const [editTransactionType, setEditTransactionType] = useState<'IN' | 'OUT'>('IN');
+  const [editTransactionQuantity, setEditTransactionQuantity] = useState('');
 
   // Delete confirmation state
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
@@ -121,6 +127,18 @@ const App = () => {
   useEffect(() => {
     setCurrentTransactionPage(1);
   }, [selectedTransactionItem]);
+
+  // Initialize Edit Transaction State when drawer opens
+  useEffect(() => {
+    if (drawerType === 'EDIT_TRANSACTION' && selectedItem) {
+      const t = selectedItem as StockTransactionDTO;
+      setEditTransactionItemId(t.itemId.toString());
+      setEditTransactionType(t.transactionType);
+      setEditTransactionQuantity(t.quantity.toString());
+      setNotes(t.notes || '');
+      setReferenceNumber(t.referenceNumber || '');
+    }
+  }, [drawerType, selectedItem]);
 
   // Derived state for pagination
   const filteredTransactions = selectedTransactionItem 
@@ -197,6 +215,21 @@ const App = () => {
             if (token) {
                     setIsLoggedIn(true);
             }
+
+            // Listen for auth errors (401) from API client
+            const handleAuthError = () => {
+                // Clear local storage and reset state
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('userRole');
+                setIsLoggedIn(false);
+                setView('DASHBOARD');
+                // We don't use handleLogout() directly here to avoid dependency cycle issues
+                // and to ensure this effect only runs once on mount
+            };
+
+            window.addEventListener('auth-error', handleAuthError);
+            return () => window.removeEventListener('auth-error', handleAuthError);
     }, []);
 
     // Fetch user profile when logged in
@@ -387,6 +420,9 @@ const App = () => {
     setDrawerOpen(true);
     setNotes(transaction.notes || '');
     setReferenceNumber(transaction.referenceNumber || '');
+    setEditTransactionItemId(transaction.itemId.toString());
+    setEditTransactionType(transaction.transactionType);
+    setEditTransactionQuantity(transaction.quantity.toString());
   };
 
   const openReverseTransaction = (transaction: StockTransactionDTO) => {
@@ -581,6 +617,9 @@ const App = () => {
                     const toastId = addToast("Updating transaction...", 'loading');
                     await updateTransaction(Number(transaction.id), {
                         ...transaction,
+                        itemId: Number(editTransactionItemId),
+                        transactionType: editTransactionType,
+                        quantity: Number(editTransactionQuantity),
                         notes,
                         referenceNumber
                     });
@@ -596,26 +635,47 @@ const App = () => {
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
                     <p className="text-sm text-blue-800 dark:text-blue-300">
                         You are editing transaction <strong>#{transaction.id}</strong>. 
-                        Only metadata fields (Notes, Reference) can be modified to preserve audit integrity.
-                    </p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
-                        <strong>Tip:</strong> To correct the Item or Quantity, please <span className="underline cursor-pointer font-medium hover:text-blue-800 dark:hover:text-blue-200" onClick={() => { closeDrawer(); setTimeout(() => openReverseTransaction(transaction), 300); }}>Reverse this transaction</span> and create a new one.
+                        Changing critical fields (Item, Quantity, Type) will affect stock levels.
                     </p>
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Item</label>
-                    <input type="text" value={transaction.itemName} disabled className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed" />
+                    <select
+                        value={editTransactionItemId}
+                        onChange={(e) => setEditTransactionItemId(e.target.value)}
+                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                        required
+                    >
+                        {stockItems.map(item => (
+                            <option key={item.id} value={item.id}>{item.name}</option>
+                        ))}
+                    </select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Type</label>
-                        <input type="text" value={transaction.transactionType} disabled className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed" />
+                        <select
+                            value={editTransactionType}
+                            onChange={(e) => setEditTransactionType(e.target.value as 'IN' | 'OUT')}
+                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                            required
+                        >
+                            <option value="IN">IN</option>
+                            <option value="OUT">OUT</option>
+                        </select>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Quantity</label>
-                        <input type="text" value={transaction.quantity} disabled className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed" />
+                        <input
+                            type="number"
+                            value={editTransactionQuantity}
+                            onChange={(e) => setEditTransactionQuantity(e.target.value)}
+                            min="1"
+                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
+                            required
+                        />
                     </div>
                 </div>
 
@@ -725,7 +785,7 @@ const App = () => {
             <div className="space-y-6">
                 <div className="flex border-b border-slate-200 dark:border-slate-600 -mx-6 px-6">
                     <TabButton tabName="details" label="Details" />
-                    {userProfile?.role === 'ADMIN' && <TabButton tabName="edit" label="Edit Item" />}
+                    <TabButton tabName="edit" label="Edit Item" />
                 </div>
 
                 {activeTab === 'details' && (
@@ -795,7 +855,7 @@ const App = () => {
                     </div>
                 )}
 
-                {activeTab === 'edit' && userProfile?.role === 'ADMIN' && (
+                {activeTab === 'edit' && (
                     <form id="edit-stock-form" className="space-y-5" onSubmit={async (e) => {
                         e.preventDefault();
                         const form = e.target as HTMLFormElement;
@@ -1525,12 +1585,7 @@ const App = () => {
                     addToast("User created successfully. An email has been sent to set their password.", 'success');
                     closeDrawer();
                     // Refresh users list if currently on Users view
-                    if (view === 'USERS') {
-                        // This will trigger a re-render of UsersView which fetches users on mount
-                        // A better approach would be to pass a refresh callback to UsersView
-                        setView('DASHBOARD'); // Temporary hack to force refresh when going back
-                        setTimeout(() => setView('USERS'), 50);
-                    }
+                    setUsersRefreshTrigger(prev => prev + 1);
                 } catch (error) {
                     const errorMessage = error instanceof ApiError 
                         ? error.message 
@@ -2345,7 +2400,7 @@ const App = () => {
                 </div>
             )}
 
-            {view === 'USERS' && <UsersView onAddUser={openAddUser} />}
+            {view === 'USERS' && <UsersView onAddUser={openAddUser} refreshTrigger={usersRefreshTrigger} />}
             {view === 'REPORT' && <ReportsView onGenerateReport={() => addToast('Generate Report feature is coming soon!', 'info')} />}
             {view === 'SETTINGS' && <SettingsView onChangePassword={openChangePassword} />}
             {view === 'NOTIFICATIONS' && <NotificationsView />}
@@ -2379,7 +2434,7 @@ const App = () => {
         title={confirmationModal.title}
         message={confirmationModal.message}
         confirmText={confirmationModal.confirmText}
-        isDangerous={confirmationModal.isDangerous}
+        type={confirmationModal.isDangerous ? 'danger' : 'info'}
         isLoading={isConfirmLoading}
       />
 
