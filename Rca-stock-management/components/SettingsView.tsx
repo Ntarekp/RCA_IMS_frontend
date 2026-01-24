@@ -48,7 +48,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
                   document.documentElement.classList.remove('dark');
               }
           } catch (err) {
-              console.error("Failed to fetch settings", err);
+              if (import.meta.env.DEV) console.error("Failed to fetch settings", err);
               setError("Failed to load settings. Please try again.");
           } finally {
               setLoading(false);

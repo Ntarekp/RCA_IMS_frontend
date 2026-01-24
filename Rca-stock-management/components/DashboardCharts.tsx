@@ -4,7 +4,7 @@ import { ChevronDown, MoreHorizontal, Loader2 } from 'lucide-react';
 import { getChartData } from '../api/services/dashboardService';
 import { useReports } from '../hooks/useReports';
 
-export const DashboardCharts: React.FC = () => {
+export const DashboardCharts: React.FC = React.memo(() => {
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { balanceReport, refetch: refetchReports } = useReports();
@@ -31,7 +31,7 @@ export const DashboardCharts: React.FC = () => {
       const data = await getChartData(currentYear);
       setChartData(data);
     } catch (err) {
-      console.error('Error loading chart data:', err);
+      if (import.meta.env.DEV) console.error('Error loading chart data:', err);
       setChartData([]);
     } finally {
       setLoading(false);
@@ -48,7 +48,7 @@ export const DashboardCharts: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const calculateDonutData = () => {
+  const calculateDonutData = React.useCallback(() => {
     if (!balanceReport || balanceReport.length === 0) {
       return [
         { name: 'Stock In', value: 0, color: isDark ? '#3b82f6' : '#1E293B' }, // Blue in dark, Dark Slate in light
@@ -69,9 +69,9 @@ export const DashboardCharts: React.FC = () => {
       { name: 'Damaged', value: damaged, color: isDark ? '#f87171' : '#ef4444' },
       { name: 'Low Stock', value: lowStock, color: isDark ? '#475569' : '#cbd5e1' },
     ];
-  };
+  }, [balanceReport, isDark]);
 
-  const DONUT_DATA = calculateDonutData();
+  const DONUT_DATA = React.useMemo(() => calculateDonutData(), [calculateDonutData]);
   const totalDonutValue = DONUT_DATA.reduce((sum, item) => sum + item.value, 0);
   const donutPercentage = totalDonutValue > 0 
     ? Math.round((DONUT_DATA[0].value / totalDonutValue) * 100) 
@@ -116,7 +116,7 @@ export const DashboardCharts: React.FC = () => {
                 <Loader2 className="w-6 h-6 animate-spin text-[#9CA3AF] dark:text-slate-500" />
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" debounce={50} minWidth={0}>
                 <BarChart data={chartData.length > 0 ? chartData : []} barGap={8}>
                     <CartesianGrid vertical={false} stroke={gridColor} strokeDasharray="3 3" />
                     <XAxis 
@@ -166,8 +166,8 @@ export const DashboardCharts: React.FC = () => {
             </button>
          </div>
          
-         <div className="flex-1 min-h-[250px] w-full flex items-center justify-center relative">
-            <ResponsiveContainer width="100%" height="100%">
+         <div className="h-[250px] w-full flex items-center justify-center relative min-w-0">
+            <ResponsiveContainer width="100%" height="100%" debounce={50} minWidth={0}>
                 <PieChart>
                     <Pie
                         data={DONUT_DATA}
@@ -207,4 +207,4 @@ export const DashboardCharts: React.FC = () => {
       </div>
     </div>
   );
-};
+});

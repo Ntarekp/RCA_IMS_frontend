@@ -5,7 +5,7 @@ interface DashboardTableProps {
   items: DashboardItem[];
 }
 
-export const DashboardTable: React.FC<DashboardTableProps> = ({ items }) => {
+export const DashboardTable: React.FC<DashboardTableProps> = React.memo(({ items }) => {
   const getStatusBadge = (status: DashboardItem['status']) => {
     switch (status) {
       case 'Birahagije':
@@ -54,4 +54,4 @@ export const DashboardTable: React.FC<DashboardTableProps> = ({ items }) => {
         </div>
     </div>
   );
-};
+});

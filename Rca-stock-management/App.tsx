@@ -1,21 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { StockCard } from './components/StockCard';
-import { DashboardTable } from './components/DashboardTable';
-import { TransactionsTable } from './components/TransactionsTable';
-import { DashboardStats } from './components/DashboardStats';
-import { DashboardCharts } from './components/DashboardCharts';
-import { AnalyticsStats } from './components/AnalyticsStats';
-import { AnalyticsCharts } from './components/AnalyticsCharts';
-import { RecentActivity } from './components/RecentActivity';
-import { SupplierCard } from './components/SupplierCard';
-import { SettingsView } from './components/SettingsView';
-import { NotificationsView } from './components/NotificationsView';
-import { ProfileView } from './components/ProfileView';
-import { ReportsView } from './components/ReportsView';
-import { UsersView } from './components/UsersView';
+
+// Lazy loaded components for performance optimization
+const DashboardTable = React.lazy(() => import('./components/DashboardTable').then(module => ({ default: module.DashboardTable })));
+const TransactionsTable = React.lazy(() => import('./components/TransactionsTable').then(module => ({ default: module.TransactionsTable })));
+const DashboardStats = React.lazy(() => import('./components/DashboardStats').then(module => ({ default: module.DashboardStats })));
+const DashboardCharts = React.lazy(() => import('./components/DashboardCharts').then(module => ({ default: module.DashboardCharts })));
+const AnalyticsStats = React.lazy(() => import('./components/AnalyticsStats').then(module => ({ default: module.AnalyticsStats })));
+const AnalyticsCharts = React.lazy(() => import('./components/AnalyticsCharts').then(module => ({ default: module.AnalyticsCharts })));
+const RecentActivity = React.lazy(() => import('./components/RecentActivity').then(module => ({ default: module.RecentActivity })));
+const SupplierCard = React.lazy(() => import('./components/SupplierCard').then(module => ({ default: module.SupplierCard })));
+const SettingsView = React.lazy(() => import('./components/SettingsView').then(module => ({ default: module.SettingsView })));
+const NotificationsView = React.lazy(() => import('./components/NotificationsView').then(module => ({ default: module.NotificationsView })));
+const ProfileView = React.lazy(() => import('./components/ProfileView').then(module => ({ default: module.ProfileView })));
+const ReportsView = React.lazy(() => import('./components/ReportsView').then(module => ({ default: module.ReportsView })));
+const UsersView = React.lazy(() => import('./components/UsersView').then(module => ({ default: module.UsersView })));
+
 import { DetailDrawer } from './components/DetailDrawer';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { ToastContainer, ToastMessage } from './components/Toast';
@@ -61,6 +64,35 @@ import {
   RefreshCw
 } from 'lucide-react';
 
+import { StockInForm } from './components/StockInForm';
+import { StockOutForm } from './components/StockOutForm';
+import { SupplierDetail } from './components/SupplierDetail';
+import { EditTransactionForm } from './components/EditTransactionForm';
+import { ReverseTransactionForm } from './components/ReverseTransactionForm';
+import { StockDetail } from './components/StockDetail';
+import { DeleteItemForm } from './components/DeleteItemForm';
+import { DeactivateSupplierForm } from './components/DeactivateSupplierForm';
+import { DeleteSupplierForm } from './components/DeleteSupplierForm';
+import { AddStockForm } from './components/AddStockForm';
+import { AddSupplierForm } from './components/AddSupplierForm';
+import { OrderForm } from './components/OrderForm';
+import { EditProfileForm } from './components/EditProfileForm';
+import { ChangePasswordForm } from './components/ChangePasswordForm';
+import { AddUserForm } from './components/AddUserForm';
+
+const TabButton = React.memo(({ tabName, label, activeTab, onClick }: { tabName: string; label: string; activeTab: string; onClick: (tab: string) => void }) => (
+  <button
+    onClick={() => onClick(tabName)}
+    className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+      activeTab === tabName
+        ? 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 border-t border-x text-slate-800 dark:text-white'
+        : 'bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600'
+    }`}
+  >
+    {label}
+  </button>
+));
+
 const App = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [view, setView] = useState<ViewState>('DASHBOARD');
@@ -99,25 +131,6 @@ const App = () => {
   const [activeTab, setActiveTab] = useState('details');
   const [usersRefreshTrigger, setUsersRefreshTrigger] = useState(0);
 
-  // Stock management form state
-  const [stockInQuantity, setStockInQuantity] = useState('');
-  const [stockOutQuantity, setStockOutQuantity] = useState('');
-  const [stockOutReason, setStockOutReason] = useState('Consumed');
-  const [damagedQuantity, setDamagedQuantity] = useState('');
-  const [transactionDate, setTransactionDate] = useState(new Date().toISOString().split('T')[0]);
-  const [notes, setNotes] = useState('');
-  const [selectedSupplierId, setSelectedSupplierId] = useState('');
-  const [referenceNumber, setReferenceNumber] = useState('');
-
-  // Edit Transaction State
-  const [editTransactionItemId, setEditTransactionItemId] = useState('');
-  const [editTransactionType, setEditTransactionType] = useState<'IN' | 'OUT'>('IN');
-  const [editTransactionQuantity, setEditTransactionQuantity] = useState('');
-
-  // Delete confirmation state
-  const [deleteConfirmation, setDeleteConfirmation] = useState('');
-  const [deletePassword, setDeletePassword] = useState('');
-
   // Filter state for transactions
   const [selectedTransactionItem, setSelectedTransactionItem] = useState<string>('');
   const [currentTransactionPage, setCurrentTransactionPage] = useState(1);
@@ -128,27 +141,20 @@ const App = () => {
     setCurrentTransactionPage(1);
   }, [selectedTransactionItem]);
 
-  // Initialize Edit Transaction State when drawer opens
-  useEffect(() => {
-    if (drawerType === 'EDIT_TRANSACTION' && selectedItem) {
-      const t = selectedItem as StockTransactionDTO;
-      setEditTransactionItemId(t.itemId.toString());
-      setEditTransactionType(t.transactionType);
-      setEditTransactionQuantity(t.quantity.toString());
-      setNotes(t.notes || '');
-      setReferenceNumber(t.referenceNumber || '');
-    }
-  }, [drawerType, selectedItem]);
+
 
   // Derived state for pagination
-  const filteredTransactions = selectedTransactionItem 
+  const filteredTransactions = React.useMemo(() => selectedTransactionItem 
       ? transactions.filter(t => t.itemId.toString() === selectedTransactionItem)
-      : transactions;
+      : transactions, [selectedTransactionItem, transactions]);
   
-  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
-  const startIndex = (currentTransactionPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, filteredTransactions.length);
-  const currentTransactions = filteredTransactions.slice(startIndex, endIndex);
+  const { totalPages, currentTransactions } = React.useMemo(() => {
+    const total = Math.ceil(filteredTransactions.length / itemsPerPage);
+    const start = (currentTransactionPage - 1) * itemsPerPage;
+    const end = Math.min(start + itemsPerPage, filteredTransactions.length);
+    const current = filteredTransactions.slice(start, end);
+    return { totalPages: total, currentTransactions: current };
+  }, [filteredTransactions, itemsPerPage, currentTransactionPage]);
 
   // Stock View State
   const [stockViewMode, setStockViewMode] = useState<'grid' | 'list'>('list');
@@ -175,24 +181,24 @@ const App = () => {
   const [isConfirmLoading, setIsConfirmLoading] = useState(false);
 
   // Toast Helpers
-  const addToast = (message: string, type: ToastMessage['type'] = 'success') => {
+  const addToast = useCallback((message: string, type: ToastMessage['type'] = 'success') => {
     const id = Math.random().toString(36).substr(2, 9);
     setToasts((prev) => [...prev, { id, message, type }]);
     return id;
-  };
+  }, []);
 
-  const removeToast = (id: string) => {
+  const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+  }, []);
 
   // Logic Handlers
-  const handleLogin = (token: string, email: string) => {
+  const handleLogin = useCallback((token: string, email: string) => {
       setIsLoggedIn(true);
       setView('DASHBOARD');
       addToast(`Welcome back, ${email}!`, 'success');
-  };
+  }, [addToast]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
       // Clear authentication data
       localStorage.removeItem('authToken');
       localStorage.removeItem('userEmail');
@@ -207,7 +213,7 @@ const App = () => {
           const basePath = import.meta.env.BASE_URL;
           window.history.pushState({}, '', basePath);
       }
-  };
+  }, [addToast]);
 
   // Check if user is already logged in on mount
     useEffect(() => {
@@ -245,7 +251,7 @@ const App = () => {
                         document.documentElement.classList.remove('dark');
                     }
                 }).catch(error => {
-                    console.error("Failed to fetch profile:", error);
+                    if (import.meta.env.DEV) console.error("Failed to fetch profile:", error);
                     // Only logout on authentication errors (401/403)
                     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
                         handleLogout();
@@ -260,7 +266,7 @@ const App = () => {
     }, [isLoggedIn]);
 
     // AI report generator using real data
-    const handleGenerateReport = async () => {
+    const handleGenerateReport = useCallback(async () => {
         setLoadingReport(true);
         setAiReport(null);
         const id = addToast("Analyzing inventory data...", 'loading');
@@ -291,9 +297,9 @@ const App = () => {
             addToast("Failed to generate analysis.", 'error');
         }
         setLoadingReport(false);
-    };
+    }, [addToast, removeToast, stockItems.length, balanceReport]);
 
-  const handleExport = async (type: string) => {
+  const handleExport = useCallback(async (type: string) => {
     const id = addToast(`Generating ${type} export...`, 'loading');
     try {
         // Use the report service to generate a comprehensive CSV
@@ -306,133 +312,45 @@ const App = () => {
         removeToast(id);
         addToast('Failed to generate export.', 'error');
     }
-  };
+  }, [addToast, removeToast]);
 
-  const handleDateFilter = (range: string) => {
+  const handleDateFilter = useCallback((range: string) => {
     setDateRange(range);
     addToast(`Filter updated: ${range}`, 'success');
-  };
-
-  const handleStockIn = async (itemOverride?: StockItem) => {
-    const item = itemOverride || selectedItem;
-    if (!item || !stockInQuantity || !('currentQuantity' in item)) return;
-    const quantity = parseInt(stockInQuantity);
-    if (quantity <= 0) {
-      addToast('Please enter a valid quantity.', 'error');
-      return;
-    }
-
-    const transactionData: CreateTransactionRequest = {
-      itemId: Number(item.id),
-      transactionType: 'IN',
-      quantity,
-      transactionDate,
-      notes,
-      recordedBy: userProfile?.name || 'User',
-      supplierId: selectedSupplierId ? Number(selectedSupplierId) : undefined
-    };
-
-    try {
-      const toastId = addToast('Recording stock in...', 'loading');
-      await addTransaction(transactionData);
-      removeToast(toastId);
-      addToast('Stock in recorded successfully.', 'success');
-      closeDrawer();
-      await Promise.all([refetchItems(), refetchReports(), refetchTransactions()]);
-    } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Failed to record stock in.';
-      addToast(errorMessage, 'error');
-    }
-  };
-
-  const handleStockOut = async (itemOverride?: StockItem) => {
-    const item = itemOverride || selectedItem;
-    if (!item || !stockOutQuantity || !('currentQuantity' in item)) return;
-    const quantity = parseInt(stockOutQuantity);
-    if (quantity <= 0) {
-      addToast('Please enter a valid quantity.', 'error');
-      return;
-    }
-
-    if (quantity > item.currentQuantity) {
-        addToast('Stock out quantity cannot be greater than current stock.', 'error');
-        return;
-    }
-
-    const transactionData: CreateTransactionRequest = {
-      itemId: Number(item.id),
-      transactionType: 'OUT',
-      quantity,
-      transactionDate,
-      notes: `${stockOutReason}: ${notes}`,
-      recordedBy: userProfile?.name || 'User',
-    };
-
-    try {
-      const toastId = addToast('Recording stock out...', 'loading');
-      await addTransaction(transactionData);
-      removeToast(toastId);
-      addToast('Stock out recorded successfully.', 'success');
-      closeDrawer();
-      await Promise.all([refetchItems(), refetchReports(), refetchTransactions()]);
-    } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Failed to record stock out.';
-      addToast(errorMessage, 'error');
-    }
-  };
+  }, [addToast]);
 
   // Drawer Openers
-  const openStockDetail = (item: StockItem) => {
+  const openStockDetail = useCallback((item: StockItem) => {
     setSelectedItem(item);
     setDrawerType('STOCK_DETAIL');
     setDrawerOpen(true);
-    setActiveTab('details');
-    setStockInQuantity('');
-    setStockOutQuantity('');
-    setDamagedQuantity('');
-    setTransactionDate(new Date().toISOString().split('T')[0]);
-    setNotes('');
-  };
+  }, []);
 
-  const openDeleteItem = (item: StockItem) => {
+  const openDeleteItem = useCallback((item: StockItem) => {
     setSelectedItem(item);
     setDrawerType('DELETE_ITEM');
     setDrawerOpen(true);
-    setDeleteConfirmation('');
-    setDeletePassword('');
-  };
+  }, []);
 
-  const openTransactionDrawer = (type: 'IN' | 'OUT') => {
+  const openTransactionDrawer = useCallback((type: 'IN' | 'OUT') => {
     setDrawerType(type === 'IN' ? 'STOCK_IN' : 'STOCK_OUT');
     setDrawerOpen(true);
     setSelectedItem(null);
-    setStockInQuantity('');
-    setStockOutQuantity('');
-    setTransactionDate(new Date().toISOString().split('T')[0]);
-    setNotes('');
-    setStockOutReason('Consumed');
-    setSelectedSupplierId('');
-  };
+  }, []);
 
-  const openEditTransaction = (transaction: StockTransactionDTO) => {
+  const openEditTransaction = useCallback((transaction: StockTransactionDTO) => {
     setSelectedItem(transaction);
     setDrawerType('EDIT_TRANSACTION');
     setDrawerOpen(true);
-    setNotes(transaction.notes || '');
-    setReferenceNumber(transaction.referenceNumber || '');
-    setEditTransactionItemId(transaction.itemId.toString());
-    setEditTransactionType(transaction.transactionType);
-    setEditTransactionQuantity(transaction.quantity.toString());
-  };
+  }, []);
 
-  const openReverseTransaction = (transaction: StockTransactionDTO) => {
+  const openReverseTransaction = useCallback((transaction: StockTransactionDTO) => {
     setSelectedItem(transaction);
     setDrawerType('REVERSE_TRANSACTION');
     setDrawerOpen(true);
-    setNotes('');
-  };
+  }, []);
 
-  const handleUndoReverseTransaction = async (transaction: StockTransactionDTO) => {
+  const handleUndoReverseTransaction = useCallback(async (transaction: StockTransactionDTO) => {
     setConfirmationModal({
         isOpen: true,
         title: 'Restore Transaction',
@@ -452,1177 +370,373 @@ const App = () => {
              }
         }
     });
-  };
+  }, [undoReverseTransaction, addToast]);
 
-  const openSupplierDetail = (supplier: Supplier) => {
+  const openSupplierDetail = useCallback((supplier: Supplier) => {
     setSelectedItem(supplier);
     setDrawerType('SUPPLIER_DETAIL');
     setDrawerOpen(true);
-  };
+  }, []);
 
-  const openOrderForm = (supplier: Supplier) => {
+  const openOrderForm = useCallback((supplier: Supplier) => {
     setSelectedItem(supplier);
     setDrawerType('ORDER_FORM');
     setDrawerOpen(true);
-  };
+  }, []);
 
-  const openAddStock = () => {
+  const openAddStock = useCallback(() => {
     setSelectedItem(null);
     setDrawerType('ADD_STOCK');
     setDrawerOpen(true);
-  };
+  }, []);
 
-  const openAddSupplier = () => {
+  const openAddSupplier = useCallback(() => {
     setSelectedItem(null);
     setDrawerType('ADD_SUPPLIER');
     setDrawerOpen(true);
-  };
+  }, []);
 
-  const openEditProfile = () => {
+  const openEditProfile = useCallback(() => {
       if (userProfile) {
         setSelectedItem(userProfile);
         setDrawerType('EDIT_PROFILE');
         setDrawerOpen(true);
       }
-  };
+  }, [userProfile]);
 
-  const openChangePassword = () => {
+  const openChangePassword = useCallback(() => {
       setSelectedItem(null);
       setDrawerType('CHANGE_PASSWORD');
       setDrawerOpen(true);
-  };
+  }, []);
 
-  const openAddUser = () => {
+  const openAddUser = useCallback(() => {
       setSelectedItem(null);
       setDrawerType('ADD_USER');
       setDrawerOpen(true);
-  };
+  }, []);
 
-  const openDeactivateSupplier = (supplier: Supplier) => {
+  const openDeactivateSupplier = useCallback((supplier: Supplier) => {
     setSelectedItem(supplier);
     setDrawerType('DEACTIVATE_SUPPLIER');
     setDrawerOpen(true);
-    setDeleteConfirmation('');
-    setDeletePassword('');
-  };
+  }, []);
 
-  const openDeleteSupplier = (supplier: Supplier) => {
+  const openDeleteSupplier = useCallback((supplier: Supplier) => {
     setSelectedItem(supplier);
     setDrawerType('DELETE_SUPPLIER');
     setDrawerOpen(true);
-    setDeleteConfirmation('');
-    setDeletePassword('');
-  };
+  }, []);
 
   // Close Drawer
-  const closeDrawer = () => {
+  const closeDrawer = useCallback(() => {
     setDrawerOpen(false);
     setTimeout(() => {
         setDrawerType('NONE');
         setSelectedItem(null);
     }, 300);
-  };
+  }, []);
+
+  // Transaction Handlers
+  const handleStockInSubmit = useCallback(async (data: CreateTransactionRequest) => {
+      await addTransaction(data);
+      await Promise.all([refetchItems(), refetchReports(), refetchTransactions()]);
+  }, [addTransaction, refetchItems, refetchReports, refetchTransactions]);
+
+  const handleStockOutSubmit = useCallback(async (data: CreateTransactionRequest) => {
+      await addTransaction(data);
+      await Promise.all([refetchItems(), refetchReports(), refetchTransactions()]);
+  }, [addTransaction, refetchItems, refetchReports, refetchTransactions]);
+
+  const handleUpdateTransactionSubmit = useCallback(async (id: number, data: StockTransactionDTO) => {
+      await updateTransaction(id, data);
+      await refetchTransactions();
+  }, [updateTransaction, refetchTransactions]);
+
+  const handleReverseTransactionSubmit = useCallback(async (id: number, notes: string) => {
+      await reverseTransaction(id, notes);
+      await Promise.all([refetchTransactions(), refetchItems(), refetchReports()]);
+  }, [reverseTransaction, refetchTransactions, refetchItems, refetchReports]);
+
+  const handleUpdateItemSubmit = useCallback(async (id: number, data: UpdateItemRequest) => {
+      await updateItem(id, data);
+      await refetchItems();
+  }, [updateItem, refetchItems]);
+
+  const handleViewHistory = useCallback((itemId: number) => {
+      setDrawerOpen(false);
+      setTimeout(() => {
+          setDrawerType('NONE');
+          setSelectedItem(null);
+          setView('TRANSACTIONS');
+          setSelectedTransactionItem(itemId.toString());
+      }, 300);
+  }, []);
+
+  const handleDeleteItemSubmit = useCallback(async (id: number, password: string) => {
+      await deleteItem(id, password);
+      await Promise.all([refetchItems(), refetchReports(), refetchTransactions()]);
+  }, [deleteItem, refetchItems, refetchReports, refetchTransactions]);
+
+  const handleDeactivateSupplierSubmit = useCallback(async (id: number, password: string) => {
+      await deactivateSupplier(id, password);
+      await refetchSuppliers();
+  }, [deactivateSupplier, refetchSuppliers]);
+
+  const handleDeleteSupplierSubmit = useCallback(async (id: number, password: string) => {
+      await hardDeleteSupplier(id, password);
+      await refetchSuppliers();
+  }, [hardDeleteSupplier, refetchSuppliers]);
+
+  const handleStockSuccess = useCallback(async () => {
+      await Promise.all([refetchItems(), refetchReports(), refetchTransactions()]);
+  }, [refetchItems, refetchReports, refetchTransactions]);
+
+  const handleSupplierSuccess = useCallback(async () => {
+      await refetchSuppliers();
+  }, [refetchSuppliers]);
+
+  const handleUserSuccess = useCallback(() => {
+      setUsersRefreshTrigger(prev => prev + 1);
+  }, []);
+  
+  const handleProfileSuccess = useCallback(() => {
+      import('./api/services/userService').then(({ getProfile }) => {
+          getProfile().then((data) => {
+            setUserProfile(data);
+            window.dispatchEvent(new Event('profile-updated'));
+          });
+      });
+  }, []);
 
   // Filtered Items Logic
-  const filteredStockItems = stockItems.filter(item => {
+  const filteredStockItems = useMemo(() => stockItems.filter(item => {
       const matchesCategory = stockCategoryFilter ? item.category === stockCategoryFilter : true;
       const matchesStatus = stockStatusFilter ? item.status === stockStatusFilter : true;
       
       return matchesCategory && matchesStatus;
-  });
+  }), [stockItems, stockCategoryFilter, stockStatusFilter]);
 
   // Unique categories for filter dropdown
-  const categories = Array.from(new Set(stockItems.map(item => item.category)));
+  const categories = useMemo(() => Array.from(new Set(stockItems.map(item => item.category))), [stockItems]);
 
   // Drawer Content Renders
-  const renderDrawerContent = () => {
+    const handleOrderSubmit = useCallback(async (data: { item: string; quantity: number; instructions: string }) => {
+        // Mock API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }, []);
+
+    const handleAddSupplierSubmit = useCallback(async (data: CreateSupplierRequest) => {
+        await addSupplier(data);
+    }, [addSupplier]);
+
+    const handleEditProfileSubmit = useCallback(async (data: UpdateProfileRequest) => {
+        await updateProfile(data);
+    }, [updateProfile]);
+
+    const handleChangePasswordSubmit = useCallback(async (data: ChangePasswordRequest) => {
+        await changePassword(data);
+    }, [changePassword]);
+
+    const handlePasswordChangeSuccess = useCallback(() => {
+        setTimeout(() => {
+            handleLogout();
+        }, 1500);
+    }, [handleLogout]);
+
+    const handleAddUserSubmit = useCallback(async (data: CreateUserRequest) => {
+        await createUser(data);
+    }, [createUser]);
+
+    const renderDrawerContent = () => {
     // ... (existing drawer content)
     if (drawerType === 'STOCK_IN' || drawerType === 'STOCK_OUT') {
         const isStockIn = drawerType === 'STOCK_IN';
-        return (
-            <form id="transaction-form" className="space-y-5" onSubmit={(e) => {
-                e.preventDefault();
-                if (isStockIn) {
-                    const selectedItemId = (document.getElementById('item-select') as HTMLSelectElement).value;
-                    const item = stockItems.find(i => i.id === selectedItemId);
-                    if (!item) {
-                        addToast('Please select an item.', 'error');
-                        return;
-                    }
-                    setSelectedItem(item); 
-                    handleStockIn(item); 
-                } else {
-                    const selectedItemId = (document.getElementById('item-select') as HTMLSelectElement).value;
-                    const item = stockItems.find(i => i.id === selectedItemId);
-                    if (!item) {
-                        addToast('Please select an item.', 'error');
-                        return;
-                    }
-                    setSelectedItem(item);
-                    handleStockOut(item); 
-                }
-            }}>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Select Item</label>
-                    <select id="item-select" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required>
-                        <option value="">Choose an item...</option>
-                        {stockItems.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Quantity</label>
-                    <input value={isStockIn ? stockInQuantity : stockOutQuantity} onChange={(e) => isStockIn ? setStockInQuantity(e.target.value) : setStockOutQuantity(e.target.value)} type="number" min="1" placeholder="Enter quantity" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
-                </div>
-                {isStockIn && (
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Supplier (Optional)</label>
-                        <select value={selectedSupplierId} onChange={(e) => setSelectedSupplierId(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
-                            <option value="">Select Supplier...</option>
-                            {suppliers.map(supplier => (
-                                <option key={supplier.id} value={supplier.id}>{supplier.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                )}
-                {!isStockIn && (
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Reason for Stock Out</label>
-                        <select value={stockOutReason} onChange={(e) => setStockOutReason(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required>
-                            <option>Consumed</option>
-                            <option>Damaged</option>
-                            <option>Expired</option>
-                            <option>Transferred</option>
-                            <option>Other</option>
-                        </select>
-                    </div>
-                )}
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Transaction Date</label>
-                    <input value={transactionDate} onChange={(e) => setTransactionDate(e.target.value)} type="date" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Notes (Optional)</label>
-                    <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add any relevant details" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 h-24"></textarea>
-                </div>
-            </form>
+        return isStockIn ? (
+            <StockInForm
+                stockItems={stockItems}
+                suppliers={suppliers}
+                onStockIn={handleStockInSubmit}
+                onClose={closeDrawer}
+                initialItem={selectedItem as StockItem}
+                userProfileName={userProfile?.name}
+                addToast={addToast}
+                removeToast={removeToast}
+            />
+        ) : (
+            <StockOutForm
+                stockItems={stockItems}
+                onStockOut={handleStockOutSubmit}
+                onClose={closeDrawer}
+                initialItem={selectedItem as StockItem}
+                userProfileName={userProfile?.name}
+                addToast={addToast}
+                removeToast={removeToast}
+            />
         );
     }
 
     if (drawerType === 'EDIT_TRANSACTION' && selectedItem) {
-        const transaction = selectedItem as StockTransactionDTO;
         return (
-            <form id="edit-transaction-form" className="space-y-5" onSubmit={async (e) => {
-                e.preventDefault();
-                try {
-                    const toastId = addToast("Updating transaction...", 'loading');
-                    await updateTransaction(Number(transaction.id), {
-                        ...transaction,
-                        itemId: Number(editTransactionItemId),
-                        transactionType: editTransactionType,
-                        quantity: Number(editTransactionQuantity),
-                        notes,
-                        referenceNumber
-                    });
-                    removeToast(toastId);
-                    addToast("Transaction updated successfully.", 'success');
-                    closeDrawer();
-                    refetchTransactions();
-                } catch (error) {
-                    const errorMessage = error instanceof ApiError ? error.message : 'Failed to update transaction.';
-                    addToast(errorMessage, 'error');
-                }
-            }}>
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
-                    <p className="text-sm text-blue-800 dark:text-blue-300">
-                        You are editing transaction <strong>#{transaction.id}</strong>. 
-                        Changing critical fields (Item, Quantity, Type) will affect stock levels.
-                    </p>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Item</label>
-                    <select
-                        value={editTransactionItemId}
-                        onChange={(e) => setEditTransactionItemId(e.target.value)}
-                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                        required
-                    >
-                        {stockItems.map(item => (
-                            <option key={item.id} value={item.id}>{item.name}</option>
-                        ))}
-                    </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Type</label>
-                        <select
-                            value={editTransactionType}
-                            onChange={(e) => setEditTransactionType(e.target.value as 'IN' | 'OUT')}
-                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                            required
-                        >
-                            <option value="IN">IN</option>
-                            <option value="OUT">OUT</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Quantity</label>
-                        <input
-                            type="number"
-                            value={editTransactionQuantity}
-                            onChange={(e) => setEditTransactionQuantity(e.target.value)}
-                            min="1"
-                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
-                            required
-                        />
-                    </div>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Reference Number</label>
-                    <input 
-                        type="text" 
-                        value={referenceNumber} 
-                        onChange={(e) => setReferenceNumber(e.target.value)}
-                        placeholder="e.g. PO-12345" 
-                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" 
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Notes</label>
-                    <textarea 
-                        value={notes} 
-                        onChange={(e) => setNotes(e.target.value)} 
-                        placeholder="Add any relevant details" 
-                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 h-24"
-                    ></textarea>
-                </div>
-            </form>
+            <EditTransactionForm
+                transaction={selectedItem as StockTransactionDTO}
+                stockItems={stockItems}
+                onUpdateTransaction={handleUpdateTransactionSubmit}
+                onClose={closeDrawer}
+                addToast={addToast}
+                removeToast={removeToast}
+            />
         );
     }
 
     if (drawerType === 'REVERSE_TRANSACTION' && selectedItem) {
-        const transaction = selectedItem as StockTransactionDTO;
         return (
-            <form id="reverse-transaction-form" className="space-y-5" onSubmit={async (e) => {
-                e.preventDefault();
-                try {
-                    const toastId = addToast("Reversing transaction...", 'loading');
-                    await reverseTransaction(Number(transaction.id), notes);
-                    removeToast(toastId);
-                    addToast("Transaction reversed successfully.", 'success');
-                    closeDrawer();
-                    await Promise.all([refetchTransactions(), refetchItems(), refetchReports()]);
-                } catch (error) {
-                    const errorMessage = error instanceof ApiError ? error.message : 'Failed to reverse transaction.';
-                    addToast(errorMessage, 'error');
-                }
-            }}>
-                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-100 dark:border-amber-800 flex gap-3">
-                    <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                    <div>
-                        <h3 className="text-sm font-bold text-amber-800 dark:text-amber-400">Confirm Reversal</h3>
-                        <p className="text-xs text-amber-600 dark:text-amber-300 mt-1">
-                            This action will create a counter-transaction to reverse the original entry. 
-                            The original transaction will remain unchanged for audit purposes.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 space-y-2">
-                    <div className="flex justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">Transaction ID:</span>
-                        <span className="font-mono font-medium text-slate-700 dark:text-slate-300">#{transaction.id}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">Item:</span>
-                        <span className="font-medium text-slate-700 dark:text-slate-300">{transaction.itemName}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">Type:</span>
-                        <span className={`font-bold ${transaction.transactionType === 'IN' ? 'text-blue-600' : 'text-slate-600'}`}>
-                            {transaction.transactionType}
-                        </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">Quantity:</span>
-                        <span className="font-bold text-slate-700 dark:text-slate-300">{transaction.quantity}</span>
-                    </div>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Reason for Reversal</label>
-                    <textarea 
-                        value={notes} 
-                        onChange={(e) => setNotes(e.target.value)} 
-                        placeholder="Why is this transaction being reversed? (Required)" 
-                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 h-24"
-                        required
-                    ></textarea>
-                </div>
-            </form>
+            <ReverseTransactionForm
+                transaction={selectedItem as StockTransactionDTO}
+                onReverseTransaction={handleReverseTransactionSubmit}
+                onClose={closeDrawer}
+                addToast={addToast}
+                removeToast={removeToast}
+            />
         );
     }
 
     if (drawerType === 'STOCK_DETAIL' && selectedItem) {
-        const item = selectedItem as StockItem;
-        const TabButton = ({ tabName, label }: { tabName: string; label: string }) => (
-            <button
-                onClick={() => setActiveTab(tabName)}
-                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
-                    activeTab === tabName
-                        ? 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 border-t border-x text-slate-800 dark:text-white'
-                        : 'bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600'
-                }`}
-            >
-                {label}
-            </button>
-        );
-
         return (
-            <div className="space-y-6">
-                <div className="flex border-b border-slate-200 dark:border-slate-600 -mx-6 px-6">
-                    <TabButton tabName="details" label="Details" />
-                    <TabButton tabName="edit" label="Edit Item" />
-                </div>
-
-                {activeTab === 'details' && (
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-600">
-                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Current Stock</div>
-                                <div className="text-2xl font-bold text-slate-800 dark:text-white">{item.currentQuantity} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">{item.unit}</span></div>
-                            </div>
-                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-600">
-                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Status</div>
-                                <div className={`text-sm font-bold px-2 py-1 rounded-full w-fit ${
-                                    item.status === 'Birahagije' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' :
-                                    item.status === 'Mucye' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                                }`}>{item.status}</div>
-                            </div>
-                        </div>
-
-                        {/* New Stats Section */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
-                                <div className="text-xs text-emerald-600 dark:text-emerald-400 mb-1 font-medium">Total Stocked In</div>
-                                <div className="text-lg font-bold text-emerald-700 dark:text-emerald-300">{item.totalIn || 0} <span className="text-xs font-normal opacity-70">{item.unit}</span></div>
-                            </div>
-                            <div className="p-3 rounded-lg bg-rose-50/50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800">
-                                <div className="text-xs text-rose-600 dark:text-rose-400 mb-1 font-medium">Total Stocked Out</div>
-                                <div className="text-lg font-bold text-rose-700 dark:text-rose-300">{item.totalOut || 0} <span className="text-xs font-normal opacity-70">{item.unit}</span></div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Category</label>
-                                <div className="p-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-600 dark:text-slate-300 text-sm flex items-center gap-2">
-                                    <Box className="w-4 h-4 text-slate-400" />
-                                    {item.category}
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Minimum Threshold</label>
-                                <div className="p-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-600 dark:text-slate-300 text-sm">
-                                    {item.minimumQuantity} {item.unit}
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Last Updated</label>
-                                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                                    <Clock className="w-4 h-4" />
-                                    {item.lastUpdated}
-                                </div>
-                            </div>
-                            
-                            <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-                                <button 
-                                    onClick={() => {
-                                        closeDrawer();
-                                        setView('TRANSACTIONS');
-                                        setSelectedTransactionItem(item.id);
-                                    }}
-                                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                                >
-                                    <History className="w-4 h-4" />
-                                    View Transaction History
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'edit' && (
-                    <form id="edit-stock-form" className="space-y-5" onSubmit={async (e) => {
-                        e.preventDefault();
-                        const form = e.target as HTMLFormElement;
-                        const formData = new FormData(form);
-                        
-                        const updateData: UpdateItemRequest = {
-                            name: formData.get('name') as string,
-                            unit: formData.get('unit') as string,
-                            minimumStock: parseInt(formData.get('minimumStock') as string),
-                            description: formData.get('description') as string,
-                        };
-
-                        try {
-                            const toastId = addToast("Updating item...", 'loading');
-                            await updateItem(Number(item.id), updateData);
-                            removeToast(toastId);
-                            addToast("Item updated successfully.", 'success');
-                            closeDrawer();
-                            await refetchItems();
-                        } catch (error) {
-                            const errorMessage = error instanceof ApiError ? error.message : 'Failed to update item.';
-                            addToast(errorMessage, 'error');
-                        }
-                    }}>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Item Name</label>
-                            <input name="name" defaultValue={item.name} type="text" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Description / Category</label>
-                            <input name="description" defaultValue={item.category} type="text" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Unit</label>
-                                <select name="unit" defaultValue={item.unit} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required>
-                                    <option>Kg</option>
-                                    <option>Liters</option>
-                                    <option>Pieces</option>
-                                    <option>Bags</option>
-                                    <option>Sacks</option>
-                                    <option>Boxes</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Min Threshold</label>
-                                <input name="minimumStock" defaultValue={item.minimumQuantity} type="number" min="1" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required />
-                            </div>
-                        </div>
-                        <div className="pt-4">
-                            <button type="submit" className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                                Save Changes
-                            </button>
-                        </div>
-                    </form>
-                )}
-            </div>
+            <StockDetail
+                item={selectedItem as StockItem}
+                onUpdateItem={handleUpdateItemSubmit}
+                onClose={closeDrawer}
+                onViewHistory={handleViewHistory}
+                addToast={addToast}
+                removeToast={removeToast}
+            />
         );
     }
 
     if (drawerType === 'DELETE_ITEM' && selectedItem) {
-        const item = selectedItem as StockItem;
         return (
-            <div className="space-y-6">
-                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-800 flex gap-3">
-                    <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0" />
-                    <div>
-                        <h3 className="text-sm font-bold text-red-800 dark:text-red-400">Warning: Irreversible Action</h3>
-                        <p className="text-xs text-red-600 dark:text-red-300 mt-1">
-                            Deleting <strong>{item.name}</strong> will remove all associated data, including transaction history. This cannot be undone.
-                        </p>
-                    </div>
-                </div>
-
-                <form onSubmit={async (e) => {
-                    e.preventDefault();
-                    if (deleteConfirmation !== 'i confirm delete') {
-                        addToast('Please type the confirmation phrase exactly.', 'error');
-                        return;
-                    }
-                    
-                    if (!deletePassword) {
-                        addToast('Please enter your password.', 'error');
-                        return;
-                    }
-                    
-                    try {
-                        const toastId = addToast("Deleting item...", 'loading');
-                        // Pass password to deleteItem
-                        await deleteItem(Number(item.id), deletePassword);
-                        removeToast(toastId);
-                        addToast("Item deleted successfully.", 'success');
-                        closeDrawer();
-                        await Promise.all([refetchItems(), refetchReports(), refetchTransactions()]);
-                    } catch (error) {
-                        const errorMessage = error instanceof ApiError ? error.message : 'Failed to delete item. Incorrect password?';
-                        addToast(errorMessage, 'error');
-                    }
-                }} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                            Type <span className="font-mono font-bold text-red-600 dark:text-red-400">i confirm delete</span> to confirm
-                        </label>
-                        <input 
-                            type="text" 
-                            value={deleteConfirmation}
-                            onChange={(e) => setDeleteConfirmation(e.target.value)}
-                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
-                            placeholder="i confirm delete"
-                            required 
-                        />
-                    </div>
-                    
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Admin Password</label>
-                        <input 
-                            type="password" 
-                            value={deletePassword}
-                            onChange={(e) => setDeletePassword(e.target.value)}
-                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
-                            placeholder="Enter your password"
-                            required 
-                        />
-                    </div>
-
-                    <div className="pt-2 flex gap-3">
-                        <button 
-                            type="button" 
-                            onClick={closeDrawer}
-                            className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button 
-                            type="submit"
-                            disabled={deleteConfirmation !== 'i confirm delete' || !deletePassword}
-                            className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            Delete Item
-                        </button>
-                    </div>
-                </form>
-            </div>
+            <DeleteItemForm
+                item={selectedItem as StockItem}
+                onDelete={handleDeleteItemSubmit}
+                onClose={closeDrawer}
+                addToast={addToast}
+                removeToast={removeToast}
+            />
         );
     }
 
     if (drawerType === 'DEACTIVATE_SUPPLIER' && selectedItem) {
-        const supplier = selectedItem as Supplier;
         return (
-            <div className="space-y-6">
-                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-100 dark:border-amber-800 flex gap-3">
-                    <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                    <div>
-                        <h3 className="text-sm font-bold text-amber-800 dark:text-amber-400">Confirm Deactivation</h3>
-                        <p className="text-xs text-amber-600 dark:text-amber-300 mt-1">
-                            Deactivating <strong>{supplier.name}</strong> will hide them from active lists. You can reactivate them later.
-                        </p>
-                    </div>
-                </div>
-
-                <form onSubmit={async (e) => {
-                    e.preventDefault();
-                    if (deleteConfirmation !== 'i confirm deactivate') {
-                        addToast('Please type the confirmation phrase exactly.', 'error');
-                        return;
-                    }
-                    
-                    if (!deletePassword) {
-                        addToast('Please enter your password.', 'error');
-                        return;
-                    }
-                    
-                    try {
-                        const toastId = addToast("Deactivating supplier...", 'loading');
-                        await deactivateSupplier(supplier.id, deletePassword);
-                        removeToast(toastId);
-                        addToast("Supplier deactivated successfully.", 'success');
-                        closeDrawer();
-                        refetchSuppliers();
-                    } catch (error) {
-                        const errorMessage = error instanceof ApiError ? error.message : 'Failed to deactivate supplier. Incorrect password?';
-                        addToast(errorMessage, 'error');
-                    }
-                }} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                            Type <span className="font-mono font-bold text-amber-600 dark:text-amber-400">i confirm deactivate</span> to confirm
-                        </label>
-                        <input 
-                            type="text" 
-                            value={deleteConfirmation}
-                            onChange={(e) => setDeleteConfirmation(e.target.value)}
-                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
-                            placeholder="i confirm deactivate"
-                            required 
-                        />
-                    </div>
-                    
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Admin Password</label>
-                        <input 
-                            type="password" 
-                            value={deletePassword}
-                            onChange={(e) => setDeletePassword(e.target.value)}
-                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
-                            placeholder="Enter your password"
-                            required 
-                        />
-                    </div>
-
-                    <div className="pt-2 flex gap-3">
-                        <button 
-                            type="button" 
-                            onClick={closeDrawer}
-                            className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button 
-                            type="submit"
-                            disabled={deleteConfirmation !== 'i confirm deactivate' || !deletePassword}
-                            className="flex-1 px-4 py-2.5 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            Deactivate Supplier
-                        </button>
-                    </div>
-                </form>
-            </div>
+            <DeactivateSupplierForm
+                supplier={selectedItem as Supplier}
+                onDeactivate={handleDeactivateSupplierSubmit}
+                onClose={closeDrawer}
+                addToast={addToast}
+                removeToast={removeToast}
+            />
         );
     }
 
     if (drawerType === 'DELETE_SUPPLIER' && selectedItem) {
-        const supplier = selectedItem as Supplier;
         return (
-            <div className="space-y-6">
-                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-800 flex gap-3">
-                    <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0" />
-                    <div>
-                        <h3 className="text-sm font-bold text-red-800 dark:text-red-400">Warning: Irreversible Action</h3>
-                        <p className="text-xs text-red-600 dark:text-red-300 mt-1">
-                            Deleting <strong>{supplier.name}</strong> will permanently remove them from the system. This cannot be undone.
-                        </p>
-                    </div>
-                </div>
-
-                <form onSubmit={async (e) => {
-                    e.preventDefault();
-                    if (deleteConfirmation !== 'i confirm delete') {
-                        addToast('Please type the confirmation phrase exactly.', 'error');
-                        return;
-                    }
-                    
-                    if (!deletePassword) {
-                        addToast('Please enter your password.', 'error');
-                        return;
-                    }
-                    
-                    try {
-                        const toastId = addToast("Deleting supplier...", 'loading');
-                        await hardDeleteSupplier(supplier.id, deletePassword);
-                        removeToast(toastId);
-                        addToast("Supplier deleted permanently.", 'success');
-                        closeDrawer();
-                        refetchSuppliers();
-                    } catch (error) {
-                        const errorMessage = error instanceof ApiError ? error.message : 'Failed to delete supplier. Incorrect password?';
-                        addToast(errorMessage, 'error');
-                    }
-                }} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                            Type <span className="font-mono font-bold text-red-600 dark:text-red-400">i confirm delete</span> to confirm
-                        </label>
-                        <input 
-                            type="text" 
-                            value={deleteConfirmation}
-                            onChange={(e) => setDeleteConfirmation(e.target.value)}
-                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
-                            placeholder="i confirm delete"
-                            required 
-                        />
-                    </div>
-                    
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Admin Password</label>
-                        <input 
-                            type="password" 
-                            value={deletePassword}
-                            onChange={(e) => setDeletePassword(e.target.value)}
-                            className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400"
-                            placeholder="Enter your password"
-                            required 
-                        />
-                    </div>
-
-                    <div className="pt-2 flex gap-3">
-                        <button 
-                            type="button" 
-                            onClick={closeDrawer}
-                            className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button 
-                            type="submit"
-                            disabled={deleteConfirmation !== 'i confirm delete' || !deletePassword}
-                            className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            Delete Permanently
-                        </button>
-                    </div>
-                </form>
-            </div>
+            <DeleteSupplierForm
+                supplier={selectedItem as Supplier}
+                onDelete={handleDeleteSupplierSubmit}
+                onClose={closeDrawer}
+                addToast={addToast}
+                removeToast={removeToast}
+            />
         );
     }
 
     if (drawerType === 'ADD_STOCK') {
         return (
-            <form id="add-stock-form" className="space-y-5" onSubmit={async (e) => { 
-                e.preventDefault(); 
-                const form = e.target as HTMLFormElement;
-                const formData = new FormData(form);
-                
-                const itemData: CreateItemRequest = {
-                    name: formData.get('name') as string,
-                    unit: formData.get('unit') as string,
-                    minimumStock: parseInt(formData.get('minimumStock') as string),
-                    description: formData.get('description') as string || undefined,
-                };
-
-                const initialQuantity = parseInt(formData.get('initialQuantity') as string) || 0;
-
-                try {
-                    const toastId = addToast("Creating item...", 'loading');
-                    const newItem = await addItem(itemData);
-                    removeToast(toastId);
-                    
-                    // If initial quantity is provided, create an IN transaction
-                    if (initialQuantity > 0 && newItem.id) {
-                        const transactionData: CreateTransactionRequest = {
-                            itemId: Number(newItem.id),
-                            transactionType: 'IN',
-                            quantity: initialQuantity,
-                            transactionDate: new Date().toISOString().split('T')[0],
-                            notes: 'Initial stock',
-                            recordedBy: 'System',
-                        };
-                        await addTransaction(transactionData);
-                    }
-                    
-                    addToast("Stock item added successfully.", 'success');
-                    closeDrawer();
-                    // Refresh all data
-                    await Promise.all([
-                        refetchItems(),
-                        refetchReports(),
-                        refetchTransactions()
-                    ]);
-                } catch (error) {
-                    const errorMessage = error instanceof ApiError 
-                        ? error.message 
-                        : 'Failed to create item. Please try again.';
-                    addToast(errorMessage, 'error');
-                }
-            }}>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Item Name</label>
-                    <input name="name" type="text" placeholder="e.g. Rice (Gikongoro)" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                     <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
-                        <input name="description" type="text" placeholder="Category or description" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Unit</label>
-                        <select name="unit" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required>
-                            <option value="">Select unit...</option>
-                            <option>Kg</option>
-                            <option>Liters</option>
-                            <option>Pieces</option>
-                            <option>Bags</option>
-                            <option>Sacks</option>
-                            <option>Boxes</option>
-                        </select>
-                    </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                     <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Initial Quantity (Optional)</label>
-                        <input name="initialQuantity" type="number" min="0" placeholder="0" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Min Threshold</label>
-                        <input name="minimumStock" type="number" min="1" placeholder="10" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
-                    </div>
-                </div>
-            </form>
+            <AddStockForm
+                onAddItem={addItem}
+                onAddTransaction={addTransaction}
+                onSuccess={handleStockSuccess}
+                onClose={closeDrawer}
+                addToast={addToast}
+                removeToast={removeToast}
+            />
         );
     }
 
     if (drawerType === 'ADD_SUPPLIER') {
         return (
-            <form id="add-supplier-form" className="space-y-5" onSubmit={async (e) => { 
-                e.preventDefault(); 
-                const form = e.target as HTMLFormElement;
-                const formData = new FormData(form);
-                
-                const supplierData = {
-                    name: formData.get('name') as string,
-                    contact: formData.get('phone') as string, // Mapping phone to contact for now
-                    email: formData.get('email') as string,
-                    itemsSupplied: (formData.get('itemsSupplied') as string).split(',').map(s => s.trim()),
-                };
-
-                try {
-                    const toastId = addToast("Adding supplier...", 'loading');
-                    await addSupplier(supplierData);
-                    removeToast(toastId);
-                    addToast("Supplier added successfully.", 'success');
-                    closeDrawer();
-                    refetchSuppliers(); // Refresh list
-                } catch (error) {
-                    const errorMessage = error instanceof ApiError 
-                        ? error.message 
-                        : 'Failed to add supplier. Please try again.';
-                    addToast(errorMessage, 'error');
-                }
-            }}>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Company Name</label>
-                    <input name="name" type="text" placeholder="e.g. Kigali Grains Ltd" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Contact Person</label>
-                    <div className="relative">
-                        <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input name="contactPerson" type="text" placeholder="Full Name" className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Phone Number</label>
-                    <div className="relative">
-                        <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input name="phone" type="tel" placeholder="+250 7..." className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email Address</label>
-                    <div className="relative">
-                        <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input name="email" type="email" placeholder="contact@supplier.com" className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Items Supplied</label>
-                    <textarea name="itemsSupplied" placeholder="List main items supplied (comma separated)..." className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 h-24"></textarea>
-                </div>
-            </form>
+            <AddSupplierForm
+                onAddSupplier={handleAddSupplierSubmit}
+                onSuccess={handleSupplierSuccess}
+                onClose={closeDrawer}
+                addToast={addToast}
+                removeToast={removeToast}
+            />
         );
     }
     
     if (drawerType === 'SUPPLIER_DETAIL' && selectedItem) {
-        const supplier = selectedItem as Supplier;
-        const isInactive = inactiveSuppliers.some(s => s.id === supplier.id);
-
         return (
-            <div className="space-y-6">
-                <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-5 border border-slate-100 dark:border-slate-600 space-y-3">
-                    <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
-                        <Phone className="w-4 h-4 text-slate-400" />
-                        <span className="text-sm font-medium">{supplier.contact}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
-                        <Mail className="w-4 h-4 text-slate-400" />
-                        <span className="text-sm font-medium">{supplier.email}</span>
-                    </div>
-                     <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
-                        <MapPin className="w-4 h-4 text-slate-400" />
-                        <span className="text-sm font-medium">Kigali, Nyarugenge District</span>
-                    </div>
-                </div>
-                
-                 {/* Supplies List */}
-                <div>
-                    <h3 className="font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
-                        <Truck className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                        Supplied Items
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                        {supplier.itemsSupplied.map((item, i) => (
-                            <span key={i} className="px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-600 dark:text-slate-300 shadow-sm">
-                                {item}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-                
-                {userProfile?.role === 'ADMIN' && (
-                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700 space-y-3">
-                        {!isInactive ? (
-                            <button 
-                                onClick={() => {
-                                    closeDrawer();
-                                    setTimeout(() => openDeactivateSupplier(supplier), 300);
-                                }}
-                                className="w-full text-center text-amber-600 dark:text-amber-400 text-sm font-medium hover:text-amber-700 dark:hover:text-amber-300 flex items-center justify-center gap-2"
-                            >
-                                <AlertTriangle className="w-4 h-4" />
-                                Deactivate Supplier
-                            </button>
-                        ) : (
-                            <>
-                                <button 
-                                    onClick={async () => {
-                                        try {
-                                            const toastId = addToast("Reactivating supplier...", 'loading');
-                                            await reactivateSupplier(supplier.id);
-                                            removeToast(toastId);
-                                            addToast("Supplier reactivated.", 'success');
-                                            closeDrawer();
-                                            refetchSuppliers();
-                                        } catch (e) {
-                                            addToast("Failed to reactivate supplier.", 'error');
-                                        }
-                                    }}
-                                    className="w-full text-center text-emerald-600 dark:text-emerald-400 text-sm font-medium hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center justify-center gap-2"
-                                >
-                                    <RefreshCw className="w-4 h-4" />
-                                    Reactivate Supplier
-                                </button>
-                                <button 
-                                    onClick={() => {
-                                        closeDrawer();
-                                        setTimeout(() => openDeleteSupplier(supplier), 300);
-                                    }}
-                                    className="w-full text-center text-rose-600 dark:text-rose-400 text-sm font-medium hover:text-rose-700 dark:hover:text-rose-300 flex items-center justify-center gap-2"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                    Delete Permanently
-                                </button>
-                            </>
-                        )}
-                    </div>
-                )}
-            </div>
+            <SupplierDetail
+                supplier={selectedItem as Supplier}
+                inactiveSuppliers={inactiveSuppliers}
+                userProfile={userProfile}
+                onClose={closeDrawer}
+                onDeactivate={openDeactivateSupplier}
+                onReactivate={reactivateSupplier}
+                onDelete={openDeleteSupplier}
+                onRefetch={refetchSuppliers}
+                addToast={addToast}
+                removeToast={removeToast}
+            />
         );
     }
 
     if (drawerType === 'ORDER_FORM' && selectedItem) {
         return (
-             <form id="order-form" className="space-y-5" onSubmit={(e) => { e.preventDefault(); closeDrawer(); addToast(`Order request sent to ${(selectedItem as Supplier).name}`); }}>
-                 <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg text-blue-800 dark:text-blue-300 text-sm flex gap-3">
-                    <div className="bg-white dark:bg-slate-800 p-1 rounded-full h-fit"><CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
-                    You are placing an order request to <strong>{(selectedItem as Supplier).name}</strong>.
-                 </div>
-                 
-                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Select Item</label>
-                    <select className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white">
-                        {(selectedItem as Supplier).itemsSupplied.map((item, i) => <option key={i}>{item}</option>)}
-                    </select>
-                </div>
-                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Quantity</label>
-                    <input type="number" placeholder="Amount" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
-                </div>
-                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Delivery Instructions</label>
-                    <textarea placeholder="Any specific requirements..." className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 h-24"></textarea>
-                </div>
-             </form>
+             <OrderForm
+                supplier={selectedItem as Supplier}
+                onOrder={handleOrderSubmit}
+                onClose={closeDrawer}
+                addToast={addToast}
+                removeToast={removeToast}
+             />
         )
     }
 
     if (drawerType === 'EDIT_PROFILE' && selectedItem) {
-        const profile = selectedItem as UserProfile;
         return (
-             <form id="edit-profile-form" className="space-y-5" onSubmit={async (e) => { 
-                e.preventDefault(); 
-                const form = e.target as HTMLFormElement;
-                const formData = new FormData(form);
-                const profileData: UpdateProfileRequest = {
-                    name: formData.get('name') as string || undefined,
-                    email: formData.get('email') as string || undefined,
-                    phone: formData.get('phone') as string || undefined,
-                    department: formData.get('department') as string || undefined,
-                };
-                try {
-                    const toastId = addToast("Updating profile...", 'loading');
-                    await updateProfile(profileData);
-                    removeToast(toastId);
-                    addToast("Profile updated successfully", 'success');
-                    
-                    // Refetch profile and update state
-                    import('./api/services/userService').then(({ getProfile }) => {
-                      getProfile().then((data) => {
-                        setUserProfile(data);
-                        closeDrawer();
-                        // Dispatch event to notify other components
-                        window.dispatchEvent(new Event('profile-updated'));
-                      });
-                    });
-                } catch (error) {
-                    const errorMessage = error instanceof ApiError 
-                        ? error.data?.message || error.message 
-                        : 'Failed to update profile. Please try again.';
-                    addToast(errorMessage, 'error');
-                }
-            }}>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
-                    <input name="name" type="text" defaultValue={profile.name} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                     <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Role</label>
-                         <input type="text" defaultValue={profile.role} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white" readOnly />
-                    </div>
-                     <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Department</label>
-                         <input name="department" type="text" defaultValue={profile.department} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" />
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email Address</label>
-                     <div className="relative">
-                        <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input name="email" type="email" defaultValue={profile.email} className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required />
-                    </div>
-                </div>
-                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Phone Number</label>
-                    <div className="relative">
-                        <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input name="phone" type="tel" defaultValue={profile.phone} className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" />
-                    </div>
-                </div>
-            </form>
+             <EditProfileForm
+                 userProfile={selectedItem as UserProfile}
+                 onUpdateProfile={handleEditProfileSubmit}
+                 onClose={closeDrawer}
+                 addToast={addToast}
+                 removeToast={removeToast}
+             />
         );
     }
 
     if (drawerType === 'CHANGE_PASSWORD') {
         return (
-             <form id="change-password-form" className="space-y-5" onSubmit={async (e) => { 
-                e.preventDefault(); 
-                const form = e.target as HTMLFormElement;
-                const formData = new FormData(form);
-                
-                const currentPassword = formData.get('currentPassword') as string;
-                const newPassword = formData.get('newPassword') as string;
-                const confirmPassword = formData.get('confirmPassword') as string;
-
-                // Validate passwords match
-                if (newPassword !== confirmPassword) {
-                    addToast("New password and confirm password do not match", 'error');
-                    return;
-                }
-
-                // Validate password length
-                if (newPassword.length < 8) {
-                    addToast("New password must be at least 8 characters long", 'error');
-                    return;
-                }
-
-                const passwordData: ChangePasswordRequest = {
-                    currentPassword,
-                    newPassword,
-                    confirmPassword,
-                };
-
-                try {
-                    const toastId = addToast("Changing password...", 'loading');
-                    await changePassword(passwordData);
-                    removeToast(toastId);
-                    addToast("Password changed successfully", 'success');
-                    closeDrawer();
-                    // Optionally logout user after password change
-                    setTimeout(() => {
-                        handleLogout();
-                    }, 1500);
-                } catch (error) {
-                    const errorMessage = error instanceof ApiError 
-                        ? error.data?.message || error.message 
-                        : 'Failed to change password. Please try again.';
-                    addToast(errorMessage, 'error');
-                }
-            }}>
-                 <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg border border-slate-100 dark:border-slate-600 text-sm text-slate-600 dark:text-slate-300">
-                    <p>Make sure your new password is at least 8 characters long and includes a number.</p>
-                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Current Password</label>
-                    <input name="currentPassword" type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
-                </div>
-                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">New Password</label>
-                    <input name="newPassword" type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required minLength={8} />
-                </div>
-                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Confirm New Password</label>
-                    <input name="confirmPassword" type="password" placeholder="••••••••" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required minLength={8} />
-                </div>
-            </form>
+             <ChangePasswordForm
+                 onChangePassword={handleChangePasswordSubmit}
+                 onSuccess={handlePasswordChangeSuccess}
+                 onClose={closeDrawer}
+                 addToast={addToast}
+                 removeToast={removeToast}
+             />
         );
     }
 
     if (drawerType === 'ADD_USER') {
         return (
-            <form id="add-user-form" className="space-y-5" onSubmit={async (e) => {
-                e.preventDefault();
-                const form = e.target as HTMLFormElement;
-                const formData = new FormData(form);
-
-                const userData: CreateUserRequest = {
-                    name: formData.get('name') as string,
-                    email: formData.get('email') as string,
-                    role: formData.get('role') as 'ADMIN' | 'USER',
-                    department: formData.get('department') as string,
-                    phone: formData.get('phone') as string,
-                };
-
-                try {
-                    const toastId = addToast("Creating user...", 'loading');
-                    await createUser(userData);
-                    removeToast(toastId);
-                    addToast("User created successfully. An email has been sent to set their password.", 'success');
-                    closeDrawer();
-                    // Refresh users list if currently on Users view
-                    setUsersRefreshTrigger(prev => prev + 1);
-                } catch (error) {
-                    const errorMessage = error instanceof ApiError 
-                        ? error.message 
-                        : 'Failed to create user. Please try again.';
-                    addToast(errorMessage, 'error');
-                }
-            }}>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Full Name</label>
-                    <input name="name" type="text" placeholder="John Doe" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email Address</label>
-                    <input name="email" type="email" placeholder="john@example.com" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" required />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Role</label>
-                        <select name="role" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white" required>
-                            <option value="USER">User</option>
-                            <option value="ADMIN">Admin</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Department</label>
-                        <input name="department" type="text" placeholder="Logistics" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" />
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Phone Number</label>
-                    <input name="phone" type="tel" placeholder="+250 7..." className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400" />
-                </div>
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-xs text-blue-700 dark:text-blue-300 flex gap-2">
-                    <div className="mt-0.5"><Shield className="w-4 h-4" /></div>
-                    <p>New users will receive an email with instructions to set their password. They will have limited access based on the selected role.</p>
-                </div>
-            </form>
+             <AddUserForm
+                 onCreateUser={handleAddUserSubmit}
+                 onSuccess={handleUserSuccess}
+                 onClose={closeDrawer}
+                 addToast={addToast}
+                 removeToast={removeToast}
+             />
         );
     }
 
@@ -1857,6 +971,7 @@ const App = () => {
 
         {/* Scrollable Content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
+            <Suspense fallback={<LoadingSpinner />}>
             {/* ... views ... */}
             {view === 'DASHBOARD' && (
                 <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500 slide-in-from-bottom-4">

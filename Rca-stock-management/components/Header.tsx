@@ -62,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => 
                 const profile = await getProfile();
                 setAvatarUrl(profile.avatarUrl || null);
             } catch (error) {
-                console.error("Failed to fetch profile for header", error);
+                if (import.meta.env.DEV) console.error("Failed to fetch profile for header", error);
             }
         };
         fetchProfile();
@@ -82,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => 
                 const hasUnread = notifications.some(n => !n.read);
                 setHasNotifications(hasUnread);
             } catch (error) {
-                console.error("Failed to check notifications", error);
+                if (import.meta.env.DEV) console.error("Failed to check notifications", error);
             }
         };
         
@@ -113,7 +113,10 @@ export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => 
         <div className="flex items-center gap-4 bg-[#F1F2F7] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-2xl p-2 shadow-sm w-full relative">
             {/* Logo Section */}
             <div className="flex items-center gap-3 pl-2 pr-4 border-r border-[#E5E7EB] dark:border-slate-700 flex-shrink-0">
-                <img src={logoPath} alt="RCA Logo" className="w-8 h-8 object-contain" />
+                <picture>
+                    <source srcSet={logoWebP} type="image/webp" />
+                    <img src={logoPath} alt="RCA Logo" className="w-8 h-8 object-contain" width="32" height="32" loading="lazy" />
+                </picture>
                 <div className="hidden sm:block leading-tight">
                     <h1 className="font-bold text-xs text-[#1E293B] dark:text-white tracking-tight">RCA</h1>
                     <h1 className="font-medium text-[10px] text-[#9CA3AF] dark:text-slate-400 tracking-wide">IMS</h1>

@@ -52,7 +52,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
             {showLogo && (
                 <div className={`h-20 flex items-center gap-3 mb-2 ${isCollapsed ? 'justify-center px-2' : 'px-6'}`}>
                     <div className="p-1">
-                        <img src={logoPath} alt="RCA Logo" className="w-10 h-10 object-contain" />
+                        <picture>
+                            <source srcSet={logoWebP} type="image/webp" />
+                            <img src={logoPath} alt="RCA Logo" className="w-10 h-10 object-contain" width="40" height="40" loading="lazy" />
+                        </picture>
                     </div>
                     <div className={`leading-tight ${isCollapsed ? 'hidden' : 'block'}`}>
                         <h1 className="font-bold text-sm text-[#1E293B] dark:text-white tracking-tight">RCA</h1>

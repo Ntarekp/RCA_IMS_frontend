@@ -2,7 +2,7 @@
  * Custom hook for managing reports
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { getBalanceReport, getLowStockReport, getReportHistory } from '../api/services/reportService';
 import { StockBalanceDTO } from '../api/types';
 import { DashboardItem, SystemReport } from '../types';
@@ -18,19 +18,7 @@ export const useReports = () => {
   // Initialize report history
   const [reportHistory, setReportHistory] = useState<SystemReport[]>([]);
 
-  const addReportToHistory = (report: SystemReport) => {
-    // Optimistic update
-    setReportHistory(prev => [report, ...prev]);
-    // Then fetch actual history to ensure we have IDs and correct data
-    fetchReports();
-  };
-
-  const clearReportHistory = () => {
-    // In a real backend, we might want an endpoint to clear history
-    setReportHistory([]);
-  };
-
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -52,14 +40,26 @@ export const useReports = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const addReportToHistory = useCallback((report: SystemReport) => {
+    // Optimistic update
+    setReportHistory(prev => [report, ...prev]);
+    // Then fetch actual history to ensure we have IDs and correct data
+    fetchReports();
+  }, [fetchReports]);
+
+  const clearReportHistory = useCallback(() => {
+    // In a real backend, we might want an endpoint to clear history
+    setReportHistory([]);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
       fetchReports();
     }
-  }, []);
+  }, [fetchReports]);
 
   return {
     balanceReport,

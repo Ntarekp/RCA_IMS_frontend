@@ -13,7 +13,7 @@ export const NotificationsView: React.FC = () => {
         const data = await getNotifications();
         setNotifications(data);
       } catch (error) {
-        console.error("Failed to fetch notifications", error);
+        if (import.meta.env.DEV) console.error("Failed to fetch notifications", error);
       } finally {
         setLoading(false);
       }

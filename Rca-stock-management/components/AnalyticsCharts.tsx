@@ -6,7 +6,7 @@ import {
 import { getAnalyticsSummary, AnalyticsSummary } from '../api/services/analyticsService';
 import { Loader2, ChevronDown, MoreHorizontal } from 'lucide-react';
 
-export const AnalyticsCharts: React.FC = () => {
+export const AnalyticsCharts: React.FC = React.memo(() => {
     const [data, setData] = useState<AnalyticsSummary | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -34,7 +34,7 @@ export const AnalyticsCharts: React.FC = () => {
                 const result = await getAnalyticsSummary();
                 setData(result);
             } catch (err) {
-                console.error('Failed to load analytics charts', err);
+                if (import.meta.env.DEV) console.error('Failed to load analytics charts', err);
                 setError('Failed to load analytics data');
             } finally {
                 setLoading(false);
@@ -63,15 +63,19 @@ export const AnalyticsCharts: React.FC = () => {
     if (!data) return null;
 
     // Prepare Pie Chart Data (Stock Out Reasons)
-    const pieData = Object.entries(data.stockOutReasons).map(([name, value]) => ({ name, value }));
+    const pieData = React.useMemo(() => {
+        return Object.entries(data.stockOutReasons).map(([name, value]) => ({ name, value }));
+    }, [data.stockOutReasons]);
     
     // Colors: Consumed (Slate), Damaged (Red), Expired (Orange), Other (Blue), Transferred (Purple)
-    const PIE_COLORS = isDark 
+    const PIE_COLORS = React.useMemo(() => isDark 
         ? ['#94a3b8', '#f87171', '#fb923c', '#3b82f6', '#a78bfa'] 
-        : ['#64748b', '#ef4444', '#f97316', '#1E293B', '#8b5cf6'];
+        : ['#64748b', '#ef4444', '#f97316', '#1E293B', '#8b5cf6'], [isDark]);
 
     // Prepare Bar Chart Data (Top Consumed Items)
-    const barData = Object.entries(data.topConsumedItems).map(([name, value]) => ({ name, value }));
+    const barData = React.useMemo(() => {
+        return Object.entries(data.topConsumedItems).map(([name, value]) => ({ name, value }));
+    }, [data.topConsumedItems]);
 
     // Chart Colors
     const gridColor = isDark ? '#334155' : '#f1f5f9';
@@ -109,8 +113,8 @@ export const AnalyticsCharts: React.FC = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div className="h-[300px] w-full min-w-0">
+                        <ResponsiveContainer width="100%" height="100%" debounce={50}>
                             <BarChart data={data.monthlyTrends} barGap={8}>
                                 <CartesianGrid vertical={false} stroke={gridColor} strokeDasharray="3 3" />
                                 <XAxis 
@@ -158,8 +162,8 @@ export const AnalyticsCharts: React.FC = () => {
                         </button>
                      </div>
              
-                     <div className="h-[250px] w-full flex items-center justify-center relative">
-                            <ResponsiveContainer width="100%" height="100%">
+                     <div className="h-[250px] w-full flex items-center justify-center relative min-w-0">
+                            <ResponsiveContainer width="100%" height="100%" debounce={50} minWidth={0}>
                                     <PieChart>
                                         <Pie
                                             data={pieData}
@@ -214,8 +218,8 @@ export const AnalyticsCharts: React.FC = () => {
                     <h3 className="text-lg font-bold text-[#1E293B] dark:text-white">Top 5 Most Consumed Items</h3>
                     <p className="text-xs text-[#9CA3AF] dark:text-slate-400 font-medium mt-1">High velocity inventory</p>
                 </div>
-                <div className="h-[250px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
+                <div className="h-[250px] w-full min-w-0">
+                    <ResponsiveContainer width="100%" height="100%" debounce={50}>
                         <BarChart data={barData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={gridColor} />
                             <XAxis type="number" hide />
@@ -247,4 +251,4 @@ export const AnalyticsCharts: React.FC = () => {
             </div>
         </div>
     );
-};
+});

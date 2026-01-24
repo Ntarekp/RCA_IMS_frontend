@@ -14,21 +14,21 @@ export type ReportType = 'balance' | 'low-stock' | 'stock-in' | 'stock-out' | 'd
  * Schedule a report
  */
 export const scheduleReport = async (config: ScheduledReportConfig): Promise<ScheduledReportConfig> => {
-    return post<ScheduledReportConfig>(`${API_CONFIG.BASE_URL}/reports/schedule`, config);
+    return post<ScheduledReportConfig>(`/reports/schedule`, config);
 };
 
 /**
  * Get all scheduled reports
  */
 export const getScheduledReports = async (): Promise<ScheduledReportConfig[]> => {
-    return get<ScheduledReportConfig[]>(`${API_CONFIG.BASE_URL}/reports/schedule`);
+    return get<ScheduledReportConfig[]>(`/reports/schedule`);
 };
 
 /**
  * Delete a scheduled report
  */
 export const deleteScheduledReport = async (id: number): Promise<void> => {
-    return del(`${API_CONFIG.BASE_URL}/reports/schedule/${id}`);
+    return del(`/reports/schedule/${id}`);
 };
 
 /**
@@ -36,7 +36,7 @@ export const deleteScheduledReport = async (id: number): Promise<void> => {
  */
 export const getReportHistory = async (): Promise<SystemReport[]> => {
   try {
-    const history = await get<any[]>(`${API_CONFIG.BASE_URL}/reports/history`);
+    const history = await get<any[]>(`/reports/history`);
     // Map backend history to frontend SystemReport
     return history.map(h => ({
       id: h.id?.toString() || Math.random().toString(),
@@ -49,7 +49,7 @@ export const getReportHistory = async (): Promise<SystemReport[]> => {
       params: {} 
     }));
   } catch (error) {
-    console.error('Failed to fetch report history', error);
+    if (import.meta.env.DEV) console.error('Failed to fetch report history', error);
     return [];
   }
 };
@@ -140,7 +140,7 @@ export const generatePdfReport = async (
     }
     return blob;
   } catch (error) {
-    console.error('Error downloading PDF report:', error);
+    if (import.meta.env.DEV) console.error('Error downloading PDF report:', error);
     throw error;
   }
 };
@@ -164,7 +164,7 @@ export const downloadReportById = async (id: string, filename: string): Promise<
     const blob = await response.blob();
     downloadFile(blob, filename);
   } catch (error) {
-    console.error('Error downloading report:', error);
+    if (import.meta.env.DEV) console.error('Error downloading report:', error);
     throw error;
   }
 };
@@ -218,7 +218,7 @@ export const generateCsvReport = async (
     }
     return blob;
   } catch (error) {
-    console.error('Error downloading Excel report:', error);
+    if (import.meta.env.DEV) console.error('Error downloading Excel report:', error);
     throw error;
   }
 };

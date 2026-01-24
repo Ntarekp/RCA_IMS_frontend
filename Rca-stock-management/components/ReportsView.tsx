@@ -152,7 +152,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
       setTimeout(() => window.URL.revokeObjectURL(url), 1000);
 
     } catch (error) {
-      console.error('Failed to generate report:', error);
+      if (import.meta.env.DEV) console.error('Failed to generate report:', error);
       const failedReport: SystemReport = { ...newReport, status: 'FAILED' }; 
       addReportToHistory(failedReport);
     } finally {
@@ -201,7 +201,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
              }
         }
     } catch (error) {
-        console.error("Failed to download report", error);
+        if (import.meta.env.DEV) console.error("Failed to download report", error);
         alert("Failed to download report. The file may have been deleted.");
     }
   };

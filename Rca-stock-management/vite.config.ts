@@ -1,28 +1,37 @@
-/// <reference types="vitest" />
-import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
 
-export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
-    return {
-        base: '/rca_ims/',
-
-        server: {
-            port: 3000,
-            host: '0.0.0.0',
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [
+    react(),
+    visualizer({
+      open: true,
+      gzipSize: true,
+      brotliSize: true,
+    }),
+  ],
+  server: {
+    proxy: {
+      '/ims/api': {
+        target: 'http://10.12.72.9:8080',
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            proxyReq.setHeader('Origin', 'http://10.12.72.9:8080');
+          });
         },
-        plugins: [react()],
-        define: {},
-        resolve: {
-            alias: {
-                '@': path.resolve(__dirname, '.'),
-            }
-        },
-        test: {
-            globals: true,
-            environment: 'jsdom',
-            setupFiles: './vitest.setup.ts',
-        }
-    };
+      }
+    }
+  },
+  esbuild: {
+    // Drop console and debugger in production
+    drop: ['console', 'debugger'],
+  },
+  build: {
+    // Ensure source maps don't leak in production
+    sourcemap: false,
+  },
 });

@@ -2,7 +2,7 @@
  * Custom hook for managing items
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { getAllItems, createItem, updateItem, deleteItem } from '../api/services/itemService';
 import { ItemDTO, CreateItemRequest } from '../api/types';
 import { StockItem } from '../types';
@@ -16,7 +16,7 @@ export const useItems = () => {
   // Store last used filters/sorts for refetch
   const [lastParams, setLastParams] = useState<any>({});
 
-  const fetchItems = async (params?: {
+  const fetchItems = useCallback(async (params?: {
     category?: string;
     status?: string;
     name?: string;
@@ -34,11 +34,11 @@ export const useItems = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const refetch = () => fetchItems(lastParams);
+  const refetch = useCallback(() => fetchItems(lastParams), [fetchItems, lastParams]);
 
-  const addItem = async (itemData: CreateItemRequest) => {
+  const addItem = useCallback(async (itemData: CreateItemRequest) => {
     try {
       const newItem = await createItem(itemData);
       await refetch(); // Refresh list
@@ -46,9 +46,9 @@ export const useItems = () => {
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to create item');
     }
-  };
+  }, [refetch]);
 
-  const updateItemById = async (id: number, itemData: Partial<CreateItemRequest>) => {
+  const updateItemById = useCallback(async (id: number, itemData: Partial<CreateItemRequest>) => {
     try {
       const updated = await updateItem(id, itemData);
       await refetch(); // Refresh list
@@ -56,23 +56,23 @@ export const useItems = () => {
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to update item');
     }
-  };
+  }, [refetch]);
 
-  const removeItem = async (id: number, password?: string) => {
+  const removeItem = useCallback(async (id: number, password?: string) => {
     try {
       await deleteItem(id, password);
       await refetch(); // Refresh list
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to delete item');
     }
-  };
+  }, [refetch]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
       fetchItems();
     }
-  }, []);
+  }, [fetchItems]);
 
   return {
     items,

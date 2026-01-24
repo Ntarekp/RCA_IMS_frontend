@@ -14,7 +14,7 @@ interface TransactionsTableProps {
   };
 }
 
-export const TransactionsTable: React.FC<TransactionsTableProps> = ({ 
+export const TransactionsTable: React.FC<TransactionsTableProps> = React.memo(({ 
   items, 
   onEdit, 
   onReverse,
@@ -130,4 +130,4 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
         </div>
     </div>
   );
-};
+});
