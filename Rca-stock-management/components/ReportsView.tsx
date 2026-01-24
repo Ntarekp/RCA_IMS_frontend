@@ -7,6 +7,7 @@ import {
     Filter, 
     Loader2, 
     Clock, 
+    CalendarClock,
     ArrowRight, 
     Eye,
     ChevronDown,
@@ -17,12 +18,16 @@ import {
     ArrowDownRight,
     AlertCircle,
     History,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
-import { generateCsvReport, generatePdfReport, ReportType } from '../api/services/reportService';
+import { generateCsvReport, generatePdfReport, downloadReportById, ReportType } from '../api/services/reportService';
 import { DateRangePicker } from './DateRangePicker';
 import { useItems } from '../hooks/useItems';
 import { useReports } from '../hooks/useReports';
 import { SystemReport } from '../types';
+
+import { ScheduledReportModal } from './ScheduledReportModal';
 
 interface ReportsViewProps {
   onGenerateReport: () => void;
@@ -37,9 +42,11 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
   });
   const [selectedItemId, setSelectedItemId] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   
   const { items } = useItems();
   const { reportHistory, addReportToHistory } = useReports();
+  const [showAllHistory, setShowAllHistory] = useState(false);
 
   // Reset to first page when a new report is added
   useEffect(() => {
@@ -63,10 +70,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
     let defaultTitle = `${typeToUse.charAt(0).toUpperCase() + typeToUse.slice(1).replace('-', ' ')} Report`;
     if (typeToUse === 'transactions' && !overrideRange) {
         defaultTitle = "Complete Transaction History";
-    } else if (typeToUse === 'transactions' && overrideRange) {
-         // If it's a custom range but not quick report (which has overrideTitle), maybe "Transaction History"?
-         // Actually, let's just stick to "Complete Transaction History" for generic transactions
-         defaultTitle = "Complete Transaction History";
     }
 
     const titleToUse = overrideTitle || defaultTitle;
@@ -80,7 +83,12 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
         type: typeToUse.toUpperCase() as any,
         format: formatToUse,
         status: 'PROCESSING',
-        size: '0 KB'
+        size: '0 KB',
+        params: {
+            reportType: typeToUse,
+            dateRange: rangeToUse,
+            itemId: itemIdToUse
+        }
     };
     addReportToHistory(newReport);
 
@@ -115,17 +123,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
 
       // Handle action
       const url = window.URL.createObjectURL(blob);
-<<<<<<< Updated upstream
-      const link = document.createElement('a');
-      link.href = url;
-      const extension = format === 'CSV' ? 'xlsx' : 'pdf';
-      link.setAttribute('download', `${typeToUse}_report_${new Date().toISOString().split('T')[0]}.${extension}`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode?.removeChild(link);
-      window.URL.revokeObjectURL(url);
-=======
-      
       if (action === 'view') {
           window.open(url, '_blank');
       } else {
@@ -153,7 +150,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
       
       // Cleanup after a delay to ensure view/download works
       setTimeout(() => window.URL.revokeObjectURL(url), 1000);
->>>>>>> Stashed changes
 
     } catch (error) {
       console.error('Failed to generate report:', error);
@@ -181,15 +177,33 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
   };
 
   const handleDownloadReport = async (report: SystemReport) => {
-    if (!report.params) return;
-    
-    await handleGenerate(
-        report.params.reportType as ReportType,
-        report.params.dateRange,
-        report.format,
-        report.params.itemId,
-        'download'
-    );
+    try {
+        if (report.status === 'READY') {
+             if (report.params && Object.keys(report.params).length > 0 && report.params.reportType) {
+                 // Re-generate using stored params
+                 const { reportType, dateRange, itemId } = report.params;
+                 // We need to cast reportType string to ReportType
+                 const type = (reportType.toLowerCase()) as ReportType;
+                 
+                 if (report.format === 'PDF') {
+                     await generatePdfReport(type, itemId ? parseInt(itemId) : undefined, dateRange, true, report.title);
+                 } else {
+                     await generateCsvReport(type, itemId ? parseInt(itemId) : undefined, dateRange, true, report.title);
+                 }
+             } else if (report.id) {
+                 // Download by ID from backend
+                 const extension = report.format === 'PDF' ? 'pdf' : 'xlsx';
+                 // Clean filename
+                 const filename = `${report.title.replace(/\s+/g, '_')}.${extension}`;
+                 await downloadReportById(report.id, filename);
+             } else {
+                 alert("Cannot re-download this report. Please generate a new one.");
+             }
+        }
+    } catch (error) {
+        console.error("Failed to download report", error);
+        alert("Failed to download report. The file may have been deleted.");
+    }
   };
 
   const generateQuickReport = (type: 'monthly' | 'weekly' | 'stock-in' | 'stock-out') => {
@@ -226,11 +240,22 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
   return (
     <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500 pb-10">
       
+      {!showAllHistory && (
+      <>
       {/* Header Section */}
       <div className="flex flex-col gap-2 pb-2">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Stock Report</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Generate and export detailed inventory reports</p>
+        <div className="flex items-center justify-between">
+            <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Stock Report</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Generate and export detailed inventory reports</p>
+            </div>
+            <button
+                onClick={() => setIsScheduleModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border border-blue-700 rounded-lg shadow-sm shadow-blue-500/20 transition-all hover:shadow-md"
+            >
+                <CalendarClock className="w-4 h-4" />
+                <span className="font-medium">Schedule Reports</span>
+            </button>
         </div>
         
         {/* Global Date Display */}
@@ -301,22 +326,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
           </div>
       </div>
 
-<<<<<<< Updated upstream
-      {/* Generate Report Section */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-8 flex flex-col">
-          <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                  <h2 className="font-bold text-slate-800 dark:text-white text-xl">
-                      Generate Report
-                  </h2>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Create custom report based on your needs</p>
-              </div>
-              <DateRangePicker 
-                  startDate={dateRange.startDate}
-                  endDate={dateRange.endDate}
-                  onChange={(start, end) => setDateRange({ startDate: start, endDate: end })}
-              />
-=======
           {/* Professional Tools Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 flex flex-col shadow-sm">
@@ -376,13 +385,20 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 lg:p-8">
-          <div className="mb-8">
-              <h2 className="font-bold text-slate-800 dark:text-white text-xl">
-                  Generate Report
-              </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Create custom report based on your needs</p>
->>>>>>> Stashed changes
+      {/* Generate Report Section */}
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-8 flex flex-col">
+          <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                  <h2 className="font-bold text-slate-800 dark:text-white text-xl">
+                      Generate Report
+                  </h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Create custom report based on your needs</p>
+              </div>
+              <DateRangePicker 
+                  startDate={dateRange.startDate}
+                  endDate={dateRange.endDate}
+                  onChange={(start, end) => setDateRange({ startDate: start, endDate: end })}
+              />
           </div>
 
           <div className="flex-1 flex flex-col gap-6">
@@ -485,13 +501,20 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
               </button>
           </div>
       </div>
+      </>
+      )}
 
       {/* Recent Reports Section */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+      <div className={`bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden ${showAllHistory ? 'min-h-[80vh]' : ''}`}>
           <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-              <h2 className="font-bold text-slate-800 dark:text-white text-lg">Generated Reports History</h2>
-              <button className="text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
-                  View All
+              <h2 className="font-bold text-slate-800 dark:text-white text-lg">
+                  {showAllHistory ? 'All Generated Reports' : 'Generated Reports History'}
+              </h2>
+              <button 
+                  onClick={() => setShowAllHistory(!showAllHistory)}
+                  className="text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+              >
+                  {showAllHistory ? 'Back to Generator' : 'View All'}
               </button>
           </div>
           
@@ -606,20 +629,24 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                                 </select>
                             </div>
                         </div>
-                        <div className="flex gap-2">
+                        
+                        <div className="flex items-center gap-2">
                             <button
-                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className="px-3 py-1.5 text-sm font-medium border border-slate-200 dark:border-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+                                className="p-2 border border-slate-200 dark:border-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                             >
-                                Previous
+                                <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                             </button>
+                            <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                Page {currentPage} of {Math.ceil(reportHistory.length / itemsPerPage)}
+                            </span>
                             <button
-                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(reportHistory.length / itemsPerPage)))}
+                                onClick={() => setCurrentPage(p => Math.min(Math.ceil(reportHistory.length / itemsPerPage), p + 1))}
                                 disabled={currentPage === Math.ceil(reportHistory.length / itemsPerPage)}
-                                className="px-3 py-1.5 text-sm font-medium border border-slate-200 dark:border-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+                                className="p-2 border border-slate-200 dark:border-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                             >
-                                Next
+                                <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                             </button>
                         </div>
                     </div>
@@ -627,6 +654,11 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
               </div>
           )}
       </div>
+
+      <ScheduledReportModal 
+        isOpen={isScheduleModalOpen} 
+        onClose={() => setIsScheduleModalOpen(false)} 
+      />
     </div>
   );
 };

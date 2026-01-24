@@ -68,7 +68,10 @@ export const useItems = () => {
   };
 
   useEffect(() => {
-    fetchItems();
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      fetchItems();
+    }
   }, []);
 
   return {

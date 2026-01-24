@@ -2,16 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { UserProfile } from '../types';
 import { Plus, Search, Trash2, User, Mail, Phone, MapPin, Shield, Loader2, AlertCircle, MoreVertical } from 'lucide-react';
 import { getUsers, deleteUser } from '../api/services/userService';
+import { ConfirmationModal } from './ConfirmationModal';
 
 interface UsersViewProps {
     onAddUser: () => void;
+    refreshTrigger?: number;
 }
 
-export const UsersView: React.FC<UsersViewProps> = ({ onAddUser }) => {
+export const UsersView: React.FC<UsersViewProps> = ({ onAddUser, refreshTrigger }) => {
     const [users, setUsers] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    
+    // Confirmation State
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<number | null>(null);
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -27,7 +33,7 @@ export const UsersView: React.FC<UsersViewProps> = ({ onAddUser }) => {
 
     useEffect(() => {
         fetchUsers();
-    }, []);
+    }, [refreshTrigger]);
 
     const filteredUsers = users.filter(user => 
         user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -35,11 +41,19 @@ export const UsersView: React.FC<UsersViewProps> = ({ onAddUser }) => {
         user.role?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this user?')) return;
+    const handleDeleteClick = (id: number) => {
+        setUserToDelete(id);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!userToDelete) return;
+        
         try {
-            await deleteUser(id);
+            await deleteUser(userToDelete);
             fetchUsers();
+            setConfirmOpen(false);
+            setUserToDelete(null);
         } catch (e) {
             alert('Failed to delete user');
         }
@@ -119,7 +133,7 @@ export const UsersView: React.FC<UsersViewProps> = ({ onAddUser }) => {
                             <div className="flex gap-1">
                                 {user.role !== 'ADMIN' && (
                                     <button 
-                                        onClick={() => user.id && handleDelete(user.id)}
+                                        onClick={() => user.id && handleDeleteClick(user.id)}
                                         className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                                         title="Delete User"
                                     >
@@ -156,6 +170,16 @@ export const UsersView: React.FC<UsersViewProps> = ({ onAddUser }) => {
                     </div>
                 ))}
             </div>
+            
+            <ConfirmationModal
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete User"
+                message="Are you sure you want to delete this user? This action cannot be undone."
+                confirmText="Delete User"
+                type="danger"
+            />
         </div>
     );
 };

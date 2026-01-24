@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { getBalanceReport, getLowStockReport } from '../api/services/reportService';
+import { getBalanceReport, getLowStockReport, getReportHistory } from '../api/services/reportService';
 import { StockBalanceDTO } from '../api/types';
 import { DashboardItem, SystemReport } from '../types';
 import { mapStockBalanceToDashboardItem } from '../utils/mappers';
@@ -15,45 +15,34 @@ export const useReports = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Initialize report history from localStorage
-  const [reportHistory, setReportHistory] = useState<SystemReport[]>(() => {
-    const saved = localStorage.getItem('reportHistory');
-    const parsed: SystemReport[] = saved ? JSON.parse(saved) : [];
-    
-    // Clean up stuck reports on load
-    return parsed.map(report => {
-        if (report.status === 'PROCESSING') {
-            return { ...report, status: 'FAILED' };
-        }
-        return report;
-    });
-  });
-
-  // Save report history to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('reportHistory', JSON.stringify(reportHistory));
-  }, [reportHistory]);
+  // Initialize report history
+  const [reportHistory, setReportHistory] = useState<SystemReport[]>([]);
 
   const addReportToHistory = (report: SystemReport) => {
+    // Optimistic update
     setReportHistory(prev => [report, ...prev]);
+    // Then fetch actual history to ensure we have IDs and correct data
+    fetchReports();
   };
 
   const clearReportHistory = () => {
+    // In a real backend, we might want an endpoint to clear history
     setReportHistory([]);
-    localStorage.removeItem('reportHistory');
   };
 
   const fetchReports = async () => {
     try {
       setLoading(true);
       setError(null);
-      const [balance, lowStock] = await Promise.all([
+      const [balance, lowStock, history] = await Promise.all([
         getBalanceReport(),
         getLowStockReport(),
+        getReportHistory(),
       ]);
       
       setBalanceReport(balance);
       setLowStockItems(lowStock);
+      setReportHistory(history);
       
       // Convert to dashboard items format
       const dashboardData = balance.map(mapStockBalanceToDashboardItem);
@@ -66,7 +55,10 @@ export const useReports = () => {
   };
 
   useEffect(() => {
-    fetchReports();
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      fetchReports();
+    }
   }, []);
 
   return {

@@ -85,7 +85,10 @@ export const useSuppliers = () => {
   };
 
   useEffect(() => {
-    fetchSuppliers();
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      fetchSuppliers();
+    }
   }, []);
 
   return {

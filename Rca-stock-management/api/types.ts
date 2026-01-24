@@ -127,3 +127,31 @@ export interface NotificationDTO {
   timestamp: string;
   read: boolean;
 }
+
+/**
+ * ScheduledReportConfig - matches backend ScheduledReportConfig
+ */
+export interface ScheduledReportConfig {
+  id?: number;
+  email: string;
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  reportType: 'ALL_REPORTS_ZIP' | 'TRANSACTION_HISTORY' | 'STOCK_BALANCE' | 'LOW_STOCK';
+  active: boolean;
+  scheduledTime?: string;
+  lastSent?: string;
+}
+
+export interface SystemReport {
+  id: string;
+  title: string;
+  type: 'STOCK' | 'FINANCIAL' | 'AUDIT' | 'TRANSACTIONS' | 'BALANCE' | 'LOW-STOCK' | 'SUPPLIERS' | 'STOCK-IN' | 'STOCK-OUT';
+  generatedDate: string;
+  size: string;
+  status: 'READY' | 'PROCESSING';
+  format: 'PDF' | 'CSV';
+  params?: {
+      reportType: string;
+      dateRange?: { startDate: string, endDate: string };
+      itemId?: string;
+  };
+}

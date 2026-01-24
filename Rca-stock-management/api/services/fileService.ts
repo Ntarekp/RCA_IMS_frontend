@@ -4,9 +4,9 @@
  */
 
 import { post } from '../client';
-import { API_CONFIG } from '../config';
+import { API_CONFIG, getApiUrl } from '../config';
 
-const ENDPOINT = '/api/files';
+const ENDPOINT = '/files';
 
 interface UploadResponse {
   fileUrl: string;
@@ -30,13 +30,19 @@ export const uploadFile = async (file: File): Promise<string> => {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_CONFIG.BASE_URL}${ENDPOINT}/upload`, {
+  const url = getApiUrl(`${ENDPOINT}/upload`);
+  const response = await fetch(url, {
     method: 'POST',
     headers,
     body: formData,
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+        localStorage.removeItem('authToken');
+        window.dispatchEvent(new Event('auth-error'));
+        throw new Error('Session expired');
+    }
     throw new Error('Failed to upload file');
   }
 

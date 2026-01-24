@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UserProfile } from '../types';
-import { User, Mail, Phone, MapPin, Shield, Calendar, Edit, Lock, LogOut, Briefcase, Camera, Loader2, Upload, Building2, Globe } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Shield, Calendar, Edit, Lock, LogOut, Briefcase, Camera, Loader2, Upload, Building2, Globe, Trash2 } from 'lucide-react';
 import { getProfile, updateProfile } from '../api/services/userService';
 import { uploadFile } from '../api/services/fileService';
 import { ApiError } from '../api/client';
@@ -87,6 +87,30 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
             addToast(`Upload failed: ${errorMessage}`, 'error');
         } finally {
             setUploading(false);
+        }
+    };
+
+    const handleRemoveImage = async (type: 'avatar' | 'cover') => {
+        if (!confirm('Are you sure you want to remove this image?')) return;
+
+        const toastId = addToast('Removing image...', 'loading');
+        try {
+            await updateProfile({
+                [type === 'avatar' ? 'avatarUrl' : 'coverUrl']: null
+            });
+            
+            setProfile(prev => prev ? {
+                ...prev,
+                [type === 'avatar' ? 'avatarUrl' : 'coverUrl']: null
+            } : null);
+            
+            window.dispatchEvent(new Event('profile-updated'));
+            removeToast(toastId);
+            addToast('Image removed successfully!', 'success');
+        } catch (error) {
+            console.error("Failed to remove image", error);
+            removeToast(toastId);
+            addToast('Failed to remove image.', 'error');
         }
     };
 

@@ -76,7 +76,10 @@ export const useTransactions = (itemId?: number) => {
   };
 
   useEffect(() => {
-    fetchTransactions();
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      fetchTransactions();
+    }
   }, [itemId]);
 
   return {
