@@ -18,6 +18,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
 
   // Use import.meta.env.BASE_URL to correctly resolve the image path
   const logoPath = `${import.meta.env.BASE_URL}rca-logo.png`;
+  const logoWebP = `${import.meta.env.BASE_URL}rca-logo.webp`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

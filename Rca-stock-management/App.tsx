@@ -23,13 +23,14 @@ import { DetailDrawer } from './components/DetailDrawer';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { ToastContainer, ToastMessage } from './components/Toast';
 import { LoginView } from './components/LoginView';
+import { LoadingSpinner } from './components/LoadingSpinner';
 import { ResetPasswordView } from './components/ResetPasswordView';
 import { ViewState, DrawerType, StockItem, Supplier, UserProfile } from './types';
 import { useItems } from './hooks/useItems';
 import { useReports } from './hooks/useReports';
 import { useTransactions } from './hooks/useTransactions';
 import { useSuppliers } from './hooks/useSuppliers';
-import { CreateItemRequest, CreateTransactionRequest, UpdateItemRequest, StockTransactionDTO } from './api/types';
+import { CreateItemRequest, CreateTransactionRequest, UpdateItemRequest, StockTransactionDTO, CreateSupplierRequest } from './api/types';
 import { ApiError } from './api/client';
 import { updateProfile, changePassword, UpdateProfileRequest, ChangePasswordRequest, createUser, CreateUserRequest } from './api/services/userService';
 import { getAnalyticsSummary } from './api/services/analyticsService';
@@ -160,6 +161,13 @@ const App = () => {
   const [stockViewMode, setStockViewMode] = useState<'grid' | 'list'>('list');
   const [stockCategoryFilter, setStockCategoryFilter] = useState('');
   const [stockStatusFilter, setStockStatusFilter] = useState('');
+  const [stockCurrentPage, setStockCurrentPage] = useState(1);
+  const [stockItemsPerPage] = useState(12);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setStockCurrentPage(1);
+  }, [stockCategoryFilter, stockStatusFilter]);
 
   // Supplier View State
   const [showInactiveSuppliers, setShowInactiveSuppliers] = useState(false);
@@ -478,12 +486,12 @@ const App = () => {
       await Promise.all([refetchItems(), refetchReports(), refetchTransactions()]);
   }, [deleteItem, refetchItems, refetchReports, refetchTransactions]);
 
-  const handleDeactivateSupplierSubmit = useCallback(async (id: number, password: string) => {
+  const handleDeactivateSupplierSubmit = useCallback(async (id: string, password: string) => {
       await deactivateSupplier(id, password);
       await refetchSuppliers();
   }, [deactivateSupplier, refetchSuppliers]);
 
-  const handleDeleteSupplierSubmit = useCallback(async (id: number, password: string) => {
+  const handleDeleteSupplierSubmit = useCallback(async (id: string, password: string) => {
       await hardDeleteSupplier(id, password);
       await refetchSuppliers();
   }, [hardDeleteSupplier, refetchSuppliers]);
@@ -516,6 +524,15 @@ const App = () => {
       
       return matchesCategory && matchesStatus;
   }), [stockItems, stockCategoryFilter, stockStatusFilter]);
+
+  // Paginated Stock Items
+  const { totalStockPages, currentStockItems } = useMemo(() => {
+    const total = Math.ceil(filteredStockItems.length / stockItemsPerPage);
+    const start = (stockCurrentPage - 1) * stockItemsPerPage;
+    const end = Math.min(start + stockItemsPerPage, filteredStockItems.length);
+    const current = filteredStockItems.slice(start, end);
+    return { totalStockPages: total, currentStockItems: current };
+  }, [filteredStockItems, stockItemsPerPage, stockCurrentPage]);
 
   // Unique categories for filter dropdown
   const categories = useMemo(() => Array.from(new Set(stockItems.map(item => item.category))), [stockItems]);
@@ -709,6 +726,7 @@ const App = () => {
              <EditProfileForm
                  userProfile={selectedItem as UserProfile}
                  onUpdateProfile={handleEditProfileSubmit}
+                 onSuccess={handleProfileSuccess}
                  onClose={closeDrawer}
                  addToast={addToast}
                  removeToast={removeToast}
@@ -970,7 +988,7 @@ const App = () => {
         />
 
         {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
+        <main className="flex-1 overflow-y-auto p-3 md:p-6 scroll-smooth min-w-0">
             <Suspense fallback={<LoadingSpinner />}>
             {/* ... views ... */}
             {view === 'DASHBOARD' && (
@@ -1147,68 +1165,142 @@ const App = () => {
                             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Try adjusting your filters or add a new item</p>
                         </div>
                     ) : (
-                        stockViewMode === 'grid' ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {filteredStockItems.map((item) => (
-                                    <StockCard 
-                                        key={item.id} 
-                                        item={item} 
-                                        onManage={openStockDetail}
-                                        onDelete={openDeleteItem}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-medium border-b border-slate-200 dark:border-slate-600">
-                                        <tr>
-                                            <th className="px-6 py-4">Item Name</th>
-                                            <th className="px-6 py-4">Category</th>
-                                            <th className="px-6 py-4 text-center">Unit</th>
-                                            <th className="px-6 py-4 text-right">Current Stock</th>
-                                            <th className="px-6 py-4 text-center">Status</th>
-                                            <th className="px-6 py-4 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                                        {filteredStockItems.map((item) => (
-                                            <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
-                                                <td className="px-6 py-4 font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
-                                                <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{item.category}</td>
-                                                <td className="px-6 py-4 text-center text-slate-500 dark:text-slate-400">{item.unit}</td>
-                                                <td className="px-6 py-4 text-right font-bold text-slate-700 dark:text-slate-300">{item.currentQuantity}</td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
+                        <>
+                            {stockViewMode === 'grid' ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {currentStockItems.map((item) => (
+                                        <StockCard 
+                                            key={item.id} 
+                                            item={item} 
+                                            onManage={openStockDetail}
+                                            onDelete={openDeleteItem}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                    {/* Mobile List View (Cards) */}
+                                    <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700">
+                                        {currentStockItems.map((item) => (
+                                             <div key={item.id} className="p-4 bg-white dark:bg-slate-800 flex flex-col gap-3">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <div className="font-medium text-slate-900 dark:text-white">{item.name}</div>
+                                                        <div className="text-sm text-slate-500 dark:text-slate-400">{item.category}</div>
+                                                    </div>
+                                                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
                                                         item.status === 'Birahagije' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800' :
                                                         item.status === 'Mucye' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-800' :
                                                         'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-800'
                                                     }`}>
                                                         {item.status}
                                                     </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <button 
-                                                        onClick={() => openStockDetail(item)}
-                                                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-xs mr-3"
-                                                    >
-                                                        Edit
-                                                    </button>
-                                                    {userProfile?.role === 'ADMIN' && (
+                                                </div>
+                                                <div className="flex justify-between items-center text-sm">
+                                                    <div className="text-slate-500 dark:text-slate-400">
+                                                        {item.currentQuantity} {item.unit}
+                                                    </div>
+                                                    <div className="flex gap-3">
                                                         <button 
-                                                            onClick={() => openDeleteItem(item)}
-                                                            className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 font-medium text-xs"
+                                                            onClick={() => openStockDetail(item)}
+                                                            className="text-blue-600 dark:text-blue-400 font-medium text-xs"
                                                         >
-                                                            Delete
+                                                            Edit
                                                         </button>
-                                                    )}
-                                                </td>
-                                            </tr>
+                                                        {userProfile?.role === 'ADMIN' && (
+                                                            <button 
+                                                                onClick={() => openDeleteItem(item)}
+                                                                className="text-rose-600 dark:text-rose-400 font-medium text-xs"
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                             </div>
                                         ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )
+                                    </div>
+                                    
+                                    <div className="hidden md:block overflow-x-auto">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-medium border-b border-slate-200 dark:border-slate-600">
+                                            <tr>
+                                                <th className="px-6 py-4">Item Name</th>
+                                                <th className="px-6 py-4">Category</th>
+                                                <th className="px-6 py-4 text-center">Unit</th>
+                                                <th className="px-6 py-4 text-right">Current Stock</th>
+                                                <th className="px-6 py-4 text-center">Status</th>
+                                                <th className="px-6 py-4 text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                                            {currentStockItems.map((item) => (
+                                                <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
+                                                    <td className="px-6 py-4 font-medium text-slate-800 dark:text-slate-200">{item.name}</td>
+                                                    <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{item.category}</td>
+                                                    <td className="px-6 py-4 text-center text-slate-500 dark:text-slate-400">{item.unit}</td>
+                                                    <td className="px-6 py-4 text-right font-bold text-slate-700 dark:text-slate-300">{item.currentQuantity}</td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
+                                                            item.status === 'Birahagije' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800' :
+                                                            item.status === 'Mucye' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-800' :
+                                                            'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-800'
+                                                        }`}>
+                                                            {item.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <button 
+                                                            onClick={() => openStockDetail(item)}
+                                                            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-xs mr-3"
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                        {userProfile?.role === 'ADMIN' && (
+                                                            <button 
+                                                                onClick={() => openDeleteItem(item)}
+                                                                className="text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 font-medium text-xs"
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Pagination Controls */}
+                            {totalStockPages > 1 && (
+                                <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 pt-4 mt-6">
+                                    <div className="text-sm text-slate-500 dark:text-slate-400">
+                                        Showing <span className="font-medium text-slate-900 dark:text-white">{(stockCurrentPage - 1) * stockItemsPerPage + 1}</span> to <span className="font-medium text-slate-900 dark:text-white">{Math.min(stockCurrentPage * stockItemsPerPage, filteredStockItems.length)}</span> of <span className="font-medium text-slate-900 dark:text-white">{filteredStockItems.length}</span> results
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setStockCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={stockCurrentPage === 1}
+                                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            <ChevronLeft className="w-5 h-5" />
+                                        </button>
+                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                            Page {stockCurrentPage} of {totalStockPages}
+                                        </span>
+                                        <button
+                                            onClick={() => setStockCurrentPage(p => Math.min(totalStockPages, p + 1))}
+                                            disabled={stockCurrentPage === totalStockPages}
+                                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            <ChevronRight className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             )}
@@ -1300,8 +1392,14 @@ const App = () => {
                         )}
                         
                          <div className="flex flex-col sm:flex-row justify-between items-center mt-6 text-sm text-slate-500 dark:text-slate-400 gap-4 pt-4 border-t border-slate-50 dark:border-slate-700">
-                                 <div>Displaying <span className="font-semibold text-slate-700 dark:text-slate-300">{filteredTransactions.length > 0 ? startIndex + 1 : 0}</span> to <span className="font-semibold text-slate-700 dark:text-slate-300">{endIndex}</span> of <span className="font-semibold text-slate-700 dark:text-slate-300">{filteredTransactions.length}</span> transactions</div>
-                                 <div className="flex items-center gap-2">
+                                {(() => {
+                                    const startIndex = (currentTransactionPage - 1) * itemsPerPage;
+                                    const endIndex = Math.min(startIndex + itemsPerPage, filteredTransactions.length);
+                                    return (
+                                        <div>Displaying <span className="font-semibold text-slate-700 dark:text-slate-300">{filteredTransactions.length > 0 ? startIndex + 1 : 0}</span> to <span className="font-semibold text-slate-700 dark:text-slate-300">{endIndex}</span> of <span className="font-semibold text-slate-700 dark:text-slate-300">{filteredTransactions.length}</span> transactions</div>
+                                    );
+                                })()}
+                                <div className="flex items-center gap-2">
                                      <div className="flex items-center gap-2 mr-4">
                                         <span className="text-xs hidden sm:inline">Per page:</span>
                                         <select 
@@ -1527,6 +1625,7 @@ const App = () => {
                     <p className="text-sm">Select a valid page from the sidebar.</p>
                 </div>
             )}
+            </Suspense>
         </main>
       </div>
 

@@ -31,7 +31,82 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = React.memo(({
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-4 p-4">
+            {items.map((item) => {
+                const unit = 'Kg'; 
+                const balanceAfter = item.balanceAfter !== undefined ? item.balanceAfter : '-'; 
+                const sourceOrIssuedTo = item.supplierName || (item.transactionType === 'IN' ? 'Supplier' : 'Consumer');
+                const reference = item.referenceNumber || `TXN-${item.id}`;
+                const isReversed = item.reversed;
+
+                return (
+                    <div key={item.id} className={`bg-white dark:bg-slate-700 p-4 rounded-lg shadow-sm border border-slate-100 dark:border-slate-600 ${isReversed ? 'opacity-60 bg-slate-50' : ''}`}>
+                        <div className="flex justify-between items-start mb-2">
+                                <div className="flex flex-col">
+                                <span className="text-xs text-slate-500 dark:text-slate-400">{item.transactionDate}</span>
+                                <span className="font-medium text-slate-900 dark:text-white truncate max-w-[150px]">{item.itemName}</span>
+                                <span className="text-xs font-mono text-slate-400 dark:text-slate-500">{reference}</span>
+                                </div>
+                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                    isReversed 
+                                        ? 'bg-gray-100 text-gray-500 border-gray-200'
+                                        : item.transactionType === 'IN' 
+                                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-800' 
+                                            : 'bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-100 dark:border-slate-600'
+                                }`}>
+                                    {isReversed ? 'REVERSED' : item.transactionType}
+                            </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-y-2 text-sm mt-3">
+                            <div className="text-slate-500 dark:text-slate-400">Qty:</div>
+                            <div className={`text-right font-medium ${isReversed ? 'line-through text-gray-400' : ''}`}>{item.quantity} {unit}</div>
+                            
+                            <div className="text-slate-500 dark:text-slate-400">Balance:</div>
+                            <div className="text-right font-medium">{balanceAfter}</div>
+
+                            <div className="text-slate-500 dark:text-slate-400">Source/Dest:</div>
+                            <div className="text-right truncate max-w-[120px]" title={sourceOrIssuedTo}>{sourceOrIssuedTo}</div>
+                        </div>
+
+                        {item.notes && (
+                            <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-600 text-xs text-slate-500 dark:text-slate-400 italic">
+                                {item.notes}
+                            </div>
+                        )}
+
+                        {!isReversed && (userPermissions.canEdit || userPermissions.canReverse) && (
+                            <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-600 flex justify-end gap-3">
+                                {userPermissions.canEdit && (
+                                    <button 
+                                        onClick={() => onEdit && onEdit(item)}
+                                        className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                                    >
+                                        <Edit className="w-3 h-3" /> Edit
+                                    </button>
+                                )}
+                                {userPermissions.canReverse && (
+                                    <button 
+                                        onClick={() => onReverse && onReverse(item)}
+                                        className="flex items-center gap-1 text-xs text-rose-600 hover:text-rose-800 font-medium"
+                                    >
+                                        <RotateCcw className="w-3 h-3" /> Reverse
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+             {items.length === 0 && (
+                <div className="py-8 text-center text-slate-400 dark:text-slate-500 text-sm">
+                    No transactions found.
+                </div>
+            )}
+        </div>
+
+        <div className="hidden md:block overflow-x-auto">
             <div className="min-w-[1100px]">
                 {/* Table Header */}
                 <div className="grid grid-cols-12 gap-4 px-6 py-4 text-sm font-medium text-gray-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-700">
@@ -131,3 +206,5 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = React.memo(({
     </div>
   );
 });
+
+TransactionsTable.displayName = 'TransactionsTable';

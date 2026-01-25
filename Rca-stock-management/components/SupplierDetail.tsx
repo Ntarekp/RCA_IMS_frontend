@@ -8,7 +8,7 @@ interface SupplierDetailProps {
     userProfile: UserProfile | null;
     onClose: () => void;
     onDeactivate: (supplier: Supplier) => void;
-    onReactivate: (supplierId: number) => Promise<void>;
+    onReactivate: (supplierId: string) => Promise<void>;
     onDelete: (supplier: Supplier) => void;
     onRefetch: () => Promise<void>;
     addToast: (message: string, type: 'success' | 'error' | 'loading' | 'info') => string;

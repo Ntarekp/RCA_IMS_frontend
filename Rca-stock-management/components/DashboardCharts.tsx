@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { ChevronDown, MoreHorizontal, Loader2 } from 'lucide-react';
 import { getChartData } from '../api/services/dashboardService';
 import { useReports } from '../hooks/useReports';
@@ -85,9 +85,9 @@ export const DashboardCharts: React.FC = React.memo(() => {
   const tooltipText = isDark ? '#f8fafc' : '#1E293B';
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {/* Bar Chart */}
-      <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-[#E5E7EB] dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)]">
+      <div className="md:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-[#E5E7EB] dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)]">
         <div className="flex justify-between items-center mb-8">
             <div>
                 <h3 className="text-lg font-bold text-[#1E293B] dark:text-white">Flow Analytics</h3>
@@ -166,7 +166,7 @@ export const DashboardCharts: React.FC = React.memo(() => {
             </button>
          </div>
          
-         <div className="h-[250px] w-full flex items-center justify-center relative min-w-0">
+         <div className="h-[250px] min-h-[250px] w-full relative min-w-0">
             <ResponsiveContainer width="100%" height="100%" debounce={50} minWidth={0}>
                 <PieChart>
                     <Pie

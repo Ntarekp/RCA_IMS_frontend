@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StockItem, UpdateItemRequest } from '../api/types';
+import { StockItem } from '../types';
+import { UpdateItemRequest } from '../api/types';
 import { ApiError } from '../api/client';
 import { ToastMessage } from './Toast';
 import { Box, Clock, History } from 'lucide-react';

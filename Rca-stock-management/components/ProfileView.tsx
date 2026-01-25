@@ -9,10 +9,11 @@ interface ProfileViewProps {
     onEditProfile: () => void;
     onChangePassword: () => void;
     onLogout: () => void;
-    addToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning' | 'loading') => void;
+    addToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning' | 'loading') => string;
+    removeToast: (id: string) => void;
 }
 
-export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChangePassword, onLogout, addToast }) => {
+export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChangePassword, onLogout, addToast, removeToast }) => {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);

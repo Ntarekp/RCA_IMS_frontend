@@ -26,7 +26,7 @@ describe('ScheduledReportModal', () => {
 
     it('calls scheduleReport on valid submission', async () => {
         const mockScheduleReport = vi.mocked(reportService.scheduleReport).mockResolvedValue({
-            id: '1',
+            id: 1,
             reportType: 'TRANSACTION_HISTORY',
             frequency: 'DAILY',
             email: 'test@example.com',

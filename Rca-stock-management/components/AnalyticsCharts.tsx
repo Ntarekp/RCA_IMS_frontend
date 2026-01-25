@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { 
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-    PieChart, Pie, Cell, Legend
+    PieChart, Pie, Cell
 } from 'recharts';
 import { getAnalyticsSummary, AnalyticsSummary } from '../api/services/analyticsService';
 import { Loader2, ChevronDown, MoreHorizontal } from 'lucide-react';
@@ -43,6 +43,30 @@ export const AnalyticsCharts: React.FC = React.memo(() => {
         fetchData();
     }, []);
 
+    // Prepare Pie Chart Data (Stock Out Reasons)
+    const pieData = React.useMemo(() => {
+        if (!data) return [];
+        return Object.entries(data.stockOutReasons).map(([name, value]) => ({ name, value }));
+    }, [data]);
+    
+    // Colors: Consumed (Slate), Damaged (Red), Expired (Orange), Other (Blue), Transferred (Purple)
+    const PIE_COLORS = React.useMemo(() => isDark 
+        ? ['#94a3b8', '#f87171', '#fb923c', '#3b82f6', '#a78bfa'] 
+        : ['#64748b', '#ef4444', '#f97316', '#1E293B', '#8b5cf6'], [isDark]);
+
+    // Prepare Bar Chart Data (Top Consumed Items)
+    const barData = React.useMemo(() => {
+        if (!data) return [];
+        return Object.entries(data.topConsumedItems).map(([name, value]) => ({ name, value }));
+    }, [data]);
+
+    // Chart Colors
+    const gridColor = isDark ? '#334155' : '#f1f5f9';
+    const textColor = isDark ? '#94a3b8' : '#9CA3AF';
+    const tooltipBg = isDark ? '#1e293b' : '#ffffff';
+    const tooltipBorder = isDark ? '#334155' : '#E5E7EB';
+    const tooltipText = isDark ? '#f8fafc' : '#1E293B';
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
@@ -61,28 +85,6 @@ export const AnalyticsCharts: React.FC = React.memo(() => {
     }
 
     if (!data) return null;
-
-    // Prepare Pie Chart Data (Stock Out Reasons)
-    const pieData = React.useMemo(() => {
-        return Object.entries(data.stockOutReasons).map(([name, value]) => ({ name, value }));
-    }, [data.stockOutReasons]);
-    
-    // Colors: Consumed (Slate), Damaged (Red), Expired (Orange), Other (Blue), Transferred (Purple)
-    const PIE_COLORS = React.useMemo(() => isDark 
-        ? ['#94a3b8', '#f87171', '#fb923c', '#3b82f6', '#a78bfa'] 
-        : ['#64748b', '#ef4444', '#f97316', '#1E293B', '#8b5cf6'], [isDark]);
-
-    // Prepare Bar Chart Data (Top Consumed Items)
-    const barData = React.useMemo(() => {
-        return Object.entries(data.topConsumedItems).map(([name, value]) => ({ name, value }));
-    }, [data.topConsumedItems]);
-
-    // Chart Colors
-    const gridColor = isDark ? '#334155' : '#f1f5f9';
-    const textColor = isDark ? '#94a3b8' : '#9CA3AF';
-    const tooltipBg = isDark ? '#1e293b' : '#ffffff';
-    const tooltipBorder = isDark ? '#334155' : '#E5E7EB';
-    const tooltipText = isDark ? '#f8fafc' : '#1E293B';
 
     return (
         <div className="space-y-6">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StockTransactionDTO, StockItem } from '../api/types';
+import { StockTransactionDTO } from '../api/types';
+import { StockItem } from '../types';
 import { ApiError } from '../api/client';
 import { ToastMessage } from './Toast';
 
@@ -29,6 +30,10 @@ export const EditTransactionForm = React.memo<EditTransactionFormProps>(({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            if (!transaction.id) {
+                addToast("Invalid transaction ID", 'error');
+                return;
+            }
             const toastId = addToast("Updating transaction...", 'loading');
             await onUpdateTransaction(Number(transaction.id), {
                 ...transaction,

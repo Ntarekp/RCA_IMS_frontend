@@ -5,7 +5,8 @@
 
 import { get, post, del } from '../client';
 import { API_CONFIG } from '../config';
-import { StockBalanceDTO, SystemReport, ScheduledReportConfig } from '../types';
+import { SystemReport, ScheduledReportConfig, StockBalanceDTO } from '../../types';
+
 
 // Report types
 export type ReportType = 'balance' | 'low-stock' | 'stock-in' | 'stock-out' | 'damaged' | 'transactions' | 'suppliers';
@@ -46,7 +47,7 @@ export const getReportHistory = async (): Promise<SystemReport[]> => {
       size: h.size || 'Unknown',
       status: (h.status || 'READY') as any,
       format: (h.format === 'EXCEL' || h.format === 'CSV') ? 'CSV' : 'PDF', // Frontend uses 'CSV' for Excel icon usually, but let's check types
-      params: {} 
+      params: undefined 
     }));
   } catch (error) {
     if (import.meta.env.DEV) console.error('Failed to fetch report history', error);

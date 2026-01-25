@@ -6,7 +6,7 @@ import { ToastMessage } from './Toast';
 
 interface DeleteSupplierFormProps {
     supplier: Supplier;
-    onDelete: (id: number, password: string) => Promise<void>;
+    onDelete: (id: string, password: string) => Promise<void>;
     onClose: () => void;
     addToast: (message: string, type?: ToastMessage['type']) => string;
     removeToast: (id: string) => void;

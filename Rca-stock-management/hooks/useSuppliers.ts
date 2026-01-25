@@ -13,6 +13,7 @@ import {
   reactivateSupplier as apiReactivateSupplier
 } from '../api/services/supplierService';
 import { Supplier } from '../types';
+import { CreateSupplierRequest } from '../api/types';
 
 export const useSuppliers = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -37,7 +38,7 @@ export const useSuppliers = () => {
     }
   }, []);
 
-  const addSupplier = useCallback(async (supplierData: Omit<Supplier, 'id'>) => {
+  const addSupplier = useCallback(async (supplierData: CreateSupplierRequest) => {
     try {
       const newSupplier = await createSupplier(supplierData);
       await fetchSuppliers(); // Refresh list
