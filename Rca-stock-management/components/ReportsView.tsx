@@ -21,7 +21,7 @@ import {
     ChevronLeft,
     ChevronRight,
 } from 'lucide-react';
-import { generateCsvReport, generatePdfReport, downloadReportById, ReportType } from '../api/services/reportService';
+import { generateCsvReport, generatePdfReport, downloadReportById, getReportBlobById, ReportType } from '../api/services/reportService';
 import { DateRangePicker } from './DateRangePicker';
 import { useItems } from '../hooks/useItems';
 import { useReports } from '../hooks/useReports';
@@ -164,16 +164,26 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const handleViewReport = async (report: SystemReport) => {
-    if (!report.params) return;
-    
-    // For view, we open in new tab (browser handles PDF/CSV view/download)
-    await handleGenerate(
-        report.params.reportType as ReportType,
-        report.params.dateRange,
-        report.format,
-        report.params.itemId,
-        'view'
-    );
+    if (report.params) {
+        // For view, we open in new tab (browser handles PDF/CSV view/download)
+        await handleGenerate(
+            report.params.reportType as ReportType,
+            report.params.dateRange,
+            report.format,
+            report.params.itemId,
+            'view'
+        );
+    } else if (report.id) {
+        try {
+            const blob = await getReportBlobById(report.id);
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+        } catch (error) {
+            console.error("Failed to view report", error);
+            alert("Failed to view report.");
+        }
+    }
   };
 
   const handleDownloadReport = async (report: SystemReport) => {
@@ -538,7 +548,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                        {[...reportHistory].reverse().slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((report) => (
+                        {reportHistory.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((report) => (
                             <tr key={report.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
                                 <td className="px-6 py-4 font-medium text-slate-800 dark:text-slate-200">{report.title}</td>
                                 <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{report.generatedDate}</td>
@@ -571,13 +581,27 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                                             Failed
                                         </span>
                                     )}
+                                    {report.status === 'EXPIRED' && (
+                                        <span className="flex items-center gap-1.5 text-slate-400 text-xs font-medium">
+                                            <Clock className="w-3 h-3" />
+                                            Expired
+                                        </span>
+                                    )}
                                 </td>
                                 <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
                                     {report.status === 'PROCESSING' ? (
                                         <span className="text-xs text-slate-400 italic">
                                             Generating...
                                         </span>
-                                    ) : report.params ? (
+                                    ) : report.status === 'FAILED' ? (
+                                        <span className="text-xs text-red-400 italic">
+                                            Failed
+                                        </span>
+                                    ) : report.status === 'EXPIRED' ? (
+                                        <span className="text-xs text-slate-400 italic" title="Report expired and cannot be regenerated">
+                                            Expired
+                                        </span>
+                                    ) : (report.params || report.id) ? (
                                         <>
                                             <button 
                                                 onClick={() => handleViewReport(report)}

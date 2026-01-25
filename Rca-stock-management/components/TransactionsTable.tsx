@@ -21,7 +21,11 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = React.memo(({
   onUndoReverse,
   userPermissions = { canEdit: true, canReverse: true } 
 }) => {
-  const isEditable = (dateStr: string) => {
+  const isEditable = (item: StockTransactionDTO) => {
+      // Use createdAt if available (more accurate), otherwise fallback to transactionDate
+      const dateStr = item.createdAt || item.transactionDate;
+      if (!dateStr) return false;
+      
       const txnDate = new Date(dateStr);
       const now = new Date();
       const msPerDay = 1000 * 60 * 60 * 24;
@@ -78,7 +82,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = React.memo(({
 
                         {!isReversed && (userPermissions.canEdit || userPermissions.canReverse) && (
                             <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-600 flex justify-end gap-3">
-                                {userPermissions.canEdit && (
+                                {userPermissions.canEdit && isEditable(item) && (
                                     <button 
                                         onClick={() => onEdit && onEdit(item)}
                                         className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
@@ -157,7 +161,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = React.memo(({
                             <div className="col-span-1 flex justify-center gap-2">
                                 {!isReversed && (
                                     <>
-                                        {userPermissions.canEdit && (
+                                        {userPermissions.canEdit && isEditable(item) && (
                                             <button 
                                                 onClick={() => onEdit && onEdit(item)}
                                                 className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
