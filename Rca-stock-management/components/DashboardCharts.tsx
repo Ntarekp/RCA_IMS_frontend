@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { ChevronDown, MoreHorizontal, Loader2 } from 'lucide-react';
 import { getChartData } from '../api/services/dashboardService';
-import { useReports } from '../hooks/useReports';
+import { useReportContext } from '../context/ReportContext';
 
 export const DashboardCharts: React.FC = React.memo(() => {
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { balanceReport, refetch: refetchReports } = useReports();
+  const { balanceReport, refreshHistory: refetchReports } = useReportContext();
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
 
   useEffect(() => {

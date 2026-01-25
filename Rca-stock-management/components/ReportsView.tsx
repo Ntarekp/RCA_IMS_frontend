@@ -21,10 +21,10 @@ import {
     ChevronLeft,
     ChevronRight,
 } from 'lucide-react';
-import { generateCsvReport, generatePdfReport, downloadReportById, getReportBlobById, ReportType } from '../api/services/reportService';
+import { downloadReportById, getReportBlobById, ReportType } from '../api/services/reportService';
 import { DateRangePicker } from './DateRangePicker';
 import { useItems } from '../hooks/useItems';
-import { useReports } from '../hooks/useReports';
+import { useReportContext } from '../context/ReportContext';
 import { SystemReport } from '../types';
 
 import { ScheduledReportModal } from './ScheduledReportModal';
@@ -41,12 +41,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
     endDate: new Date().toISOString().split('T')[0]
   });
   const [selectedItemId, setSelectedItemId] = useState<string>('');
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   
   const { items } = useItems();
-  const { reportHistory, addReportToHistory } = useReports();
+  const { reportHistory, isGenerating, generateReport } = useReportContext();
   const [showAllHistory, setShowAllHistory] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   // Reset to first page when a new report is added
   useEffect(() => {
@@ -61,7 +63,6 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
     action: 'download' | 'view' = 'download',
     overrideTitle?: string
   ) => {
-    setIsGenerating(true);
     const typeToUse = overrideType || reportType;
     const rangeToUse = overrideRange || dateRange;
     const formatToUse = overrideFormat || format;
@@ -74,94 +75,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
 
     const titleToUse = overrideTitle || defaultTitle;
     
-    // Create a pending report entry
-    const reportId = Math.random().toString(36).substr(2, 9);
-    const newReport: SystemReport = {
-        id: reportId,
-        title: titleToUse,
-        generatedDate: new Date().toLocaleDateString(),
-        type: typeToUse.toUpperCase() as any,
-        format: formatToUse,
-        status: 'PROCESSING',
-        size: '0 KB',
-        params: {
-            reportType: typeToUse,
-            dateRange: rangeToUse,
-            itemId: itemIdToUse
-        }
-    };
-    addReportToHistory(newReport);
-
-    try {
-      const itemId = itemIdToUse ? parseInt(itemIdToUse) : undefined;
-      const range = (typeToUse === 'stock-in' || typeToUse === 'stock-out' || typeToUse === 'transactions') 
+    const range = (typeToUse === 'stock-in' || typeToUse === 'stock-out' || typeToUse === 'transactions') 
         ? rangeToUse 
         : undefined;
 
-      let blob: Blob;
-      if (formatToUse === 'CSV') {
-        blob = await generateCsvReport(typeToUse, itemId, range, false, titleToUse); // Pass false to prevent auto-download
-      } else {
-        blob = await generatePdfReport(typeToUse, itemId, range, false, titleToUse); // Pass false to prevent auto-download
-      }
-
-      // Calculate size
-      const sizeInBytes = blob.size;
-      const size = sizeInBytes > 1024 * 1024 
-        ? `${(sizeInBytes / (1024 * 1024)).toFixed(2)} MB` 
-        : `${(sizeInBytes / 1024).toFixed(2)} KB`;
-
-      const updatedReport: SystemReport & { blob?: Blob } = { 
-          ...newReport, 
-          status: 'READY', 
-          size,
-          // @ts-ignore
-          blob: blob 
-      };
-      
-      addReportToHistory(updatedReport);
-
-      // Handle action
-      const url = window.URL.createObjectURL(blob);
-      if (action === 'view') {
-          window.open(url, '_blank');
-      } else {
-          const link = document.createElement('a');
-          link.href = url;
-          const extension = formatToUse === 'CSV' ? 'xlsx' : 'pdf';
-          
-          const now = new Date();
-          const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
-          
-          let filename = `${typeToUse}_report_${timestamp}.${extension}`;
-          
-          if (itemId) {
-              const itemName = items.find(i => i.id === itemIdToUse)?.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-              if (itemName) {
-                  filename = `${typeToUse}_${itemName}_${timestamp}.${extension}`;
-              }
-          }
-          
-          link.setAttribute('download', filename);
-          document.body.appendChild(link);
-          link.click();
-          link.parentNode?.removeChild(link);
-      }
-      
-      // Cleanup after a delay to ensure view/download works
-      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
-
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to generate report:', error);
-      const failedReport: SystemReport = { ...newReport, status: 'FAILED' }; 
-      addReportToHistory(failedReport);
-    } finally {
-      setIsGenerating(false);
-    }
+    await generateReport({
+        type: typeToUse,
+        dateRange: range,
+        format: formatToUse,
+        itemId: itemIdToUse,
+        action: action,
+        title: titleToUse
+    });
   };
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const handleViewReport = async (report: SystemReport) => {
     if (report.params) {
@@ -192,14 +118,17 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
              if (report.params && Object.keys(report.params).length > 0 && report.params.reportType) {
                  // Re-generate using stored params
                  const { reportType, dateRange, itemId } = report.params;
-                 // We need to cast reportType string to ReportType
                  const type = (reportType.toLowerCase()) as ReportType;
                  
-                 if (report.format === 'PDF') {
-                     await generatePdfReport(type, itemId ? parseInt(itemId) : undefined, dateRange, true, report.title);
-                 } else {
-                     await generateCsvReport(type, itemId ? parseInt(itemId) : undefined, dateRange, true, report.title);
-                 }
+                 await generateReport({
+                    type: type,
+                    dateRange: dateRange,
+                    format: report.format,
+                    itemId: itemId,
+                    action: 'download',
+                    title: report.title
+                 });
+
              } else if (report.id) {
                  // Download by ID from backend
                  const extension = report.format === 'PDF' ? 'pdf' : 'xlsx';

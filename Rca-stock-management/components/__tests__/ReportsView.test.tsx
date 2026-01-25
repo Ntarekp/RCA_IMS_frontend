@@ -9,10 +9,12 @@ vi.mock('../hooks/useItems', () => ({
     }),
 }));
 
-vi.mock('../hooks/useReports', () => ({
-    useReports: () => ({
+vi.mock('../context/ReportContext', () => ({
+    useReportContext: () => ({
         reportHistory: [],
         addReportToHistory: vi.fn(),
+        isGenerating: false,
+        generateReport: vi.fn(),
     }),
 }));
 

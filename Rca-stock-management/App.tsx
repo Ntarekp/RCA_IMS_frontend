@@ -21,13 +21,14 @@ const UsersView = React.lazy(() => import('./components/UsersView').then(module 
 
 import { DetailDrawer } from './components/DetailDrawer';
 import { ConfirmationModal } from './components/ConfirmationModal';
-import { ToastContainer, ToastMessage } from './components/Toast';
+import { ToastMessage } from './components/Toast';
 import { LoginView } from './components/LoginView';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ResetPasswordView } from './components/ResetPasswordView';
 import { ViewState, DrawerType, StockItem, Supplier, UserProfile } from './types';
 import { useItems } from './hooks/useItems';
-import { useReports } from './hooks/useReports';
+import { useReportContext } from './context/ReportContext';
+import { useToast } from './context/ToastContext';
 import { useTransactions } from './hooks/useTransactions';
 import { useSuppliers } from './hooks/useSuppliers';
 import { CreateItemRequest, CreateTransactionRequest, UpdateItemRequest, StockTransactionDTO, CreateSupplierRequest } from './api/types';
@@ -101,7 +102,6 @@ const App = () => {
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loadingReport, setLoadingReport] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [dateRange, setDateRange] = useState('This Month');
 
   // Check for reset password route
@@ -121,7 +121,7 @@ const App = () => {
 
   // API Hooks
   const { items: stockItems, loading: itemsLoading, error: itemsError, addItem, updateItem, deleteItem, refetch: refetchItems } = useItems();
-  const { dashboardItems, loading: reportsLoading, error: reportsError, balanceReport, refetch: refetchReports } = useReports();
+  const { dashboardItems, loading: reportsLoading, error: reportsError, balanceReport, refreshHistory: refetchReports } = useReportContext();
   const { transactions, loading: transactionsLoading, error: transactionsError, addTransaction, updateTransaction, reverseTransaction, undoReverseTransaction, refetch: refetchTransactions } = useTransactions();
   const { suppliers, inactiveSuppliers, loading: suppliersLoading, error: suppliersError, addSupplier, updateSupplier, deactivateSupplier, reactivateSupplier, hardDeleteSupplier, refetch: refetchSuppliers } = useSuppliers();
 
@@ -189,15 +189,7 @@ const App = () => {
   const [isConfirmLoading, setIsConfirmLoading] = useState(false);
 
   // Toast Helpers
-  const addToast = useCallback((message: string, type: ToastMessage['type'] = 'success') => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setToasts((prev) => [...prev, { id, message, type }]);
-    return id;
-  }, []);
-
-  const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+  const { addToast, removeToast } = useToast();
 
   // Logic Handlers
   const handleLogin = useCallback((token: string, email: string) => {
@@ -963,7 +955,6 @@ const App = () => {
 
       return (
         <>
-            <ToastContainer toasts={toasts} onRemove={removeToast} />
             <LoginView onLogin={(token, email) => handleLogin(token, email)} />
         </>
       );
@@ -971,7 +962,6 @@ const App = () => {
 
   return (
     <div className="flex flex-col h-screen bg-slate-50/50 dark:bg-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden transition-colors duration-300">
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
       
       {/* Header - Spans full width */}
       <Header onChangeView={setView} onMenuClick={() => setIsMobileMenuOpen(true)} />
