@@ -51,7 +51,7 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ token, onS
           onSuccess(); // Redirect to login
       }, 3000);
     } catch (err) {
-      console.error('Reset password failed:', err);
+      if (import.meta.env.DEV) console.error('Reset password failed:', err);
       if (err instanceof ApiError) {
         setError(err.data?.message || `Failed to reset password: ${err.statusText}`);
       } else {

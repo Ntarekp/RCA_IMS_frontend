@@ -2,7 +2,7 @@
  * Custom hook for managing transactions
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { getAllTransactions, recordTransaction, updateTransaction, reverseTransaction, undoReverseTransaction } from '../api/services/transactionService';
 import { getBalanceReport } from '../api/services/reportService';
 import { StockTransactionDTO, CreateTransactionRequest, StockBalanceDTO } from '../api/types';
@@ -15,7 +15,7 @@ export const useTransactions = (itemId?: number) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -33,9 +33,9 @@ export const useTransactions = (itemId?: number) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [itemId]);
 
-  const addTransaction = async (transactionData: CreateTransactionRequest) => {
+  const addTransaction = useCallback(async (transactionData: CreateTransactionRequest) => {
     try {
       const newTransaction = await recordTransaction(transactionData);
       await fetchTransactions(); // Refresh list
@@ -43,9 +43,9 @@ export const useTransactions = (itemId?: number) => {
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to create transaction');
     }
-  };
+  }, [fetchTransactions]);
 
-  const updateTransactionData = async (id: number, transactionData: StockTransactionDTO) => {
+  const updateTransactionData = useCallback(async (id: number, transactionData: StockTransactionDTO) => {
     try {
       const updatedTransaction = await updateTransaction(id, transactionData);
       await fetchTransactions(); // Refresh list
@@ -53,9 +53,9 @@ export const useTransactions = (itemId?: number) => {
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to update transaction');
     }
-  };
+  }, [fetchTransactions]);
 
-  const reverseTransactionData = async (id: number, reason: string) => {
+  const reverseTransactionData = useCallback(async (id: number, reason: string) => {
     try {
       const reversedTransaction = await reverseTransaction(id, reason);
       await fetchTransactions(); // Refresh list
@@ -63,9 +63,9 @@ export const useTransactions = (itemId?: number) => {
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to reverse transaction');
     }
-  };
+  }, [fetchTransactions]);
 
-  const undoReverseTransactionData = async (id: number) => {
+  const undoReverseTransactionData = useCallback(async (id: number) => {
     try {
       const restoredTransaction = await undoReverseTransaction(id);
       await fetchTransactions(); // Refresh list
@@ -73,14 +73,14 @@ export const useTransactions = (itemId?: number) => {
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to undo reversal');
     }
-  };
+  }, [fetchTransactions]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
       fetchTransactions();
     }
-  }, [itemId]);
+  }, [fetchTransactions]);
 
   return {
     transactions,

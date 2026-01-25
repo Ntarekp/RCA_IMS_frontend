@@ -23,7 +23,7 @@ export const getAllTransactions = async (
   try {
     return await get<StockTransactionDTO[]>(url);
   } catch (error) {
-    console.warn('Using mock data for transactions');
+    if (import.meta.env.DEV) console.warn('Using mock data for transactions');
     return [
       { id: 1, itemId: 1, itemName: 'Laptop Dell XPS', transactionType: 'IN', quantity: 10, transactionDate: '2024-01-15', recordedBy: 'Admin', balanceAfter: 50 },
       { id: 2, itemId: 1, itemName: 'Laptop Dell XPS', transactionType: 'OUT', quantity: 2, transactionDate: '2024-01-16', recordedBy: 'User', balanceAfter: 48, notes: 'Assigned to HR' },

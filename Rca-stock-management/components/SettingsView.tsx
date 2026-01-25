@@ -48,7 +48,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
                   document.documentElement.classList.remove('dark');
               }
           } catch (err) {
-              console.error("Failed to fetch settings", err);
+              if (import.meta.env.DEV) console.error("Failed to fetch settings", err);
               setError("Failed to load settings. Please try again.");
           } finally {
               setLoading(false);
@@ -263,16 +263,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
                 </div>
                 
                 {/* Radio Button Group for Theme */}
-                <div className="flex items-center gap-4 bg-slate-100 dark:bg-slate-700 p-1.5 rounded-xl">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 bg-slate-100 dark:bg-slate-700 p-1.5 rounded-xl w-full sm:w-auto">
                     <label 
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                        className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 justify-center sm:justify-start ${
                             settings.theme === 'LIGHT' 
                                 ? 'bg-white text-slate-800 shadow-sm' 
                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                         }`}
                         onClick={() => handleThemeChange('LIGHT')}
                     >
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${
                             settings.theme === 'LIGHT' ? 'border-[#1E293B]' : 'border-slate-400'
                         }`}>
                             {settings.theme === 'LIGHT' && <div className="w-2 h-2 rounded-full bg-[#1E293B]" />}
@@ -281,14 +281,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
                     </label>
 
                     <label 
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                        className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 justify-center sm:justify-start ${
                             settings.theme === 'DARK' 
                                 ? 'bg-slate-600 text-white shadow-sm' 
                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                         }`}
                         onClick={() => handleThemeChange('DARK')}
                     >
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${
                             settings.theme === 'DARK' ? 'border-blue-400' : 'border-slate-400'
                         }`}>
                             {settings.theme === 'DARK' && <div className="w-2 h-2 rounded-full bg-blue-400" />}

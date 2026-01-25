@@ -77,7 +77,7 @@ export interface SystemReport {
   type: 'STOCK' | 'FINANCIAL' | 'AUDIT' | 'TRANSACTIONS' | 'BALANCE' | 'LOW-STOCK' | 'SUPPLIERS' | 'STOCK-IN' | 'STOCK-OUT';
   generatedDate: string;
   size: string;
-  status: 'READY' | 'PROCESSING';
+  status: 'READY' | 'PROCESSING' | 'FAILED' | 'EXPIRED';
   format: 'PDF' | 'CSV';
   // Parameters used to generate the report (for re-generation)
   params?: {

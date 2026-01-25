@@ -7,7 +7,7 @@ interface RecentActivityProps {
     onViewAll?: () => void;
 }
 
-export const RecentActivity: React.FC<RecentActivityProps> = ({ onViewAll }) => {
+export const RecentActivity: React.FC<RecentActivityProps> = React.memo(({ onViewAll }) => {
   const [activities, setActivities] = useState<StockTransactionDTO[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,7 +18,7 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({ onViewAll }) => 
       const transactions = await getRecentTransactions(5); 
       setActivities(transactions);
     } catch (err) {
-      console.error('Error loading recent activities:', err);
+      if (import.meta.env.DEV) console.error('Error loading recent activities:', err);
       setActivities([]);
     } finally {
       setLoading(false);
@@ -31,36 +31,6 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({ onViewAll }) => 
     const interval = setInterval(fetchActivities, 30000);
     return () => clearInterval(interval);
   }, []);
-
-  const formatTimeAgo = (dateString: string) => {
-    try {
-      // Handle ISO date string format (YYYY-MM-DD)
-      // If dateString is just a date (YYYY-MM-DD), append time to make it comparable
-      // If createdAt is available (which includes time), prefer that for accuracy
-      const date = new Date(dateString.includes('T') ? dateString : dateString + 'T00:00:00');
-      const now = new Date();
-      const diffMs = now.getTime() - date.getTime();
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-
-      if (diffMins < 1) return 'Just now';
-      if (diffMins < 60) return `${diffMins}m ago`;
-      if (diffHours < 24) return `${diffHours}h ago`;
-      if (diffDays === 0) return 'Today';
-      if (diffDays === 1) return 'Yesterday';
-      if (diffDays < 7) return `${diffDays}d ago`;
-      
-      return date.toLocaleDateString();
-    } catch {
-      return 'Recent';
-    }
-  };
-
-  // Helper to determine if a transaction is "Damaged" based on notes or type
-  const isDamaged = (activity: StockTransactionDTO) => {
-      return activity.notes?.toLowerCase().includes('damaged') || false;
-  };
 
   // Only show the first 3 activities
   const displayedActivities = activities.slice(0, 3);
@@ -137,4 +107,24 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({ onViewAll }) => 
       </div>
     </div>
   );
+});
+
+// Helper functions moved outside component
+const formatTimeAgo = (dateString: string) => {
+  if (!dateString) return 'Unknown';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return 'Just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+  return date.toLocaleDateString();
+};
+
+const isDamaged = (activity: StockTransactionDTO) => {
+    if (!activity) return false;
+    const notes = activity.notes?.toLowerCase() || '';
+    return notes.includes('damaged') || notes.includes('broken') || notes.includes('expired');
 };

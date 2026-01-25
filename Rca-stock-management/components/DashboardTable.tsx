@@ -5,7 +5,7 @@ interface DashboardTableProps {
   items: DashboardItem[];
 }
 
-export const DashboardTable: React.FC<DashboardTableProps> = ({ items }) => {
+export const DashboardTable: React.FC<DashboardTableProps> = React.memo(({ items }) => {
   const getStatusBadge = (status: DashboardItem['status']) => {
     switch (status) {
       case 'Birahagije':
@@ -21,7 +21,34 @@ export const DashboardTable: React.FC<DashboardTableProps> = ({ items }) => {
 
   return (
     <div className="bg-[#f3f6f9] dark:bg-slate-800 rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-4 p-4">
+            {items.map((item) => (
+                <div key={item.id} className="bg-white dark:bg-slate-700 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600">
+                    <div className="flex justify-between items-start mb-2">
+                        <div>
+                            <div className="font-medium text-gray-900 dark:text-white">{item.name}</div>
+                            <div className="text-xs text-gray-500 dark:text-slate-400">{item.unit}</div>
+                        </div>
+                        {getStatusBadge(item.status)}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm mt-3">
+                        <div className="text-gray-500 dark:text-slate-400">Qty In:</div>
+                        <div className="text-right font-medium dark:text-slate-200">{item.quantityIn}</div>
+                        <div className="text-gray-500 dark:text-slate-400">Remaining:</div>
+                        <div className="text-right font-medium dark:text-slate-200">{item.quantityRemaining}</div>
+                        <div className="text-gray-500 dark:text-slate-400">Threshold:</div>
+                        <div className="text-right font-medium dark:text-slate-200">{item.quantityThreshold}</div>
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-gray-100 dark:border-slate-600 flex justify-between items-center text-xs text-gray-500 dark:text-slate-400">
+                        <span>Last Out:</span>
+                        <span>{item.date}</span>
+                    </div>
+                </div>
+            ))}
+        </div>
+
+        <div className="hidden md:block overflow-x-auto">
             <div className="min-w-[800px]">
                 {/* Table Header Row */}
                 <div className="grid grid-cols-7 gap-4 px-6 py-4 text-sm font-medium text-gray-600 dark:text-slate-400">
@@ -54,4 +81,6 @@ export const DashboardTable: React.FC<DashboardTableProps> = ({ items }) => {
         </div>
     </div>
   );
-};
+});
+
+DashboardTable.displayName = 'DashboardTable';

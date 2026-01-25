@@ -2,7 +2,7 @@
  * Custom hook for managing suppliers
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { 
   getAllSuppliers, 
   getInactiveSuppliers,
@@ -13,6 +13,7 @@ import {
   reactivateSupplier as apiReactivateSupplier
 } from '../api/services/supplierService';
 import { Supplier } from '../types';
+import { CreateSupplierRequest } from '../api/types';
 
 export const useSuppliers = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -20,7 +21,7 @@ export const useSuppliers = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchSuppliers = async () => {
+  const fetchSuppliers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -35,9 +36,9 @@ export const useSuppliers = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const addSupplier = async (supplierData: Omit<Supplier, 'id'>) => {
+  const addSupplier = useCallback(async (supplierData: CreateSupplierRequest) => {
     try {
       const newSupplier = await createSupplier(supplierData);
       await fetchSuppliers(); // Refresh list
@@ -45,9 +46,9 @@ export const useSuppliers = () => {
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to create supplier');
     }
-  };
+  }, [fetchSuppliers]);
 
-  const updateSupplierById = async (id: string, supplierData: Partial<Supplier>) => {
+  const updateSupplierById = useCallback(async (id: string, supplierData: Partial<Supplier>) => {
     try {
       const updated = await updateSupplier(id, supplierData);
       await fetchSuppliers(); // Refresh list
@@ -55,41 +56,41 @@ export const useSuppliers = () => {
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to update supplier');
     }
-  };
+  }, [fetchSuppliers]);
 
-  const deactivateSupplier = async (id: string, password: string) => {
+  const deactivateSupplier = useCallback(async (id: string, password: string) => {
     try {
       await apiDeactivateSupplier(id, password);
       await fetchSuppliers(); // Refresh list
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to deactivate supplier');
     }
-  };
+  }, [fetchSuppliers]);
 
-  const reactivateSupplier = async (id: string) => {
+  const reactivateSupplier = useCallback(async (id: string) => {
     try {
       await apiReactivateSupplier(id);
       await fetchSuppliers(); // Refresh list
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to reactivate supplier');
     }
-  };
+  }, [fetchSuppliers]);
 
-  const hardDeleteSupplier = async (id: string, password: string) => {
+  const hardDeleteSupplier = useCallback(async (id: string, password: string) => {
     try {
       await deleteSupplier(id, password);
       await fetchSuppliers(); // Refresh list
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to delete supplier');
     }
-  };
+  }, [fetchSuppliers]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
       fetchSuppliers();
     }
-  }, []);
+  }, [fetchSuppliers]);
 
   return {
     suppliers,
@@ -101,6 +102,6 @@ export const useSuppliers = () => {
     updateSupplier: updateSupplierById,
     deactivateSupplier,
     reactivateSupplier,
-    hardDeleteSupplier
+    hardDeleteSupplier,
   };
 };

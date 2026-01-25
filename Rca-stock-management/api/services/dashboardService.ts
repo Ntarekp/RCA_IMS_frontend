@@ -19,7 +19,7 @@ export const getDashboardMetrics = async (): Promise<StockMetricsDTO> => {
   try {
     return await get<StockMetricsDTO>(`${ENDPOINT}/metrics`);
   } catch (error) {
-    console.warn('Using mock data for dashboard metrics');
+    if (import.meta.env.DEV) console.warn('Using mock data for dashboard metrics');
     return {
       total: 150,
       lowStock: 12,
@@ -41,7 +41,7 @@ export const getChartData = async (year?: number): Promise<any[]> => {
   try {
     return await get<any[]>(url);
   } catch (error) {
-    console.warn('Using mock data for chart data');
+    if (import.meta.env.DEV) console.warn('Using mock data for chart data');
     return [
       { name: 'Jan', in: 65, out: 45, damaged: 2 },
       { name: 'Feb', in: 45, out: 55, damaged: 1 },

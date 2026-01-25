@@ -53,11 +53,18 @@ async function apiRequest<T>(
     headers,
   };
 
-  console.log(`Sending API request: ${config.method} ${url}`, { headers: config.headers });
+  // Redact sensitive info in logs if ever enabled
+  if (import.meta.env.DEV) {
+    // Only log method and URL, never headers or body which might contain secrets
+    console.log(`[API] ${config.method} ${url.split('?')[0]}`); 
+  }
 
   try {
     const response = await fetch(url, config);
-    console.log(`Received API response: ${response.status} ${response.statusText}`);
+    // Silent in production, minimal in dev
+    if (import.meta.env.DEV) {
+      console.log(`[API] Response: ${response.status}`);
+    }
     
     // Handle empty responses (e.g., 204 No Content)
     if (response.status === 204) {
@@ -79,7 +86,7 @@ async function apiRequest<T>(
         } catch {
              // If parsing fails, use the raw text if it's an error to aid debugging
              if (!response.ok) {
-                 console.warn('Non-JSON error response:', text.substring(0, 500));
+                 if (import.meta.env.DEV) console.warn('Non-JSON error response:', text.substring(0, 500));
              }
              data = null;
         }
@@ -88,14 +95,14 @@ async function apiRequest<T>(
     // Check if response is successful
     if (!response.ok) {
       if (response.status === 401) {
-        console.warn('Unauthorized access.');
+        if (import.meta.env.DEV) console.warn('Unauthorized access.');
         
         // Prevent infinite loops:
         // 1. If we didn't have a token to begin with, don't reload - we are already "logged out"
         // 2. Check if we are already at the login page (or preventing loops via session storage)
         
         if (!token) {
-           console.warn('Received 401 but no token was present. Ignoring reload.');
+           if (import.meta.env.DEV) console.warn('Received 401 but no token was present. Ignoring reload.');
            throw new ApiError(401, 'Unauthorized', null, 'Unauthorized request (no token)');
         }
 
@@ -109,7 +116,7 @@ async function apiRequest<T>(
         // We do NOT reload the page to avoid infinite loops if the error persists
         window.dispatchEvent(new Event('auth-error'));
         
-        console.warn('Session expired. Redirecting to login...');
+        if (import.meta.env.DEV) console.warn('Session expired. Redirecting to login...');
         
         throw new ApiError(401, 'Unauthorized', null, 'Session expired. Please login again.');
       }

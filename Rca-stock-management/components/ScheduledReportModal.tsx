@@ -21,7 +21,8 @@ export const ScheduledReportModal: React.FC<ScheduledReportModalProps> = ({ isOp
 
   // Form State
   const [email, setEmail] = useState('');
-  const [frequency, setFrequency] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('DAILY');
+  const [frequency, setFrequency] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY' | 'INTERVAL'>('DAILY');
+  const [intervalHours, setIntervalHours] = useState<number>(24);
   const [scheduledTime, setScheduledTime] = useState('08:00');
   const [reportType, setReportType] = useState<'ALL_REPORTS_ZIP' | 'TRANSACTION_HISTORY' | 'STOCK_BALANCE' | 'LOW_STOCK'>('ALL_REPORTS_ZIP');
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -20,7 +20,7 @@ export const AnalyticsStats: React.FC = () => {
                 setAnalytics(analyticsData);
                 setDashboardMetrics(dashboardData);
             } catch (err) {
-                console.error('Failed to load analytics stats', err);
+                if (import.meta.env.DEV) console.error('Failed to load analytics stats', err);
             } finally {
                 setLoading(false);
             }

@@ -9,10 +9,11 @@ interface ProfileViewProps {
     onEditProfile: () => void;
     onChangePassword: () => void;
     onLogout: () => void;
-    addToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning' | 'loading') => void;
+    addToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning' | 'loading') => string;
+    removeToast: (id: string) => void;
 }
 
-export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChangePassword, onLogout, addToast }) => {
+export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChangePassword, onLogout, addToast, removeToast }) => {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
@@ -25,7 +26,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
                 const data = await getProfile();
                 setProfile(data);
             } catch (error) {
-                console.error("Failed to load profile", error);
+                if (import.meta.env.DEV) console.error("Failed to load profile", error);
             } finally {
                 setLoading(false);
             }
@@ -39,7 +40,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
             const data = await getProfile();
             setProfile(data);
         } catch (error) {
-            console.error("Failed to refresh profile", error);
+            if (import.meta.env.DEV) console.error("Failed to refresh profile", error);
         }
     };
 
@@ -82,7 +83,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
             addToast('Image updated successfully!', 'success');
 
         } catch (error) {
-            console.error("Failed to upload image", error);
+            if (import.meta.env.DEV) console.error("Failed to upload image", error);
             const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
             addToast(`Upload failed: ${errorMessage}`, 'error');
         } finally {
@@ -108,7 +109,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onEditProfile, onChang
             removeToast(toastId);
             addToast('Image removed successfully!', 'success');
         } catch (error) {
-            console.error("Failed to remove image", error);
+            if (import.meta.env.DEV) console.error("Failed to remove image", error);
             removeToast(toastId);
             addToast('Failed to remove image.', 'error');
         }

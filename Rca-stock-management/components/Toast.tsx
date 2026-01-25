@@ -4,7 +4,7 @@ import { CheckCircle2, AlertCircle, X, Info } from 'lucide-react';
 export interface ToastMessage {
   id: string;
   message: string;
-  type: 'success' | 'error' | 'loading' | 'info';
+  type: 'success' | 'error' | 'loading' | 'info' | 'warning';
 }
 
 interface ToastProps {
@@ -38,6 +38,7 @@ const ToastItem: React.FC<{ toast: ToastMessage; onRemove: (id: string) => void 
       case 'error': return <AlertCircle className="w-5 h-5 text-rose-500" />;
       case 'loading': return null; // No icon for loading, just the bar
       case 'info': return <Info className="w-5 h-5 text-[#28375B]" />;
+      case 'warning': return <AlertCircle className="w-5 h-5 text-amber-500" />;
     }
   };
 

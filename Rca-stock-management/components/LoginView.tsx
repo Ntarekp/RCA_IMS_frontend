@@ -18,14 +18,13 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
 
   // Use import.meta.env.BASE_URL to correctly resolve the image path
   const logoPath = `${import.meta.env.BASE_URL}rca-logo.png`;
+  const logoWebP = `${import.meta.env.BASE_URL}rca-logo.webp`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     
-    console.log('Submitting login request with:', { email, password });
-
     try {
       const loginRequest: LoginRequest = { email, password };
       const response = await login(loginRequest);
@@ -38,10 +37,12 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
       // Call onLogin callback with token and email
       onLogin(response.token, response.email);
     } catch (err) {
-      console.error('Login failed:', err);
+      if (import.meta.env.DEV) {
+        console.error('Login failed:', err);
+      }
       if (err instanceof ApiError) {
         if (err.status === 0) {
-            setError('Network Error: Unable to connect to server. Check if backend is running on port 8081.');
+            setError('Network Error: Unable to connect to server. Please check your internet connection or contact support.');
         } else if (err.status === 401) {
             setError('Invalid email or password');
         } else {
@@ -76,7 +77,10 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
         {/* Logo Section (Left Side) */}
         <div className="flex flex-col items-center md:items-start gap-4 text-center md:text-left">
             <div className="w-48 h-48 flex items-center justify-center p-4">
-                 <img src={logoPath} alt="RCA Logo" className="w-full h-full object-contain" />
+                 <picture>
+                   <source srcSet={logoWebP} type="image/webp" />
+                   <img src={logoPath} alt="RCA Logo" className="w-full h-full object-contain" width="192" height="192" />
+                 </picture>
             </div>
         </div>
 
