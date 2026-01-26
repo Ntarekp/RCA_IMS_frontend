@@ -79,7 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, isO
                             title={isCollapsed ? item.label : undefined}
                             className={`w-full flex items-center gap-3 px-3 ${isMobile ? 'py-2' : 'py-3'} text-sm font-medium rounded-[12px] transition-all duration-200 group relative ${
                                 isActive
-                                    ? 'bg-[#1E293B] dark:bg-blue-600 text-white shadow-md shadow-slate-900/10'
+                                    ? 'bg-[#1E293B] dark:bg-[#155DFC] text-white shadow-md shadow-slate-900/10'
                                     : 'text-[#9CA3AF] dark:text-slate-400 hover:bg-[#EDEEF3] dark:hover:bg-slate-700 hover:text-[#1E293B] dark:hover:text-white'
                             } ${isCollapsed ? 'justify-center px-2' : ''}`}
                         >

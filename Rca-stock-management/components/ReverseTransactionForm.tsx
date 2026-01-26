@@ -59,7 +59,7 @@ export const ReverseTransactionForm = React.memo<ReverseTransactionFormProps>(({
                 </div>
                 <div className="flex justify-between text-sm">
                     <span className="text-slate-500 dark:text-slate-400">Type:</span>
-                    <span className={`font-bold ${transaction.transactionType === 'IN' ? 'text-blue-600' : 'text-slate-600'}`}>
+                    <span className={`font-bold ${transaction.transactionType === 'IN' ? 'text-[#1E293B] dark:text-[#155DFC]' : 'text-slate-600'}`}>
                         {transaction.transactionType}
                     </span>
                 </div>

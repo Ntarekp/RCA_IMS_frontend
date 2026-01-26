@@ -23,11 +23,11 @@ export const SupplierCard: React.FC<SupplierCardProps> = ({
     <div className={`bg-white dark:bg-slate-800 rounded-2xl p-6 border ${isActive ? 'border-slate-100 dark:border-slate-700' : 'border-slate-200 dark:border-slate-600 opacity-75'} shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-none hover:shadow-lg dark:hover:shadow-slate-900/30 hover:-translate-y-1 transition-all duration-300 group`}>
       <div className="flex justify-between items-start mb-6">
         <div className="flex items-center gap-3">
-             <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg ${isActive ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
+             <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg ${isActive ? 'bg-[#1E293B]/10 dark:bg-[#155DFC]/20 border border-[#1E293B]/20 dark:border-[#155DFC]/30 text-[#1E293B] dark:text-[#155DFC]' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
                  {supplier.name.charAt(0)}
              </div>
              <div>
-                 <h3 className="font-bold text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{supplier.name}</h3>
+                 <h3 className="font-bold text-slate-800 dark:text-white group-hover:text-[#1E293B] dark:group-hover:text-[#155DFC] transition-colors">{supplier.name}</h3>
                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${isActive ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' : 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700'}`}>
                     {isActive ? 'Active Partner' : 'Inactive'}
                  </span>
@@ -81,7 +81,7 @@ export const SupplierCard: React.FC<SupplierCardProps> = ({
         {isActive && onOrder ? (
             <button 
               onClick={() => onOrder(supplier)}
-              className="flex items-center justify-center py-2.5 rounded-xl bg-[#1e293b] dark:bg-blue-600 text-white text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10 active:scale-95"
+              className="flex items-center justify-center py-2.5 rounded-xl bg-[#1e293b] dark:bg-[#155DFC] text-white text-sm font-medium hover:bg-slate-800 dark:hover:bg-[#155DFC]/90 transition-colors shadow-lg shadow-slate-900/10 active:scale-95"
             >
               Order Now
             </button>

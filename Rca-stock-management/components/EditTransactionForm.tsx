@@ -132,7 +132,7 @@ export const EditTransactionForm = React.memo<EditTransactionFormProps>(({
                 </button>
                 <button
                     type="submit"
-                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm shadow-blue-500/20 transition-all"
+                    className="px-6 py-2 bg-[#1E293B] hover:bg-[#1E293B]/90 dark:bg-[#155DFC] dark:hover:bg-[#155DFC]/90 text-white rounded-lg text-sm font-medium shadow-sm shadow-blue-500/20 transition-all"
                 >
                     Save Changes
                 </button>

@@ -51,7 +51,7 @@ export const AnalyticsCharts: React.FC = React.memo(() => {
     
     // Colors: Consumed (Slate), Damaged (Red), Expired (Orange), Other (Blue), Transferred (Purple)
     const PIE_COLORS = React.useMemo(() => isDark 
-        ? ['#94a3b8', '#f87171', '#fb923c', '#3b82f6', '#a78bfa'] 
+        ? ['#94a3b8', '#f87171', '#fb923c', '#155DFC', '#a78bfa'] 
         : ['#64748b', '#ef4444', '#f97316', '#1E293B', '#8b5cf6'], [isDark]);
 
     // Prepare Bar Chart Data (Top Consumed Items)
@@ -101,7 +101,7 @@ export const AnalyticsCharts: React.FC = React.memo(() => {
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-3 text-xs font-medium text-[#9CA3AF] dark:text-slate-400">
                                 <div className="flex items-center gap-1.5">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-[#1E293B] dark:bg-blue-500"></span> In
+                                    <span className="w-2.5 h-2.5 rounded-full bg-[#1E293B] dark:bg-[#155DFC]"></span> In
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <span className="w-2.5 h-2.5 rounded-full bg-[#64748b] dark:bg-slate-400"></span> Consumed

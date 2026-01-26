@@ -62,8 +62,8 @@ export const RecentActivity: React.FC<RecentActivityProps> = React.memo(({ onVie
                   {/* Timeline Dot */}
                   <div className={`absolute left-0 top-1.5 w-7 h-7 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-sm z-10 ${
                       damaged ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
-                      activity.transactionType === 'IN' ? 'bg-[#1E293B] dark:bg-blue-600 text-white' : 'bg-[#EDEEF3] dark:bg-slate-700 text-[#9CA3AF] dark:text-slate-400'
-                  }`}>
+          activity.transactionType === 'IN' ? 'bg-[#1E293B] dark:bg-[#155DFC] text-white' : 'bg-[#EDEEF3] dark:bg-slate-700 text-[#9CA3AF] dark:text-slate-400'
+        }`}>
                       {damaged ? <AlertTriangle className="w-3.5 h-3.5" /> :
                        activity.transactionType === 'IN' ? <ArrowDownRight className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
                   </div>
