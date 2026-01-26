@@ -190,7 +190,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
             </div>
             <button
                 onClick={() => setIsScheduleModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border border-blue-700 rounded-lg shadow-sm shadow-blue-500/20 transition-all hover:shadow-md"
+                className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] dark:bg-[#155DFC] hover:bg-[#1E293B]/90 dark:hover:bg-[#155DFC]/90 text-white rounded-lg shadow-sm shadow-slate-900/20 transition-all hover:shadow-md"
             >
                 <CalendarClock className="w-4 h-4" />
                 <span className="font-medium">Schedule Reports</span>
@@ -316,7 +316,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ onGenerateReport }) =>
                             if (!itemId) return alert('Please select an item');
                             handleGenerate('transactions', undefined, 'CSV', itemId);
                         }}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-900/10"
+                        className="px-4 py-2 bg-[#1E293B] hover:bg-[#1E293B]/90 dark:bg-[#155DFC] dark:hover:bg-[#155DFC]/90 text-white rounded-xl text-sm font-bold transition-colors shadow-lg shadow-blue-900/10"
                     >
                         Export
                     </button>

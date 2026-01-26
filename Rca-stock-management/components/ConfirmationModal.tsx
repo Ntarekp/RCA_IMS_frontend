@@ -33,7 +33,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       case 'warning':
         return <AlertTriangle className="w-6 h-6 text-amber-600" />;
       case 'info':
-        return <Check className="w-6 h-6 text-blue-600" />;
+        return <Check className="w-6 h-6 text-[#1E293B] dark:text-[#155DFC]" />;
     }
   };
 
@@ -44,7 +44,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       case 'warning':
         return 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500';
       case 'info':
-        return 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500';
+        return 'bg-[#1E293B] hover:bg-[#1E293B]/90 dark:bg-[#155DFC] dark:hover:bg-[#155DFC]/90 focus:ring-blue-500';
     }
   };
 
@@ -53,7 +53,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 dark:border-slate-700 transform transition-all scale-100">
         <div className="p-6">
           <div className="flex items-start gap-4">
-            <div className={`p-3 rounded-full ${type === 'danger' ? 'bg-red-100 dark:bg-red-900/30' : type === 'warning' ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-blue-100 dark:bg-blue-900/30'}`}>
+            <div className={`p-3 rounded-full ${type === 'danger' ? 'bg-red-100 dark:bg-red-900/30' : type === 'warning' ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-[#1E293B]/10 dark:bg-[#155DFC]/20'}`}>
               {getIcon()}
             </div>
             <div className="flex-1">

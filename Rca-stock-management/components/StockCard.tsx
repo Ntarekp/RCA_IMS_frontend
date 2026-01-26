@@ -42,8 +42,8 @@ export const StockCard: React.FC<StockCardProps> = ({ item, onManage, onDelete }
       )}
 
       <div className="flex justify-between items-start mb-6 relative z-10">
-         <div className="p-3 bg-slate-50 rounded-xl group-hover:bg-blue-50 transition-colors border border-slate-100 group-hover:border-blue-100">
-            <Package className="w-6 h-6 text-slate-400 group-hover:text-blue-500 transition-colors" strokeWidth={1.5} />
+         <div className="p-3 bg-slate-50 rounded-xl group-hover:bg-[#1E293B]/10 dark:group-hover:bg-[#155DFC]/20 transition-colors border border-slate-100 group-hover:border-[#1E293B]/20 dark:group-hover:border-[#155DFC]/30">
+            <Package className="w-6 h-6 text-slate-400 group-hover:text-[#1E293B] dark:group-hover:text-[#155DFC] transition-colors" strokeWidth={1.5} />
          </div>
          <div className="flex items-center gap-2">
             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ring-1 ${getStatusColor(item.status)}`}>

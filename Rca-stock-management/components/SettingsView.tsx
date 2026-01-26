@@ -143,7 +143,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
       {/* Notifications Section */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
-            <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-2 rounded-xl">
+            <div className="bg-slate-100 dark:bg-[#155DFC]/20 text-[#1E293B] dark:text-[#155DFC] p-2 rounded-xl">
                 <Bell className="w-5 h-5" />
             </div>
             <div>
@@ -159,7 +159,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
                 </div>
                 <button 
                     onClick={() => handleToggle('emailNotifications')}
-                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${settings.emailNotifications ? 'bg-[#1E293B] dark:bg-blue-600' : 'bg-slate-200 dark:bg-slate-600'}`}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${settings.emailNotifications ? 'bg-[#1E293B] dark:bg-[#155DFC]' : 'bg-slate-200 dark:bg-slate-600'}`}
                 >
                     <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-sm ${settings.emailNotifications ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
@@ -171,7 +171,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
                 </div>
                 <button 
                     onClick={() => handleToggle('smsNotifications')}
-                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${settings.smsNotifications ? 'bg-[#1E293B] dark:bg-blue-600' : 'bg-slate-200 dark:bg-slate-600'}`}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${settings.smsNotifications ? 'bg-[#1E293B] dark:bg-[#155DFC]' : 'bg-slate-200 dark:bg-slate-600'}`}
                 >
                     <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-sm ${settings.smsNotifications ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
@@ -198,22 +198,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
                 </div>
                  <button 
                     onClick={() => handleToggle('twoFactorAuth')}
-                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${settings.twoFactorAuth ? 'bg-[#1E293B] dark:bg-blue-600' : 'bg-slate-200 dark:bg-slate-600'}`}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${settings.twoFactorAuth ? 'bg-[#1E293B] dark:bg-[#155DFC]' : 'bg-slate-200 dark:bg-slate-600'}`}
                 >
                     <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-sm ${settings.twoFactorAuth ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
             </div>
             <div className="flex items-center justify-between pt-6 border-t border-slate-50 dark:border-slate-700">
                 <div>
-                    <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Change Password</h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Update your password regularly to keep your account safe.</p>
-                </div>
-                <button 
-                    onClick={onChangePassword}
-                    className="text-sm text-blue-600 dark:text-blue-400 font-semibold hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-4 py-2 rounded-lg transition-colors"
-                >
-                    Update Password
-                </button>
+                <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Change Password</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Update your password regularly to keep your account safe.</p>
+            </div>
+            <button 
+                onClick={onChangePassword}
+                className="text-sm text-[#1E293B] dark:text-[#155DFC] font-semibold hover:text-slate-700 dark:hover:text-blue-300 hover:bg-slate-50 dark:hover:bg-blue-900/20 px-4 py-2 rounded-lg transition-colors"
+            >
+                Update Password
+            </button>
             </div>
         </div>
       </div>
@@ -289,9 +289,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
                         onClick={() => handleThemeChange('DARK')}
                     >
                         <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${
-                            settings.theme === 'DARK' ? 'border-blue-400' : 'border-slate-400'
+                            settings.theme === 'DARK' ? 'border-[#155DFC]' : 'border-slate-400'
                         }`}>
-                            {settings.theme === 'DARK' && <div className="w-2 h-2 rounded-full bg-blue-400" />}
+                            {settings.theme === 'DARK' && <div className="w-2 h-2 rounded-full bg-[#155DFC]" />}
                         </div>
                         <span className="text-sm font-medium">Dark</span>
                     </label>
@@ -304,7 +304,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onChangePassword }) 
           <button 
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 dark:hover:bg-blue-700 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-[#1E293B] dark:bg-[#155DFC] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-[#1E293B]/90 dark:hover:bg-[#155DFC]/90 transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {saving ? (
                 <>

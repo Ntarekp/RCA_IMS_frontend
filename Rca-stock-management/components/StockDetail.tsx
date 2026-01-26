@@ -159,7 +159,7 @@ export const StockDetail = React.memo<StockDetailProps>(({
                         </div>
                     </div>
                     <div className="pt-4">
-                        <button type="submit" className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                        <button type="submit" className="w-full bg-[#1E293B] hover:bg-[#1E293B]/90 dark:bg-[#155DFC] dark:hover:bg-[#155DFC]/90 text-white py-2.5 rounded-lg text-sm font-medium transition-colors">
                             Save Changes
                         </button>
                     </div>

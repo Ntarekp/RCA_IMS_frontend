@@ -154,8 +154,8 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ startDate, end
             
             let className = "h-8 w-8 flex items-center justify-center text-xs rounded-full cursor-pointer transition-all relative z-10 ";
             
-            if (isStart) className += "bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-md shadow-blue-500/30 ";
-            else if (isEnd) className += "bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-md shadow-blue-500/30 ";
+            if (isStart) className += "bg-[#1E293B] dark:bg-[#155DFC] text-white font-bold hover:bg-[#1E293B]/90 dark:hover:bg-[#155DFC]/90 shadow-md shadow-blue-500/30 ";
+            else if (isEnd) className += "bg-[#1E293B] dark:bg-[#155DFC] text-white font-bold hover:bg-[#1E293B]/90 dark:hover:bg-[#155DFC]/90 shadow-md shadow-blue-500/30 ";
             else if (isInRange) className += "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-none ";
             else className += "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 ";
 
@@ -214,18 +214,18 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ startDate, end
             <div 
                 onClick={() => setIsOpen(!isOpen)}
                 className={`w-full md:w-[260px] flex items-center justify-between bg-white dark:bg-slate-700 border rounded-xl px-4 py-2.5 cursor-pointer shadow-sm hover:shadow-md transition-all group ${
-                    isOpen ? 'border-blue-600 dark:border-blue-500 ring-2 ring-blue-100 dark:ring-blue-900/20' : 'border-slate-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-500'
+                    isOpen ? 'border-[#1e293b] dark:border-[#155DFC] ring-2 ring-blue-100 dark:ring-blue-900/20' : 'border-slate-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-500'
                 }`}
             >
                 <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
-                     <CalendarIcon className={`w-4 h-4 transition-colors ${isOpen ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                     <CalendarIcon className={`w-4 h-4 transition-colors ${isOpen ? 'text-[#1e293b] dark:text-[#155DFC]' : 'text-slate-400'}`} />
                      <span className="truncate">
                         {tempStart ? formatDate(tempStart) : 'Select Date'} 
                         <span className="text-slate-400 mx-2">—</span> 
                         {tempEnd ? formatDate(tempEnd) : 'Select Date'}
                      </span>
                 </div>
-                <ChevronDown className={`w-4 h-4 transition-transform duration-200 text-slate-400 ${isOpen ? 'rotate-180 text-blue-600 dark:text-blue-400' : ''}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 text-slate-400 ${isOpen ? 'rotate-180 text-[#1e293b] dark:text-[#155DFC]' : ''}`} />
             </div>
 
             {isOpen && (
@@ -271,7 +271,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ startDate, end
                             <button 
                                 onClick={handleApply}
                                 disabled={!tempStart || !tempEnd}
-                                className="px-4 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-lg shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                className="px-4 py-1.5 text-xs font-bold text-white bg-[#1E293B] hover:bg-[#1E293B]/90 dark:bg-[#155DFC] dark:hover:bg-[#155DFC]/90 active:bg-blue-800 rounded-lg shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                             >
                                 Apply Range
                             </button>

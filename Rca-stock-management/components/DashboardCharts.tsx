@@ -51,7 +51,7 @@ export const DashboardCharts: React.FC = React.memo(() => {
   const calculateDonutData = React.useCallback(() => {
     if (!balanceReport || balanceReport.length === 0) {
       return [
-        { name: 'Stock In', value: 0, color: isDark ? '#3b82f6' : '#1E293B' }, // Blue in dark, Dark Slate in light
+        { name: 'Stock In', value: 0, color: isDark ? '#155DFC' : '#1E293B' }, // Blue in dark, Dark Slate in light
         { name: 'Stock Out', value: 0, color: isDark ? '#94a3b8' : '#64748b' }, // Slate 400/500
         { name: 'Damaged', value: 0, color: isDark ? '#f87171' : '#ef4444' }, // Red 400/500
         { name: 'Low Stock', value: 0, color: isDark ? '#475569' : '#cbd5e1' }, // Slate 600/300
@@ -64,7 +64,7 @@ export const DashboardCharts: React.FC = React.memo(() => {
     const lowStock = balanceReport.filter(item => item.isLowStock).length;
 
     return [
-      { name: 'Stock In', value: totalIn, color: isDark ? '#3b82f6' : '#1E293B' },
+      { name: 'Stock In', value: totalIn, color: isDark ? '#155DFC' : '#1E293B' },
       { name: 'Stock Out', value: totalOut, color: isDark ? '#94a3b8' : '#64748b' },
       { name: 'Damaged', value: damaged, color: isDark ? '#f87171' : '#ef4444' },
       { name: 'Low Stock', value: lowStock, color: isDark ? '#475569' : '#cbd5e1' },
@@ -96,7 +96,7 @@ export const DashboardCharts: React.FC = React.memo(() => {
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3 text-xs font-medium text-[#9CA3AF] dark:text-slate-400">
                     <div className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#1E293B] dark:bg-blue-500"></span> In
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#1E293B] dark:bg-[#155DFC]"></span> In
                     </div>
                     <div className="flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 rounded-full bg-[#64748b] dark:bg-slate-400"></span> Out
@@ -145,7 +145,7 @@ export const DashboardCharts: React.FC = React.memo(() => {
                         itemStyle={{ color: tooltipText }}
                         cursor={{fill: isDark ? '#334155' : '#F7F8FD'}}
                     />
-                    <Bar dataKey="in" fill={isDark ? '#3b82f6' : '#1E293B'} radius={[4, 4, 0, 0]} barSize={12} activeBar={{ fill: isDark ? '#60a5fa' : '#334155' }} />
+                    <Bar dataKey="in" fill={isDark ? '#155DFC' : '#1E293B'} radius={[4, 4, 0, 0]} barSize={12} activeBar={{ fill: isDark ? '#60a5fa' : '#334155' }} />
                     <Bar dataKey="out" fill={isDark ? '#94a3b8' : '#64748b'} radius={[4, 4, 0, 0]} barSize={12} activeBar={{ fill: isDark ? '#cbd5e1' : '#475569' }} />
                     <Bar dataKey="damaged" fill={isDark ? '#f87171' : '#ef4444'} radius={[4, 4, 0, 0]} barSize={12} activeBar={{ fill: isDark ? '#fca5a5' : '#dc2626' }} />
                 </BarChart>

@@ -153,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => 
                                         onClick={() => handleSearchSelect(item.view)}
                                         className="w-full text-left px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors group/item"
                                     >
-                                        <div className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-500 dark:text-slate-400 group-hover/item:bg-blue-50 dark:group-hover/item:bg-blue-900/20 group-hover/item:text-blue-600 dark:group-hover/item:text-blue-400 transition-colors">
+                                        <div className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-500 dark:text-slate-400 group-hover/item:bg-[#1E293B]/10 dark:group-hover/item:bg-[#155DFC]/20 group-hover/item:text-[#1E293B] dark:group-hover/item:text-[#155DFC] transition-colors">
                                             <item.icon className="w-4 h-4" />
                                         </div>
                                         <div>
@@ -256,7 +256,7 @@ export const Header: React.FC<HeaderProps> = ({ onChangeView, onMenuClick }) => 
                                 onClick={() => handleSearchSelect(item.view)}
                                 className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-4 rounded-xl mb-1"
                             >
-                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-blue-600 dark:text-blue-400">
+                                <div className="p-3 bg-[#1E293B]/10 dark:bg-[#155DFC]/20 rounded-xl text-[#1E293B] dark:text-[#155DFC]">
                                     <item.icon className="w-5 h-5" />
                                 </div>
                                 <div>

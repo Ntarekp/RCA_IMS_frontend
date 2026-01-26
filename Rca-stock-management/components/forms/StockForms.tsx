@@ -125,10 +125,10 @@ export const StockInForm: React.FC<StockInFormProps> = ({
                     Cancel
                 </button>
                 <button 
-                    type="submit" 
-                    disabled={isSubmitting}
-                    className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-                >
+          type="submit" 
+          disabled={isSubmitting}
+          className="flex-1 px-4 py-2.5 bg-[#1E293B] text-white rounded-lg text-sm font-medium hover:bg-[#1E293B]/90 dark:bg-[#155DFC] dark:hover:bg-[#155DFC]/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+        >
                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Stock In'}
                 </button>
             </div>
@@ -245,7 +245,7 @@ export const StockOutForm: React.FC<StockOutFormProps> = ({
                 <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2.5 bg-[#1E293B] text-white rounded-lg text-sm font-medium hover:bg-[#1E293B]/90 dark:bg-[#155DFC] dark:hover:bg-[#155DFC]/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Stock Out'}
                 </button>

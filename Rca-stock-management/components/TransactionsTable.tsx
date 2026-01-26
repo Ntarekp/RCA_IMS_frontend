@@ -56,7 +56,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = React.memo(({
                                     isReversed 
                                         ? 'bg-gray-100 text-gray-500 border-gray-200'
                                         : item.transactionType === 'IN' 
-                                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-800' 
+                                            ? 'bg-[#1E293B]/10 dark:bg-[#155DFC]/20 text-[#1E293B] dark:text-[#155DFC] border-[#1E293B]/20 dark:border-[#155DFC]/30' 
                                             : 'bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-100 dark:border-slate-600'
                                 }`}>
                                     {isReversed ? 'REVERSED' : item.transactionType}
@@ -85,7 +85,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = React.memo(({
                                 {userPermissions.canEdit && isEditable(item) && (
                                     <button 
                                         onClick={() => onEdit && onEdit(item)}
-                                        className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                                        className="flex items-center gap-1 text-xs text-[#1E293B] dark:text-[#155DFC] hover:text-[#1E293B]/80 dark:hover:text-[#155DFC]/80 font-medium"
                                     >
                                         <Edit className="w-3 h-3" /> Edit
                                     </button>
@@ -164,7 +164,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = React.memo(({
                                         {userPermissions.canEdit && isEditable(item) && (
                                             <button 
                                                 onClick={() => onEdit && onEdit(item)}
-                                                className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                                className="p-1 text-slate-400 hover:text-[#1E293B] dark:hover:text-[#155DFC] hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors"
                                                 title="Edit Details"
                                             >
                                                 <Edit className="w-4 h-4" />

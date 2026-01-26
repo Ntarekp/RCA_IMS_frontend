@@ -161,7 +161,7 @@ export const ScheduledReportModal: React.FC<ScheduledReportModalProps> = ({ isOp
                   <p className="text-sm mt-1">Create a schedule to receive automated reports</p>
                   <button
                     onClick={() => setActiveTab('create')}
-                    className="mt-4 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                    className="mt-4 px-4 py-2 bg-[#1E293B]/10 dark:bg-[#155DFC]/20 text-[#1E293B] dark:text-[#155DFC] rounded-lg text-sm font-medium hover:bg-[#1E293B]/20 dark:hover:bg-[#155DFC]/30 transition-colors"
                   >
                     Create Schedule
                   </button>
@@ -284,7 +284,7 @@ export const ScheduledReportModal: React.FC<ScheduledReportModalProps> = ({ isOp
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-900/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
+                  className="px-6 py-2.5 bg-[#1E293B] hover:bg-[#1E293B]/90 dark:bg-[#155DFC] dark:hover:bg-[#155DFC]/90 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-900/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
                 >
                   {isSubmitting ? (
                     <>

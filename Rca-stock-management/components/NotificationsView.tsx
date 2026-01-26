@@ -60,8 +60,8 @@ export const NotificationsView: React.FC = () => {
           ) : (
               notifications.map((notif) => {
                 let Icon = Info;
-                let iconColor = 'text-blue-500 dark:text-blue-400';
-                let bgColor = 'bg-blue-50 dark:bg-blue-900/20';
+                let iconColor = 'text-[#1E293B] dark:text-[#155DFC]';
+                let bgColor = 'bg-[#1E293B]/10 dark:bg-[#155DFC]/20';
 
                 if (notif.type === 'WARNING') {
                     Icon = AlertTriangle;
@@ -78,7 +78,7 @@ export const NotificationsView: React.FC = () => {
                 }
 
                 return (
-                    <div key={notif.id} className={`bg-white dark:bg-slate-800 p-5 rounded-xl border ${notif.read ? 'border-[#E5E7EB] dark:border-slate-700 opacity-80' : 'border-l-4 border-l-[#1E293B] dark:border-l-blue-500 shadow-sm dark:shadow-slate-900/10'} flex gap-4 transition-all hover:shadow-md dark:hover:shadow-slate-900/20`}>
+                    <div key={notif.id} className={`bg-white dark:bg-slate-800 p-5 rounded-xl border ${notif.read ? 'border-[#E5E7EB] dark:border-slate-700 opacity-80' : 'border-l-4 border-l-[#1E293B] dark:border-l-[#155DFC] shadow-sm dark:shadow-slate-900/10'} flex gap-4 transition-all hover:shadow-md dark:hover:shadow-slate-900/20`}>
                         <div className={`${bgColor} ${iconColor} p-2.5 rounded-full h-fit flex-shrink-0`}>
                             <Icon className="w-5 h-5" />
                         </div>
@@ -91,7 +91,7 @@ export const NotificationsView: React.FC = () => {
                         </div>
                         {!notif.read && (
                             <div className="self-center">
-                                <span className="w-2.5 h-2.5 bg-[#1E293B] dark:bg-blue-500 rounded-full block"></span>
+                                <span className="w-2.5 h-2.5 bg-[#1E293B] dark:bg-[#155DFC] rounded-full block"></span>
                             </div>
                         )}
                     </div>

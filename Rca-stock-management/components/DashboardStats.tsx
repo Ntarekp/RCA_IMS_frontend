@@ -48,7 +48,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, trend, icon: Icon, da
   <div 
     className={`p-6 rounded-2xl flex flex-col justify-between h-44 relative group transition-all duration-300 hover:-translate-y-1 cursor-pointer ${
       dark 
-        ? 'bg-[#1E293B] dark:bg-blue-600 text-white shadow-xl shadow-slate-900/20' 
+        ? 'bg-[#1E293B] dark:bg-[#155DFC] text-white shadow-xl shadow-slate-900/20' 
         : 'bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] hover:shadow-lg'
     }`}
     onClick={() => onNavigate(targetView as ViewState)}

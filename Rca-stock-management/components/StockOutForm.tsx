@@ -152,7 +152,7 @@ export const StockOutForm = React.memo<StockOutFormProps>(({
                 <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-full flex items-center justify-center gap-2 bg-[#1E293B] hover:bg-[#1E293B]/90 dark:bg-[#155DFC] dark:hover:bg-[#155DFC]/90 text-white px-4 py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                     {isSubmitting ? 'Recording...' : 'Record Stock Out'}

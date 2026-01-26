@@ -806,7 +806,7 @@ const App = () => {
             <button 
                 type="submit"
                 form="transaction-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+                className="bg-[#1e293b] dark:bg-[#155DFC] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-[#155DFC]/90 transition-colors shadow-lg shadow-slate-900/10"
             >
                 {drawerType === 'STOCK_IN' ? 'Record Stock In' : 'Record Stock Out'}
             </button>
@@ -817,7 +817,7 @@ const App = () => {
             <button 
                 type="submit"
                 form="add-stock-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+                className="bg-[#1e293b] dark:bg-[#155DFC] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-[#155DFC]/90 transition-colors shadow-lg shadow-slate-900/10"
             >
                 Create Item
             </button>
@@ -828,7 +828,7 @@ const App = () => {
             <button 
                 type="submit"
                 form="add-supplier-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+                className="bg-[#1e293b] dark:bg-[#155DFC] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-[#155DFC]/90 transition-colors shadow-lg shadow-slate-900/10"
             >
                 Register Supplier
             </button>
@@ -839,7 +839,7 @@ const App = () => {
             <button 
                 type="submit"
                 form="order-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+                className="bg-[#1e293b] dark:bg-[#155DFC] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-[#155DFC]/90 transition-colors shadow-lg shadow-slate-900/10"
             >
                 Send Request
             </button>
@@ -850,7 +850,7 @@ const App = () => {
             <button 
                 type="submit"
                 form="edit-profile-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+                className="bg-[#1e293b] dark:bg-[#155DFC] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-[#155DFC]/90 transition-colors shadow-lg shadow-slate-900/10"
             >
                 Save Changes
             </button>
@@ -861,7 +861,7 @@ const App = () => {
             <button 
                 type="submit"
                 form="change-password-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+                className="bg-[#1e293b] dark:bg-[#155DFC] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-[#155DFC]/90 transition-colors shadow-lg shadow-slate-900/10"
             >
                 Update Password
             </button>
@@ -872,22 +872,14 @@ const App = () => {
             <button 
                 type="submit"
                 form="add-user-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
+                className="bg-[#1e293b] dark:bg-[#155DFC] text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-[#155DFC]/90 transition-colors shadow-lg shadow-slate-900/10"
             >
                 Create User
             </button>
         );
     }
     if (drawerType === 'EDIT_TRANSACTION') {
-        return (
-            <button 
-                type="submit"
-                form="edit-transaction-form"
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors shadow-lg shadow-slate-900/10"
-            >
-                Save Changes
-            </button>
-        );
+        return null;
     }
     if (drawerType === 'REVERSE_TRANSACTION') {
         return (
@@ -901,26 +893,10 @@ const App = () => {
         );
     }
     if (drawerType === 'DEACTIVATE_SUPPLIER') {
-        return (
-            <button 
-                type="submit"
-                form="deactivate-supplier-form"
-                className="bg-amber-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/10"
-            >
-                Deactivate Supplier
-            </button>
-        );
+        return null;
     }
     if (drawerType === 'DELETE_SUPPLIER') {
-        return (
-            <button 
-                type="submit"
-                form="delete-supplier-form"
-                className="bg-red-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors shadow-lg shadow-red-900/10"
-            >
-                Delete Permanently
-            </button>
-        );
+        return null;
     }
     if (drawerType === 'SUPPLIER_DETAIL') {
         const supplier = selectedItem as Supplier;
@@ -934,9 +910,9 @@ const App = () => {
                     closeDrawer();
                     setTimeout(() => openOrderForm(selectedItem as Supplier), 300);
                 }}
-                className="bg-[#1e293b] dark:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-colors"
+                className="bg-[#1e293b] dark:bg-[#155DFC] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-[#155DFC]/90 transition-colors"
              >
-                 Create New Order
+                Order Now
              </button>
          );
     }
@@ -1004,7 +980,7 @@ const App = () => {
                                 <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
                                     <button 
                                         onClick={openAddStock}
-                                        className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 hover:shadow-lg hover:shadow-slate-900/20 transition-all whitespace-nowrap active:scale-95"
+                                        className="flex items-center gap-2 bg-[#1e293b] dark:bg-[#155DFC] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 dark:hover:bg-[#155DFC]/90 hover:shadow-lg hover:shadow-slate-900/20 transition-all whitespace-nowrap active:scale-95"
                                     >
                                         <Plus className="w-4 h-4" />
                                         <span>New Entry</span>
@@ -1075,7 +1051,7 @@ const App = () => {
                             {userProfile?.role === 'ADMIN' && (
                                 <button 
                                     onClick={openAddStock}
-                                    className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-900/20 active:scale-95"
+                                    className="flex items-center gap-2 bg-[#1e293b] dark:bg-[#155DFC] hover:bg-slate-800 dark:hover:bg-[#155DFC]/90 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-900/20 active:scale-95"
                                 >
                                     <span>Add Item</span>
                                     <PlusCircle className="w-4 h-4" />
@@ -1434,7 +1410,7 @@ const App = () => {
                                                      onClick={() => setCurrentTransactionPage(pageNum)}
                                                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
                                                          currentTransactionPage === pageNum
-                                                             ? 'bg-[#1e293b] dark:bg-blue-600 text-white'
+                                                             ? 'bg-[#1e293b] dark:bg-[#155DFC] text-white'
                                                              : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400'
                                                      }`}
                                                  >
@@ -1471,7 +1447,7 @@ const App = () => {
                             </button>
                             <button 
                                 onClick={() => handleExport('Analytics')}
-                                className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 dark:hover:bg-blue-700 transition-all shadow-lg shadow-slate-900/20"
+                                className="flex items-center gap-2 bg-[#1e293b] dark:bg-[#155DFC] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 dark:hover:bg-[#155DFC]/90 transition-all shadow-lg shadow-slate-900/20"
                             >
                                 <FileSpreadsheet className="w-4 h-4" />
                                 <span>Export Report</span>
@@ -1530,7 +1506,7 @@ const App = () => {
                             <div className="flex items-center gap-3 w-full md:w-auto">
                                 <button
                                     onClick={openAddSupplier}
-                                    className="flex items-center gap-2 bg-[#1e293b] dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-900/20 active:scale-95"
+                                    className="flex items-center gap-2 bg-[#1e293b] dark:bg-[#155DFC] hover:bg-slate-800 dark:hover:bg-[#155DFC]/90 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-slate-900/20 active:scale-95"
                                 >
                                     <span>Add Supplier</span>
                                     <PlusCircle className="w-4 h-4" />
@@ -1543,13 +1519,13 @@ const App = () => {
                     <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-700">
                         <button
                             onClick={() => setShowInactiveSuppliers(false)}
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${!showInactiveSuppliers ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
+                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${!showInactiveSuppliers ? 'border-[#1e293b] text-[#1e293b] dark:text-[#155DFC] dark:border-[#155DFC]' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
                         >
                             Active Suppliers
                         </button>
                         <button
                             onClick={() => setShowInactiveSuppliers(true)}
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${showInactiveSuppliers ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
+                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${showInactiveSuppliers ? 'border-[#1e293b] text-[#1e293b] dark:text-[#155DFC] dark:border-[#155DFC]' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
                         >
                             Inactive ({inactiveSuppliers.length})
                         </button>
