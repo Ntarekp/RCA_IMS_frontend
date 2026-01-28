@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   const apiTarget = env.VITE_API_TARGET || 'http://10.12.72.9:8080';
 
   return {
-    base: '/rca_ims/',
+    base: '/',
     plugins: [
       react(),
       visualizer({ 
