@@ -1,9 +1,13 @@
 # Build stage
 FROM node:20-alpine AS build
 WORKDIR /app
-COPY package*.json ./
+# Copy only package.json to force fresh dependency resolution for Linux
+COPY package.json ./
 RUN npm install
 COPY . .
+# Set API URL to /api so it uses the Nginx proxy
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # Run stage
