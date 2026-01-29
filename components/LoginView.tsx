@@ -130,7 +130,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
             ) : (
                 <>
                     <div className="text-left mb-8">
-                        <h1 className="text-xl font-bold text-[#797A7C] uppercase tracking-wide">welcome Back</h1>
+                        <h1 className="text-xl font-bold text-[#797A7C] uppercase tracking-wide">Back</h1>
                         <p className="text-sm text-[#9CA3AF] mt-2 font-medium">Log into your account to continue</p>
                     </div>
 
