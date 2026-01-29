@@ -21,7 +21,7 @@ jobs:
       - name: Deploy build
         run: |
           rm -rf /opt/apps/rca-frontend/*
-          cp -r build/* /opt/apps/rca-frontend/
+          cp -r dist/* /opt/apps/rca-frontend/
 
       - name: Copy env
         run: |
