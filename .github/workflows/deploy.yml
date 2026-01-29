@@ -9,27 +9,28 @@ jobs:
     runs-on: [self-hosted, frontend]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Inject env
+        run: |
+          cp /opt/configs/rca-frontend/.env .env
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build frontend
         run: npm run build
+
+      - name: Cleanup env
+        run: rm -f .env
 
       - name: Deploy build
         run: |
           rm -rf /opt/apps/rca-frontend/*
           cp -r dist/* /opt/apps/rca-frontend/
 
-      - name: Copy env
-        run: |
-          cp /opt/configs/rca-frontend/.env /opt/apps/rca-frontend/.env
-
       - name: Restart frontend
         run: |
-          pm2 reload rca-frontend || \
-          pm2 start "serve -s /opt/apps/rca-frontend -l 3000" \
-          --name rca-frontend
+          pm2 delete rca-frontend || true
+          pm2 start serve --name rca-frontend -- -s /opt/apps/rca-frontend -l 3000
           pm2 save
