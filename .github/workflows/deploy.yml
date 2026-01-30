@@ -13,7 +13,17 @@ jobs:
 
       - name: Inject env
         run: |
-          cp /opt/configs/rca-frontend/.env .env
+          # Use the repository's .env.production if available, or fall back to server config
+          # We prefer .env.production for VITE_API_URL settings
+          if [ -f .env.production ]; then
+             echo "Using .env.production from repository"
+             cp .env.production .env
+          elif [ -f /opt/configs/rca-frontend/.env ]; then
+             echo "Using server .env"
+             cp /opt/configs/rca-frontend/.env .env
+          else
+             echo "No .env found!"
+          fi
 
       - name: Install dependencies
         run: npm install
