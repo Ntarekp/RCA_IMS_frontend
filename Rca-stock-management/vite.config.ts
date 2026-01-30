@@ -7,7 +7,8 @@ export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, process.cwd(), '');
-  const apiTarget = env.VITE_API_TARGET || 'http://10.12.72.9:8080';
+  const apiTarget = env.VITE_API_TARGET || 'http://localhost:8080';
+  const contextPath = env.VITE_CONTEXT_PATH || '/ims';
 
   return {
     base: '/',
@@ -22,7 +23,7 @@ export default defineConfig(({ mode }) => {
     ],
     server: {
       proxy: {
-        '/ims/api': {
+        [`${contextPath}/api`]: {
           target: apiTarget,
           changeOrigin: true,
           secure: false,

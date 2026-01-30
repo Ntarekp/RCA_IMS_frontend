@@ -5,8 +5,8 @@
 
 export const API_CONFIG = {
   // Backend base URL - uses environment variable
-  // Note: The base URL should include the /api prefix if the backend expects it
-  BASE_URL: import.meta.env.VITE_API_URL || '',
+  // Priority: Runtime Config (window.env) -> Build-time Env -> Default
+  BASE_URL: (window as any).env?.VITE_API_URL || import.meta.env.VITE_API_URL || '',
   
   // API endpoints (relative to BASE_URL)
   ENDPOINTS: {
