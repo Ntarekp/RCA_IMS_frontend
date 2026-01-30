@@ -19,6 +19,8 @@ jobs:
         run: npm install
 
       - name: Build frontend
+        env:
+          VITE_API_URL: "http://5.252.53.111:8081/ims/api"
         run: npm run build
 
       - name: Cleanup env
