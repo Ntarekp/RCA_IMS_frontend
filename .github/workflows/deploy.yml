@@ -33,7 +33,8 @@ jobs:
 
       - name: Cleanup env
         run: rm -f .env
-
+  
+        
       - name: Deploy build
         run: |
           rm -rf /opt/apps/rca-frontend/*
