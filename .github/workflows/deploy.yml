@@ -1,0 +1,36 @@
+name: Deploy RCA IMS Frontend
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, frontend]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject env
+        run: |
+          cp /opt/configs/rca-frontend/.env .env
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Cleanup env
+        run: rm -f .env
+
+      - name: Deploy build
+        run: |
+          rm -rf /opt/apps/rca-frontend/*
+          cp -r dist/* /opt/apps/rca-frontend/
+
+      - name: Restart frontend
+        run: |
+          pm2 delete rca-frontend || true
+          pm2 start serve --name rca-frontend -- -s /opt/apps/rca-frontend -l 3000
+          pm2 save
