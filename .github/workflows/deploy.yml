@@ -41,8 +41,11 @@ jobs:
 
       - name: Restart frontend
         run: |
+          npm install -g serve
           pm2 delete rca-frontend || true
-          pm2 serve /opt/apps/rca-frontend 3000 --name rca-frontend --spa
+          pm2 start serve --name rca-frontend -- -s /opt/apps/rca-frontend -l 3000 --single
           pm2 save
           sleep 5
+          pm2 list
+          pm2 logs rca-frontend --lines 20 --nostream
           ss -tuln
