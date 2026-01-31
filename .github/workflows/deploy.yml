@@ -2,28 +2,16 @@ name: Deploy RCA IMS Frontend
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: [self-hosted, frontend]
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Inject env
-        run: |
-          # Use the repository's .env.production if available, or fall back to server config
-          # We prefer .env.production for VITE_API_URL settings
-          if [ -f .env.production ]; then
-             echo "Using .env.production from repository"
-             cp .env.production .env
-          elif [ -f /opt/configs/rca-frontend/.env ]; then
-             echo "Using server .env"
-             cp /opt/configs/rca-frontend/.env .env
-          else
-             echo "No .env found!"
-          fi
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Install dependencies
         run: npm install
@@ -31,20 +19,40 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      - name: Cleanup env
-        run: rm -f .env
-
       - name: Deploy build
         run: |
           rm -rf /opt/apps/rca-frontend/*
           cp -r dist/* /opt/apps/rca-frontend/
 
+      - name: Copy env
+        run: |
+          cp /opt/configs/rca-frontend/.env /opt/apps/rca-frontend/.env
+
       - name: Restart frontend
         run: |
+          # Install serve globally to ensure availability
+          npm install -g serve
+          
+          # Find the absolute path to serve
+          SERVE_PATH=$(which serve)
+          echo "Serve is located at: $SERVE_PATH"
+          
+          # Verify build output exists
+          if [ ! -d "/opt/apps/rca-frontend" ] || [ -z "$(ls -A /opt/apps/rca-frontend)" ]; then
+             echo "Error: Deployment directory is empty!"
+             exit 1
+          fi
+
+          # Stop existing process
           pm2 delete rca-frontend || true
-          pm2 start serve --name rca-frontend -- -s /opt/apps/rca-frontend -l 3000
+          
+          # Start with absolute path to ensure PM2 finds it
+          pm2 start "$SERVE_PATH" --name rca-frontend -- -s /opt/apps/rca-frontend -l 3000 --single
+          
           pm2 save
           sleep 5
+          
+          # Health check
           pm2 list
           pm2 logs rca-frontend --lines 20 --nostream
-          ss -tuln
+          ss -tuln | grep 3000 || echo "Port 3000 not listening"
