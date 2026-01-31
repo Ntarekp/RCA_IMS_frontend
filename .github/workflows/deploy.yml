@@ -45,6 +45,5 @@ jobs:
       - name: Restart frontend
         run: |
           pm2 delete rca-frontend || true
-          sleep 1
-          pm2 start http-server --name rca-frontend -- -p 3001 -c-1
+          pm2 start serve --name rca-frontend -- -s /opt/apps/rca-frontend -l 3000
           pm2 save
