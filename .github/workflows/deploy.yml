@@ -46,7 +46,7 @@ jobs:
         run: |
           npm install -g serve
           pm2 delete rca-frontend || true
-          pm2 start serve --name rca-frontend -- -s /opt/apps/rca-frontend -l 8080
+          pm2 start serve --name rca-frontend -- -s /opt/apps/rca-frontend -l 3000
           pm2 save
           sleep 5
           ss -tuln
